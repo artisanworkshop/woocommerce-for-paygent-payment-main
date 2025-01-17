@@ -1,0 +1,1830 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PAYGENT for WooCommerce\n"
+"POT-Creation-Date: 2022-11-01 11:51+0900\n"
+"PO-Revision-Date: 2022-11-01 11:50+0900\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Poedit 3.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: woocommerce-for-paygent-payment-main.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SearchPathExcluded-1: vendor\n"
+
+#: includes/admin/class-wc-admin-screen-paygent.php:59
+msgid "Paygent Setting"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:94
+msgid "Client Cert File(.pem) for Production environment do not exist. "
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:95
+msgid "CA Cert File(.crt) do not exist. "
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:102
+msgid "Mistake your uploaded file."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:116
+msgid "Basic Setting"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:122
+msgid "Server IP address"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:129
+msgid "Payment information difference notification URL"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:136
+#: includes/admin/class-wc-admin-screen-paygent.php:574
+msgid "Site ID"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:143
+msgid "CA Cert File"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:150
+#: includes/admin/class-wc-admin-screen-paygent.php:617
+msgid "Test Mode"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:157
+#: includes/admin/class-wc-admin-screen-paygent.php:626
+msgid "Telegram hash check"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:166
+msgid "Production environment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:172
+#: includes/admin/class-wc-admin-screen-paygent.php:229
+#: includes/admin/class-wc-admin-screen-paygent.php:473
+#: includes/admin/class-wc-admin-screen-paygent.php:525
+msgid "Merchant ID"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:179
+#: includes/admin/class-wc-admin-screen-paygent.php:236
+#: includes/admin/class-wc-admin-screen-paygent.php:482
+#: includes/admin/class-wc-admin-screen-paygent.php:534
+msgid "Connect ID"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:186
+#: includes/admin/class-wc-admin-screen-paygent.php:243
+#: includes/admin/class-wc-admin-screen-paygent.php:491
+#: includes/admin/class-wc-admin-screen-paygent.php:543
+msgid "Connect Password"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:193
+#: includes/admin/class-wc-admin-screen-paygent.php:250
+#: includes/admin/class-wc-admin-screen-paygent.php:500
+#: includes/admin/class-wc-admin-screen-paygent.php:552
+msgid "Token Generation Key"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:200
+#: includes/admin/class-wc-admin-screen-paygent.php:257
+#: includes/admin/class-wc-admin-screen-paygent.php:561
+msgid "Client Cert File"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:207
+#: includes/admin/class-wc-admin-screen-paygent.php:635
+msgid "Telegram hash check Code"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:214
+#: includes/admin/class-wc-admin-screen-paygent.php:653
+msgid "Paygent debug Mode"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:223
+msgid "Test environment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:264
+#: includes/admin/class-wc-admin-screen-paygent.php:644
+msgid "Test Telegram hash check Code"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:273
+msgid "Paygent Payment Method"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:279
+#: includes/admin/class-wc-admin-screen-paygent.php:662
+msgid "Prefix of Order Number"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:286
+#: includes/admin/class-wc-admin-screen-paygent.php:671
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:64
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:167
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:173
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:179
+msgid "Credit Card"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:293
+#: includes/admin/class-wc-admin-screen-paygent.php:680
+msgid "Paidy Payment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:300
+#: includes/admin/class-wc-admin-screen-paygent.php:689
+msgid "PayPay Payment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:307
+#: includes/admin/class-wc-admin-screen-paygent.php:698
+msgid "RakutenPay Payment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:314
+#: includes/admin/class-wc-admin-screen-paygent.php:707
+msgid "Convenience store"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:321
+#: includes/admin/class-wc-admin-screen-paygent.php:716
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:95
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:104
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:110
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:122
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:128
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:134
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:140
+msgid "Bank Net"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:328
+#: includes/admin/class-wc-admin-screen-paygent.php:725
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:55
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:60
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:61
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:99
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:108
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:114
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:120
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:197
+msgid "ATM Payment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:335
+#: includes/admin/class-wc-admin-screen-paygent.php:734
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:63
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:64
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:107
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:122
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:128
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:341
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:349
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:403
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:459
+msgid "Carrier Payment"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:342
+#: includes/admin/class-wc-admin-screen-paygent.php:743
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:117
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:129
+msgid "Multi-currency Credit Card"
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:399
+#: woocommerce-for-paygent-payment-main.php:173
+msgid "wc-paygent folder created."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:402
+#: woocommerce-for-paygent-payment-main.php:175
+msgid "wc-paygent folder could not be created."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:412
+msgid "Client Cert File have not been uploaded."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:416
+msgid "Uploaded flie is not Client Cert File. Please check .pem file."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:426
+msgid "CA Cert File have not been uploaded."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:430
+msgid "Uploaded flie is not CA Cert File. Please check .crt file."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:465
+msgid "Your settings have been saved."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:513
+msgid "Please select Client Cert File (pem) from local."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:515
+msgid ""
+"If you want to change Client Cert File, please select New Client Cert File "
+"(pem) from local."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:576
+msgid "If you have only one site please enter 1."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:588
+msgid "Please select CA Cert(crt) File from local."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:590
+msgid ""
+"If you want to change CA Cert File, please select New CA Cert(crt) File from "
+"local."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:601
+msgid ""
+"Since it is different depending on the rental server, please contact the "
+"server company if the test is not completed."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:610
+msgid ""
+"This URL is the payment information difference notification URL set on the "
+"Paygent merchant administrator site."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:654
+msgid ""
+"Check it only for error checking in the production environment. Basically, "
+"please uncheck it."
+msgstr ""
+
+#: includes/admin/class-wc-admin-screen-paygent.php:776
+msgid "Toggle panel"
+msgstr ""
+
+#: includes/admin/views/html-admin-info-screen.php:1
+msgid "Infomation of Japanese Support"
+msgstr ""
+
+#: includes/admin/views/html-admin-info-screen.php:11
+#, php-format
+msgid "This Plugin's framework is %s."
+msgstr ""
+
+#: includes/admin/views/html-admin-screen.php:3
+msgid "Setting"
+msgstr ""
+
+#: includes/admin/views/html-admin-screen.php:3
+msgid "Infomations"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:5
+msgid "General Setting"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:9
+msgid "WooCommerce Paygent"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:17
+msgid "Do you like this plugin?"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:18
+msgid "Rate it 5"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:18
+msgid "on WordPress.org"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:21
+#: includes/jp4wc-framework/config-jp4wc-framework.php:37
+msgid "Created by"
+msgstr ""
+
+#: includes/admin/views/html-admin-setting-screen.php:22
+#: includes/jp4wc-framework/config-jp4wc-framework.php:38
+msgid "WooCommerce Doc in Japanese"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-addon-cc.php:132
+msgid "Subscription Credit Card Payment completed."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-addon-cc.php:146
+#: includes/gateways/paygent/class-wc-gateway-paygent-addon-cc.php:151
+msgid "Subscription Credit Card Payment failed."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-addon-cc.php:151
+msgid "There are no saved cards."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-addon-cc.php:165
+#, php-format
+msgid "Paygent Transaction Failed (%s)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:55
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:120
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:64
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:179
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:78
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:177
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:128
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:129
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:127
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:134
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:124
+#, php-format
+msgid "Proceed to %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:60
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:63
+#, php-format
+msgid "Paygent %s Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:61
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:64
+#, php-format
+msgid "Allows payments by Paygent %s in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:64
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:67
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:95
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:88
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:71
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:87
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:71
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:68
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:70
+msgid "Please set this payment at Control Panel! "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:98
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:94
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:157
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:155
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:106
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:107
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:105
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:112
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:102
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:99
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:95
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:107
+#, php-format
+msgid "Enable paygent %s Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:105
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:101
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:164
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:162
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:113
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:114
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:112
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:119
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:109
+msgid "Title"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:107
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:103
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:166
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:164
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:115
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:114
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:111
+msgid "This controls the title which the user sees during checkout."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:111
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:107
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:170
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:168
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:119
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:120
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:118
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:125
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:115
+msgid "Description"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:113
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:119
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:109
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:115
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:172
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:178
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:170
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:127
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:122
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:120
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:126
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:127
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:133
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:117
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:123
+msgid "This controls the description which the user sees during checkout."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:114
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:110
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:173
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:122
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:128
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:118
+#, php-format
+msgid "Pay with your %s via Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:117
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:113
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:176
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:125
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:124
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:131
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:121
+msgid "Order Button Text"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:123
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:182
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:180
+msgid "Thank you page description"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:125
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:184
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:182
+msgid "This controls the description displayed on the thank you page."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:126
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:287
+msgid ""
+"Thank you. Your order has been received. Please pay at the bank ATM by the "
+"specified method."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:129
+msgid "Invoice detail"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:131
+msgid ""
+"This controls the text which the detail at ATM. Please enter in full-width "
+"characters."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:132
+msgid "Shop Title"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:135
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:125
+msgid "Invoice detail (kana)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:137
+msgid ""
+"This controls the text which the detail at ATM.(Kana) Please enter in half-"
+"width characters."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:138
+msgid "Shop Title (kana)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:141
+msgid "Payment Limit date"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:145
+msgid "Set Payment limit date."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:148
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:143
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:279
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:236
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:149
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:151
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:156
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:137
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:141
+msgid "Debug Mode"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:150
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:145
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:281
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:238
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:151
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:153
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:158
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:139
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:143
+msgid "Enable Debug Mode"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:152
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:147
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:283
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:240
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:153
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:155
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:160
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:141
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:145
+msgid "Save debug data using WooCommerce logging."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:197
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:403
+#, php-format
+msgid "Awaiting %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:244
+msgid "Pay Center Number :"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:247
+msgid "Customer Number :"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:250
+msgid "Conf Number :"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:253
+msgid "Payment Limit Date :"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:256
+msgid "This order was not complete. Please pay at ATM."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-atm.php:261
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:244
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:347
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:514
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:761
+msgid "Thank you for your order."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:63
+msgid "Paygent Bank Net Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:64
+msgid "Allows payments by Paygent Bnak Net in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:119
+msgid "Invoice detail (Kanji)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:127
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:139
+msgid "This controls the description which invoice detail."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:139
+msgid "Double-byte characters are required."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:122
+#, php-format
+msgid "invoice detail Via %s (kanji)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:125
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:133
+msgid "Half-width characters are required."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:128
+#, php-format
+msgid "invoice detail Via %s (kana)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:131
+msgid "Invoice shop name (Kana)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:133
+msgid "This controls the shop name."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:134
+#, php-format
+msgid "invoice shop name Via %s (kana)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:137
+msgid "Invoice shop name (kanji)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:140
+#, php-format
+msgid "invoice shop name Via %s (kanji)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:209
+msgid "Awaiting Bank Net payment ASP"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:236
+msgid "Failed at Paygent system for Bank Net Payment ASP."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-bn.php:238
+msgid "This payment is failed."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:69
+msgid "Paygent Credit Card Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:70
+msgid "Allows payments by Paygent Credit Card in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:88
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:252
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:548
+msgid "1 time payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:89
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:253
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:558
+msgid "Installment payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:90
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:254
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:551
+msgid "Bonus One time"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:91
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:255
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:554
+msgid "Revolving payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:158
+msgid "Enable paygent Credit Card Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:185
+msgid "Thank you. Your order has been received."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:188
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:132
+msgid "Store Card Infomation"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:190
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:134
+msgid "Enable Store Card Infomation"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:192
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:136
+msgid "Store user Credit Card information in Paygent Server.(Option)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:195
+msgid "Set Credit Card"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:198
+msgid "VISA & MASTER"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:204
+msgid "DINNERS"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:210
+msgid "AMEX & JCB"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:212
+msgid "Please check them you are able to use Credit Card"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:215
+msgid "3D Secure"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:216
+msgid "Enable 3D Secure"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:218
+msgid "It cannot be used after October 2022."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:222
+msgid "3D Secure 2.0"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:223
+msgid "Enable 3D Secure 2.0"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:225
+msgid "* Cannot be used together with 3D Secure 1.0."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:229
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:230
+msgid "Store name"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:232
+msgid "Input Store name."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:235
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:139
+msgid "Payment Action"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:238
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:250
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:142
+msgid ""
+"Choose whether you wish to capture funds immediately or authorize payment "
+"only."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:242
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:146
+msgid "Capture"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:243
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:147
+msgid "Authorize"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:247
+msgid "Payment Method"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:259
+msgid "Number of payments"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:262
+msgid ""
+"Please select from here if you choose installment payment. (Multiple "
+"selection possible)."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:265
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:266
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:267
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:268
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:269
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:270
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:271
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:272
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:273
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:274
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:275
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:344
+msgid "times"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:331
+msgid "Payment method : "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:548
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:551
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:554
+#, php-format
+msgid "Payment Number is %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:558
+#, php-format
+msgid "Payment Number is %1$d times of %2$s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:589
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:591
+msgid "3D Secure 2.0 Payment Processing."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:600
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:400
+msgid "paygent Payment completed. Transaction ID: "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:620
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:419
+msgid "Success accept to 3D Secure."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:629
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:422
+msgid "3DSecure Payment Processing."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:788
+msgid ""
+"If you use IE, this payment may fail. If this payment is not successful, "
+"please try a browser such as Edge."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:801
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:803
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:805
+#, php-format
+msgid "The number of digits of %s is invalid."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:801
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:811
+msgid "Security code"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:803
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:813
+msgid "Expiration date"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:803
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:813
+msgid ""
+"Please enter the expiration date in 4 digits of the month / year. Example) "
+"In the case of November 2018 it will be 11/18."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:805
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:815
+msgid "Credit Card Number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:807
+msgid "Parameter value has illegal number of digits."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:811
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:813
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:815
+#, php-format
+msgid "%s is an invalid value."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:813
+msgid "The expiration date is too old or too future."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:817
+msgid "The value of the parameter is an invalid value."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:835
+msgid "The payment has been interrupted."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:836
+msgid ""
+"The following order has failed. Sorry to trouble you, but if you want to "
+"purchase, please order again from the beginning."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:838
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:980
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:523
+msgid "Error at 3D Secure."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:957
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:500
+msgid "3D Secure payment was complete."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1004
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:577
+msgid "Use stored credit card information."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1008
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:581
+msgid "credit card last some numbers: "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1012
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:585
+msgid "Card code"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1018
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:591
+msgid "Use a new payment method"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1050
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:624
+msgid "Input information of the credit card is not enough."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1055
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1057
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:629
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:631
+msgid "Card information input error. Fault to stored your card info."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1060
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:635
+msgid "Stored card info."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1086
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:661
+msgid ""
+"Sorry, you need to create an account in order for us to save your payment "
+"information."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1095
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:670
+msgid ""
+"Input information of the credit card is not enough. Please check Credit card "
+"expiration date, etc."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1100
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:674
+msgid "Input information of the credit card is not enough. Please check CVC."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cc.php:1266
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:884
+msgid "Failed to delete the token payment method at paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:78
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:165
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:177
+msgid "Convenience Store"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:83
+msgid "Paygent Convenience Store Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:84
+msgid "Allows payments by Paygent Convenience Store in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:97
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:189
+msgid "Seven Eleven"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:98
+msgid "Lawson"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:98
+msgid "Mini Stop"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:99
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:201
+msgid "Family Mart"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:100
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:207
+msgid "Seicomart"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:101
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:213
+msgid "Daily Yamazaki"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:106
+msgid "Payment slip number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:107
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:108
+msgid "Customer number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:109
+msgid "Receiving number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:110
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:450
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:451
+msgid "Payment receipt number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:111
+msgid "Online payment number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:115
+msgid ""
+"Please print out the payment slip (or write down the \"Payment slip number "
+"(13 digits)\") and go to the 7-Eleven store. Please say \"Pay for the "
+"Internet payment\" at the cash register and pay with the payment slip, or "
+"give the \"Payment slip number\" and pay."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:117
+#, php-format
+msgid ""
+"Make a note of the reported %s and go to Lawson or Ministop store. Please "
+"enter the number into the multimedia terminal Loppi or MINISTOPLoppi "
+"installed in the store and pay at the cash register with the application "
+"ticket issued."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:116
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:117
+msgid "\"Customer number\" and \"confirmation number(400008)\""
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:118
+msgid ""
+"Make a note of the notified \"Receiving number\" and go to the FamilyMart "
+"store. Please enter the number into the Fami port, a multimedia terminal "
+"installed in the store, and pay at the cash register with the application "
+"ticket issued."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:119
+msgid ""
+"Make a note of the \"Payment receipt number\" notified and go to the "
+"Seicomart store. Please enter the number in the multimedia terminal club "
+"station installed in the store and pay at the cash register with the "
+"application ticket issued."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:120
+msgid ""
+"Make a note of the notified \"Online payment number\" and go to the Daily "
+"Yamazaki store. Please say \"Online payment\" at the cash register, enter "
+"the \"Online payment number\" on the cashier's customer screen, and pay."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:156
+msgid "Enable paygent Convenience Store Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:171
+msgid "Pay at Convenience Store via Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:174
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:126
+msgid "Order Button"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:176
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:128
+msgid "This controls the order button which the user sees during checkout."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:183
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:483
+msgid ""
+"Thank you. Your order has been received. Please pay at the convenience store "
+"by the specified method."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:186
+msgid "Set Convenience Store"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:195
+msgid "Lowson & Mini Stop"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:215
+msgid "Please check them you are able to use Convenience Store"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:218
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:317
+msgid "Payment limit date"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:222
+msgid ""
+"Please input the number of day for payment limit date. Default is 30 days."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:225
+msgid "Convenience store connection type"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:229
+msgid ""
+"Please select the convenience store connection type specified by Paygent. "
+"Most contracts are type A."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:231
+msgid "Type A"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:232
+msgid "Type D"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:261
+msgid "Please select Convenience Store where you want to pay"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:314
+msgid "Awaiting Convenience store payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:315
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:432
+msgid "CVS Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:316
+msgid "Receipt number"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:319
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:435
+msgid "Receipt Print Url"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:337
+msgid "Paygent Payment failed. Sysmte Error: "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:338
+msgid "Sorry, there was an error."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:341
+msgid "Paygent Payment failed. Some trouble happened."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:342
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:367
+msgid ""
+"No response from payment gateway server. Try again later or contact the site "
+"administrator."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:399
+msgid "Convenience store payment details"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:401
+msgid "Convenience store : "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:404
+msgid "URL : "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:406
+msgid "limit Date : "
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:409
+#, php-format
+msgid "For %s Users"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:430
+msgid "Payment Detail"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:437
+msgid "How to pay at a convenience store"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:464
+#: includes/gateways/paygent/class-wc-gateway-paygent-cs.php:465
+msgid ""
+"Make a note of the reported \"Payment receipt number\" and go to Lawson or "
+"Ministop store. Please enter the number into the multimedia terminal Loppi "
+"or MINISTOPLoppi installed in the store and pay at the cash register with "
+"the application ticket issued."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:87
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:133
+msgid "au Easy Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:88
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:139
+msgid "Docomo Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:89
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:145
+msgid "SoftBank Matomete Payment(B)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:167
+msgid "Please select carrier type where you want to pay"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:341
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:349
+#, php-format
+msgid "Pending %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:459
+#, php-format
+msgid "processing this order via %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:464
+msgid "This order was not complete. Please pay from here to Carrier payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mb.php:469
+msgid ""
+"This order was not complete. Please authorised from here to Carrier site"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:58
+msgid "Paygent Multi-currency Credit Card"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:63
+msgid "Paygent Multi-currency Credit Card Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:64
+msgid "Allows payments by Paygent Multi-currency Credit Card in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:108
+msgid "Enable paygent Multi-currency Credit Card Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-mccc.php:123
+msgid "Pay with your credit card via Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:58
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:115
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:121
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:127
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:145
+msgid "Paidy"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:63
+msgid "Paygent Paidy Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:64
+msgid "Allows payments by Paygent Paidy in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:106
+msgid "Enable paygent Paidy Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:130
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:132
+msgid "API Public Key"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:132
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:138
+#, php-format
+msgid "Please enter %s from Paidy Admin site."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:136
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:138
+msgid "Test API Public Key"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:142
+msgid "Store Name"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:144
+msgid "This controls the store name which the user sees during paidy checkout."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:148
+msgid "Logo Image (168×168 recommend)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:150
+msgid ""
+"URL of a custom logo that can be displayed in the checkout application "
+"header. If no value is specified, the Paidy logo will be displayed."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:153
+msgid "Optional"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:422
+msgid ""
+"API Public key is not set. Please set an API public key in the admin page."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:459
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:335
+msgid "Success the cancel for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:462
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:472
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:338
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:348
+msgid "Failed the cancel for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:469
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:345
+msgid "Success the refund for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:476
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:231
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:352
+msgid "Failed this order to refund for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:544
+msgid "Once the customer interrupted the payment.. Order ID:"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:547
+msgid ""
+"This Paidy payment has been declined. Please select another payment method."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:604
+#, php-format
+msgid "Already using URL as image: %s"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:612
+msgid "Select a image to upload"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:613
+msgid "Use this image"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:614
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:617
+msgid "Add image"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paidy.php:625
+msgid "Remove image"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:122
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:128
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:134
+msgid "PayPay"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:100
+msgid "Paygent PayPay Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:101
+msgid "Allows payments by Paygent PayPay in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:113
+msgid "Enable paygent PayPay Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:224
+msgid "Success the Refund for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-paypay.php:227
+msgid "Failed the refund for paygent."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:57
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:118
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:124
+msgid "Rakuten Pay"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:62
+msgid "Paygent Rakuten Pay Payment Gateway"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:63
+msgid "Allows payments by Paygent Rakuten Pay in Japan."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:103
+msgid "Enable paygent Rakuten Pay Payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:112
+msgid "Rakuten PAY"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:127
+msgid "Button type"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:130
+msgid "Select the button you want to display when making a payment decision."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:134
+msgid "Red: 240px(width) 40px(height)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:135
+msgid "White: 240px(width) 40px(height)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:136
+msgid "Red: 165px(width) 30px(height)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:137
+msgid "White: 165px(width) 30px(height)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:226
+msgid ""
+"Rakuten PAY cannot be used with this product due to consumption tax. Please "
+"contact the store."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:232
+msgid "Rakuten PAY cannot be used if there is a coupon discount."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php:295
+msgid "Rakuten Pay payment was successful."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:74
+#, php-format
+msgid ""
+"I received a payment information inquiry telegram with a payment status of "
+"%s."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:88
+msgid "Validity confirmed"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:90
+msgid "Validity confirmation NG"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:116
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:367
+msgid "Sales canceled"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:121
+#, php-format
+msgid "I received an application from Paygent and changed the status to %s."
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:352
+msgid "Apply"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:353
+msgid "Approval failure"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:354
+msgid "Expired payment"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:355
+msgid "3D secure failure"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:356
+msgid "Application interruption"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:357
+msgid "Authority OK"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:358
+msgid "Requesting sales"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:359
+msgid "The authority is being canceled"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:360
+msgid "Approval revoked"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:361
+msgid "Authorization expired"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:362
+msgid "Sales hold"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:363
+msgid "Cleared"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:364
+msgid "Cleared (no change more)"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:365
+msgid "Breaking news detected"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:366
+msgid "Cleared complete"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:368
+msgid "Breaking news canceled"
+msgstr ""
+
+#: includes/gateways/paygent/class-wc-paygent-endpoint.php:369
+msgid "Cancellation completed"
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:168
+msgid "This request send data for order ID:"
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:173
+msgid "The request transmission data is shown below."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:198
+msgid "This response data for order ID:"
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:205
+msgid "The response transmission data is shown below."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:258
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:263
+msgid "Success this order set to sale at Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:265
+msgid "Failed this order set to sale at Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:306
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:313
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:330
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:337
+msgid "Failed Refund. "
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:306
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:330
+msgid "Not matched payment_status for refund."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:313
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:337
+msgid "Error Code :"
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:313
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:337
+msgid " Error message :"
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:316
+msgid "This order has been successfully refunded by Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:319
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:345
+msgid "Failed Refund."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:342
+msgid "This order has been successfully partial refunded by Paygent."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:342
+#, php-format
+msgid "payment_id changed from %1$s to %2$s."
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:362
+msgid "paygent Payment failed. Sysmte Error: "
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:363
+msgid "Sorry, there was an error: "
+msgstr ""
+
+#: includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php:366
+msgid "paygent Payment failed. Some trouble happened."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:21
+#, php-format
+msgid "Please check it if you want to use %s."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:22
+#, php-format
+msgid "Please check it if you want to use the payment method of %s."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:23
+#, php-format
+msgid "Please input %s."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:24
+#, php-format
+msgid "Please select one from these as %s."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:25
+msgid "Need support?"
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:26
+#, php-format
+msgid ""
+"If you are having problems with this plugin, talk about them in the <a href="
+"\"%s\" target=\"_blank\" title=\"Pro Version\">Support forum</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:27
+#, php-format
+msgid ""
+"If you need professional support, please consider about <a href=\"%1$s\" "
+"target=\"_blank\" title=\"Site Construction Support service\">Site "
+"Construction Support service</a> or <a href=\"%2$s\" target=\"_blank\" title="
+"\"Maintenance Support service\">Maintenance Support service</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:28
+msgid "Pro version"
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:29
+#, php-format
+msgid ""
+"The pro version is available <a href=\"%s\" target=\"_blank\" title="
+"\"Support forum\">here</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:30
+msgid ""
+"The pro version includes support for bulletin boards. Please consider "
+"purchasing the pro version."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:31
+msgid "Finished Latest Update, WordPress and WooCommerce?"
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:32
+#, php-format
+msgid ""
+"One the security, latest update is the most important thing. If you need "
+"site maintenance support, please consider about <a href=\"%s\" target="
+"\"_blank\" title=\"Support forum\">Site Maintenance Support service</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:33
+msgid "Where is the study group of Woocommerce in Japan?"
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:34
+#, php-format
+msgid ""
+"<a href=\"%s\" target=\"_blank\" title=\"Tokyo WooCommerce Meetup\">Tokyo "
+"WooCommerce Meetup</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:35
+#, php-format
+msgid ""
+"<a href=\"%s\" target=\"_blank\" title=\"Kansai WooCommerce Meetup\">Kansai "
+"WooCommerce Meetup</a>."
+msgstr ""
+
+#: includes/jp4wc-framework/config-jp4wc-framework.php:36
+msgid "Join Us!"
+msgstr ""
+
+#: woocommerce-for-paygent-payment-main.php:211
+msgid ""
+"Paygent Payment Gateways for WooCommerce is enabled but not effective. It "
+"requires WooCommerce in order to work."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+#. Description of the plugin/theme
+msgid "Paygent Payment for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://wordpress.org/plugins/woocommerce-for-paygent-payment-main/"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Artisan Workshop"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://wc.artws.info/"
+msgstr ""

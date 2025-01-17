@@ -1,0 +1,22 @@
+{
+	"name": "artisanworkshop/paygent-for-woocommerce",
+	"description": "Paygent for WooCommerce",
+	"license": "GPL-3.0-or-later",
+	"version": "2.4.0",
+	"type": "wordpress-plugin",
+	"authors": [
+		{
+			"name": "Shohei Tanaka",
+			"homepage": "https://wc.artws.info/"
+		}
+	],
+	"require": {
+		"php": ">=7.4",
+        "symfony/yaml" : ">=v2.8.2"
+	},
+    "autoload": {
+        "psr-4": {
+            "PaygentModule\\": "src/paygent_module"
+        }
+    }
+}
