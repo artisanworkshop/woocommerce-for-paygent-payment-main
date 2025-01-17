@@ -1,0 +1,47 @@
+/* CSS Document */
+#wc-paygent-setting-form table.form-table th{
+    padding-left: 20px;
+}
+
+.wc-paygent-settings {
+    margin-right: 300px;
+}
+.wc-paygent-settings form {
+    float: left;
+    min-width: 100%;
+    width: auto;
+}
+.wc-paygent-sidebar {
+    float: right;
+    width: 280px;
+    margin: 0 -300px 20px 20px;
+    position: relative;
+}
+.wc-paygent-sidebar .wc-paygent-credits {
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+.wc-paygent-sidebar h3 {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+.metabox-holder h3.hndle {
+    font-size: 14px;
+    padding: 8px 12px;
+    margin: 0;
+    line-height: 1.4;
+}
+.wc-paygent-sidebar .inner {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+img.wc-paygent-logo{
+    width: 140px;
+}
+p.wc-paygent-link{
+	padding-bottom: 10px;
+}
