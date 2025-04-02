@@ -417,7 +417,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 				$send_data['redirect_url'] = $payment_url;
 				$telegram_kind             = '104';
 				$response_user             = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-				if ( 0 === $response_user['result'] && $response_user['result_array'] ) {
+				if ( '0' === $response_user['result'] && $response_user['result_array'] ) {
 					if ( isset( $response_user['result_array'][0]['running_id'] ) ) {
 						$order->add_meta_data( 'running_id', $response_user['result_array'][0]['running_id'] );
 					}
@@ -457,7 +457,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 		$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 		// Check response.
-		if ( 0 === $response['result'] && $response['result_array'] ) {
+		if ( '0' === $response['result'] && $response['result_array'] ) {
 			if ( '6' === $send_data['career_type'] ) {
 				$order->add_meta_data( '_career_type', 'sb', true );
 				$order->add_order_note( 'Career type is Softbank.' );
@@ -594,13 +594,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		$order          = wc_get_order( $order_id );
 		$payment_method = $order->get_payment_method();
 		if ( $payment_method === $this->id ) {
-			$javascript_auto_send_code = '
-<script type="text/javascript">
-function send_form_submit() {
-    document.form.submit();
-}
-window.onload = send_form_submit;
-</script>';
+			$javascript_auto_send_code = 'function send_form_submit() { document.submitForm.submit(); }window.onload = send_form_submit;';
 			$send_data                 = array();
 			$career_type               = $order->get_meta( '_career_type', true );
 			$send_data['career_type']  = $this->set_career_type_num( $career_type );
@@ -624,14 +618,14 @@ window.onload = send_form_submit;
 
 					$cart_url = wc_get_cart_url();
 					// Check response.
-					if ( 0 === $response['result'] && isset( $response['result_array'] ) ) {
+					if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 						$order->add_meta_data( '_paygent_order_id', $response['result_array'][0]['trading_id'], true );
 
 						$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 						// Return thank you redirect.
 						if ( isset( $response['result_array'][0]['redirect_html'] ) ) {
 							echo esc_html( mb_convert_encoding( $response['result_array'][0]['redirect_html'], 'SJIS', 'UTF-8' ) );
-							echo wp_kses_post( $javascript_auto_send_code );
+							echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
 						} else {
 							$order->add_order_note( 'No redirect HTML' );
 							if ( wp_safe_redirect( $cart_url ) ) {
@@ -647,10 +641,10 @@ window.onload = send_form_submit;
 					}
 				} elseif ( $redirect_html && '6' === $send_data['career_type'] ) {// SoftBank.
 					echo wp_kses_post( $redirect_html );
-					echo wp_kses_post( $javascript_auto_send_code );
+					echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
 				} else { // docomo.
 					echo esc_html( $order->get_meta( '_open_id_redirect_html', true ) );
-					echo wp_kses_post( $javascript_auto_send_code );
+					echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
 				}
 			} elseif ( '4' === $send_data['career_type'] ) { // au payment.
 				if ( isset( $_GET['open_id'] ) ) {// phpcs:ignore
@@ -667,7 +661,7 @@ window.onload = send_form_submit;
 					$send_data = $this->mb_order_send_data( $order_id, $send_data );
 					$response  = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 					// Check response.
-					if ( 0 === $response['result'] && isset( $response['result_array'] ) ) {
+					if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 						$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 						// Return thank you redirect.
 						if ( isset( $response['result_array'][0]['redirect_url'] ) ) {
@@ -994,7 +988,7 @@ window.onload = send_form_submit;
 			$response                = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 			echo '</div>';
 			echo '<div id="running_status_wrapper">';
-			if ( 0 === $response['result'] && $response['result_array'] ) {
+			if ( '0' === $response['result'] && $response['result_array'] ) {
 				$running_status = $response['result_array'][0]['running_status'];
 				$display_texts  = array(
 					15 => __( 'Application interruption', 'woocommerce-for-paygent-payment-main' ),

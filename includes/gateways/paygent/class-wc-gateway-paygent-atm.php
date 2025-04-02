@@ -203,7 +203,7 @@ class WC_Gateway_Paygent_ATM extends WC_Payment_Gateway {
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
 		// Check response.
-		if ( 0 === $response['result'] && isset( $response['result_array'] ) ) {
+		if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 			$order->add_meta_data( '_pay_center_number', wc_clean( $response['result_array'][0]['pay_center_number'] ), true );
 			$order->add_meta_data( '_customer_number', wc_clean( $response['result_array'][0]['customer_number'] ), true );
 			$order->add_meta_data( '_conf_number', wc_clean( $response['result_array'][0]['conf_number'] ), true );

@@ -135,7 +135,7 @@ class WC_Gateway_Paygent_Addon_CC extends WC_Gateway_Paygent_CC {
 			$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
 			// Check response.
-			if ( 0 === $response['result'] && $response['result_array'] ) {
+			if ( '0' === $response['result'] && $response['result_array'] ) {
 				// Success.
 				$order->add_order_note( __( 'Subscription Credit Card Payment completed.', 'woocommerce-for-paygent-payment-main' ) );
 				$order->add_meta_data( '_paygent_order_id', $send_data['trading_id'], true );
@@ -144,7 +144,7 @@ class WC_Gateway_Paygent_Addon_CC extends WC_Gateway_Paygent_CC {
 				if ( isset( $this->paymentaction ) && 'sale' === $this->paymentaction ) {
 					$telegram_kind = '022';
 					$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-					if ( 0 !== $response_sale['result'] ) {
+					if ( '0' !== $response_sale['result'] ) {
 						$this->paygent_request->error_response( $response_sale, $order );
 					}
 				}

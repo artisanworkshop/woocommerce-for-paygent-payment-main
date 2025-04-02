@@ -199,7 +199,7 @@ class WC_Gateway_Paygent_Request {
 		// Save debug response data.
 		$send_message  = 'telegram_kind : ' . $telegram_kind . "\n";
 		$send_message .= 'result : ' . $result_data['result'] . "\n";
-		if ( 0 !== $result_data['result'] ) {
+		if ( '0' !== $result_data['result'] ) {
 			$send_message .= 'responseCode : ' . $result_data['responseCode'] . "\n";
 			$send_message .= 'responseDetail : ' . mb_convert_encoding( $result_data['responseDetail'], 'UTF-8', 'SJIS' ) . "\n";
 		}
@@ -266,13 +266,13 @@ class WC_Gateway_Paygent_Request {
 				$send_data['site_id'] = 1;
 			}
 			$response = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind, $send_data, $payment->debug );
-			if ( 0 === $response['result'] ) {
+			if ( '0' === $response['result'] ) {
 				$order->add_order_note( __( 'Success this order set to sale at Paygent.', 'woocommerce-for-paygent-payment-main' ) );
 			} elseif ( $order->get_payment_method() === 'paygent_paidy' ) {
 				// Paidy Payment.
 					$send_data['trading_id'] = $order_id;
 					$response_again          = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind, $send_data, $payment->debug );
-				if ( 0 === $response_again['result'] ) {
+				if ( '0' === $response_again['result'] ) {
 					$order->add_order_note( __( 'Success this order set to sale at Paygent.', 'woocommerce-for-paygent-payment-main' ) );
 				} else {
 					$order->add_order_note( __( 'Failed this order set to sale at Paygent.', 'woocommerce-for-paygent-payment-main' ) );
@@ -392,7 +392,7 @@ class WC_Gateway_Paygent_Request {
 	 */
 	public function error_response( $response, $order ) {
 		$order_id = $order->get_id();
-		if ( 1 === $response['result'] ) {// System Error
+		if ( '1' === $response['result'] ) {// System Error
 			// Other transaction error.
 			$code        = str_replace( '″', '', $response['responseDetail'] );
 			$error_texts = $this->error_text();

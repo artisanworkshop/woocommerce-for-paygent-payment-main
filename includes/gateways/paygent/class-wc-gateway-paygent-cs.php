@@ -385,7 +385,7 @@ class WC_Gateway_Paygent_CS extends WC_Payment_Gateway {
 		$result_array = $response['result_array'];
 
 		// Check response.
-		if ( 0 === $response['result'] ) {
+		if ( '0' === $response['result'] ) {
 			// Success.
 			$cvs_id = wc_clean( $this->get_post( 'cvs_company_id' ) );
 			$order->add_meta_data( '_paygent_cvs_id', $cvs_id, true );
@@ -420,7 +420,7 @@ class WC_Gateway_Paygent_CS extends WC_Payment_Gateway {
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),
 			);
-		} elseif ( 1 === $response['result'] ) {// System Error.
+		} elseif ( '1' === $response['result'] ) {// System Error.
 			// Other transaction error.
 			$order->add_order_note( __( 'Paygent Payment failed. Sysmte Error: ', 'woocommerce-for-paygent-payment-main' ) . $response['responseCode'] . ':' . mb_convert_encoding( $response['responseDetail'], 'UTF-8', 'SJIS' ) . ':wc_' . $order_id );
 			wc_add_notice( __( 'Sorry, there was an error.', 'woocommerce-for-paygent-payment-main' ) . mb_convert_encoding( $response['responseDetail'], 'UTF-8', 'SJIS' ) . ' Error Code:' . $response['responseCode'], $notice_type = 'error' );

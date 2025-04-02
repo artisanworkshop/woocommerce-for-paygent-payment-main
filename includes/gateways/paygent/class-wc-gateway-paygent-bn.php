@@ -218,7 +218,7 @@ class WC_Gateway_Paygent_BN extends WC_Payment_Gateway {
 		$response = $this->paygent_request->send_paygent_request( $test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
 		// Check response.
-		if ( 0 === $response['result'] && $response['result_array'] ) {
+		if ( '0' === $response['result'] && $response['result_array'] ) {
 			// Success.
 			$order->add_meta_data( '_paygent_bn_asp_url', $response['result_array'][0]['asp_url'] );
 			$order->add_meta_data( '_paygent_order_id', $send_data['trading_id'], true );
