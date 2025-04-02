@@ -88,7 +88,7 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 
 		// Set Test mode.
 		$this->test_mode   = get_option( 'wc-paygent-testmode' );
-		$this->environment = ( 1 !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
+		$this->environment = ( '1' !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
 
 		// Actions.
 		add_action( 'woocommerce_update_options_payment_gateways', array( $this, 'process_admin_options' ) );
@@ -177,7 +177,7 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
-		if ( isset( $response['result'] ) && 0 === $response['result'] && isset( $response['result_array'] ) ) {
+		if ( isset( $response['result'] ) && '0' === $response['result'] && isset( $response['result_array'] ) ) {
 			// Success.
 			$order->set_transaction_id( $response['result_array'][0]['payment_id'] );
 			$order->add_meta_data( '_paygent_order_id', $response['result_array'][0]['trading_id'], true );
@@ -213,14 +213,9 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 				echo esc_html( $html );
 			}
 			echo '<input type="submit" value="PayPay認証"></form>';
-			$javascript_auto_send_code = '
-<script type="text/javascript">
-function send_form_submit() {
-    document.form.submit();
-}
-window.onload = send_form_submit;
-</script>';
-			echo wp_kses_post( $javascript_auto_send_code );
+			echo '<script type="text/javascript">' .
+			esc_js( 'function send_form_submit() { document.form.submit(); } window.onload = send_form_submit;' ) .
+			'</script>';
 			wc_reduce_stock_levels( $order_id );
 			$order->update_status( 'on-hold' );
 			$order->save();

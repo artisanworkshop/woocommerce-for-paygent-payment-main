@@ -137,7 +137,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			// Admin Setting Screen.
 			require_once WC_PAYGENT_ABSPATH . 'includes/admin/class-wc-admin-screen-paygent.php';
 			// load autoload.
-			require_once WC_PAYGENT_ABSPATH . 'vendor/autoload.php';
+			require_once WC_PAYGENT_ABSPATH . 'vendor-wc/autoload.php';
 			include_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/class-wc-gateway-paygent-request.php';
 			// Credit Card.
 			require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/class-wc-gateway-paygent-cc.php';

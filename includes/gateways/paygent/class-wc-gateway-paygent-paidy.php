@@ -158,7 +158,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 
 		// Set Test mode.
 		$this->test_mode   = get_option( 'wc-paygent-testmode' );
-		$this->environment = ( 1 !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
+		$this->environment = ( '1' !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
 
 		// Actions Hook.
 		add_action( 'woocommerce_update_options_payment_gateways', array( $this, 'process_admin_options' ) );

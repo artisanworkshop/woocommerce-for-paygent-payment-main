@@ -131,7 +131,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 		}
 		$response = array();
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $subscription, $telegram_kind, $send_data, $this->debug );
-		if ( 0 === $response['result'] && $response['result_array'] ) {
+		if ( '0' === $response['result'] && $response['result_array'] ) {
 			$subscription->add_order_note( __( 'Success cancel subscription.', 'woocommerce-for-paygent-payment-main' ) . $add_message );
 		} else {
 			$this->paygent_request->error_response( $response, $subscription );
@@ -161,7 +161,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 		}
 		$response = array();
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $subscription, $telegram_kind, $send_data, $this->debug );
-		if ( 0 === $response['result'] && $response['result_array'] ) {
+		if ( '0' === $response['result'] && $response['result_array'] ) {
 			// translators: %s: new amount.
 			$subscription->add_order_note( sprintf( __( 'Success change amount to %s.', 'woocommerce-for-paygent-payment-main' ), $new_amount ) . $add_message );
 		} else {
@@ -279,7 +279,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 
 		if ( isset( $running_id ) ) {
 			$response = $this->paygent_mb_check_subscription_status( $running_id, $trading_id, $order );
-			if ( 0 === $response['result'] && isset( $response['result_array'] ) ) {
+			if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 				$running_status = $response['result_array'][0]['running_status'];
 
 				if ( '10' === $running_status || '20' === $running_status ) {
@@ -473,7 +473,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			$send_data['redirect_url'] = $redirect_url;
 			$telegram_kind             = '104';
 			$response_user             = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-			if ( 0 === $response_user['result'] && $response_user['result_array'] ) {
+			if ( '0' === $response_user['result'] && $response_user['result_array'] ) {
 				echo esc_html( mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 			} else {
 				echo '何か障害が発生いたしました。また、時間をおいて試してください。';
@@ -503,7 +503,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			$send_data['open_id']    = $_GET['open_id'];// phpcs:ignore
 			$telegram_kind           = '126';
 			$response                = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-			if ( 0 === $response['result'] && isset( $response['result_array'] ) ) {
+			if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 				if ( isset( $response['result_array'][0]['redirect_html'] ) ) {
 					echo esc_html( mb_convert_encoding( $response['result_array'][0]['redirect_html'], 'SJIS', 'UTF-8' ) );
 				} else {
@@ -603,7 +603,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			}
 			$add_message = '(by System)';
 			$response    = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-			if ( 0 === $response['result'] && $response['result_array'] ) {
+			if ( '0' === $response['result'] && $response['result_array'] ) {
 				$subscription->add_order_note( __( 'Success cancel the old MB subscription.', 'woocommerce-for-paygent-payment-main' ) . $add_message );
 			} else {
 				$this->paygent_request->error_response( $response, $subscription );
@@ -612,7 +612,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			if ( $order->get_payment_method() === $this->id ) {
 				$running_target_ym = date_i18n( 'Ym' );
 				$refund_response   = $this->paygent_mb_refund_subscription( $old_running_id, $old_trading_id, $running_target_ym, $order );
-				if ( 0 === $refund_response['result'] && $refund_response['result_array'] ) {
+				if ( '0' === $refund_response['result'] && $refund_response['result_array'] ) {
 					$subscription->add_order_note( __( 'Success refund this month MB subscription.', 'woocommerce-for-paygent-payment-main' ) . $add_message );
 				} else {
 					$this->paygent_request->error_response( $refund_response, $subscription );

@@ -91,7 +91,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 
 		// Set Test mode.
 		$this->test_mode   = get_option( 'wc-paygent-testmode' );
-		$this->environment = ( 1 !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
+		$this->environment = ( '1' !== get_option( 'wc-paygent-testmode' ) ) ? 'live' : 'sandbox';
 
 		// Actions.
 		add_action( 'woocommerce_update_options_payment_gateways', array( $this, 'process_admin_options' ) );
@@ -247,7 +247,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 		}
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
-		if ( isset( $response['result'] ) && 0 === $response['result'] && isset( $response['result_array'] ) ) {
+		if ( isset( $response['result'] ) && '0' === $response['result'] && isset( $response['result_array'] ) ) {
 			// Success.
 			$order->set_transaction_id( $response['result_array'][0]['payment_id'] );
 			$order->add_meta_data( '_paygent_order_id', $response['result_array'][0]['trading_id'], true );
@@ -341,7 +341,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 		if ( $order->get_status() === 'processing' ) {// Processing to cancel.
 			$telegram_kind = '340';
 			$response      = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-			if ( 0 === $response['result'] ) {
+			if ( '0' === $response['result'] ) {
 				$order->add_order_note( __( 'Success the cancel for paygent.', 'woocommerce-for-paygent-payment-main' ) );
 				return true;
 			} else {
@@ -351,7 +351,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 		} elseif ( $order->get_status() === 'completed' ) {
 			$telegram_kind = '342';
 			$response      = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-			if ( 0 === $response['result'] ) {
+			if ( '0' === $response['result'] ) {
 				$order->add_order_note( __( 'Success the refund for paygent.', 'woocommerce-for-paygent-payment-main' ) );
 				return true;
 			} else {

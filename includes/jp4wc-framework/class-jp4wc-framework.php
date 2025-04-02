@@ -146,7 +146,7 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 			$key            = substr( $salted, 0, 32 );
 			$iv             = substr( $salted, 32, 16 );
 			$encrypted_data = openssl_encrypt( $set_data, 'AES-256-CBC', $key, 0, $iv );
-			return base64_encode( $salt . $encrypted_data );
+			return base64_encode( $salt . $encrypted_data );// phpcs:ignore
 		}
 
 		/**
@@ -157,7 +157,7 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 		 * @return string
 		 */
 		public function decrypt( $set_data, $password ) {
-			$data    = base64_decode( $set_data );
+			$data    = base64_decode( $set_data ); // phpcs:ignore
 			$salt    = substr( $data, 0, 16 );
 			$ct      = substr( $data, 16 );
 			$rounds  = 3; // depends on key length.
@@ -476,7 +476,7 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 		public function jp4wc_update_notice() {
 			?>
 			<h4 class="inner"><?php echo esc_html( $this->text_array['update_notice_01'] ); ?></h4>
-			<p class="inner"><?php echo esc_html( sprintf( $this->text_array['update_notice_02'], 'https://wc.artws.info/shop/maintenance-support/woocommerce-professional-support-subscription/?utm_source=jp4wc-settings&utm_medium=link&utm_campaign=maintenance-support' ) ); ?></p>
+			<p class="inner"><?php printf( $this->text_array['update_notice_02'], 'https://wc.artws.info/shop/maintenance-support/woocommerce-professional-support-subscription/?utm_source=jp4wc-settings&utm_medium=link&utm_campaign=maintenance-support' ); ?></p>
 			<?php
 		}
 
@@ -486,8 +486,8 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 		public function jp4wc_community_info() {
 			?>
 			<h4 class="inner"><?php echo esc_html( $this->text_array['community_info_01'] ); ?></h4>
-			<p class="inner"><?php echo esc_html( sprintf( $this->text_array['community_info_02'], 'http://meetup.com/ja-JP/Tokyo-WooCommerce-Meetup/?' ) ); ?><br />
-				<?php echo esc_html( sprintf( $this->text_array['community_info_03'], 'http://meetup.com/ja-JP/Kansai-WooCommerce-Meetup/' ) ); ?><br />
+			<p class="inner"><?php printf( $this->text_array['community_info_02'], 'http://meetup.com/ja-JP/Tokyo-WooCommerce-Meetup/?' ); ?><br />
+				<?php printf( $this->text_array['community_info_03'], 'http://meetup.com/ja-JP/Kansai-WooCommerce-Meetup/' ); ?><br />
 				<?php echo esc_html( $this->text_array['community_info_04'] ); ?>
 			</p>
 			<?php
@@ -781,6 +781,18 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 			} else {
 				return new WP_Error( 'round_type_error', 'Round Type Error' );
 			}
+		}
+
+		/**
+		 * Get post data if set
+		 *
+		 * @param string $name The name of the POST field.
+		 * @return string|null The sanitized POST field value or null if not set.
+		 */
+		public function get_post( $name ) {
+			// Get the WC_Checkout object.
+			$checkout = WC()->checkout();
+			return $checkout->get_value( $name );
 		}
 	}
 endif;
