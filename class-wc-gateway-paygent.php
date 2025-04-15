@@ -158,7 +158,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/class-wc-gateway-paygent-paypay.php';
 			}
 			// Rakuten Pay.
-			if ( get_option( 'wc-paygent-rakuten-pay' ) ) {
+			if ( get_option( 'wc-paygent-rakutenpay' ) ) {
 				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/class-wc-gateway-paygent-rakuten-pay.php';
 			}
 			// Bank Net.
@@ -237,8 +237,8 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				if ( get_option( 'wc-paygent-paypay' ) ) {
 					unset( $methods['paygent_paypay'] );
 				}
-				if ( get_option( 'wc-paygent-rakuten-pay' ) ) {
-					unset( $methods['paygent_rakuten_pay'] );
+				if ( get_option( 'wc-paygent-rakutenpay' ) ) {
+					unset( $methods['paygent_rakutenpay'] );
 				}
 				if ( get_option( 'wc-paygent-bn' ) ) {
 					unset( $methods['paygent_bn'] );
@@ -293,7 +293,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				$methods[] = 'WC_Gateway_Paygent_PayPay';
 			}
 			// Rakuten Pay.
-			if ( get_option( 'wc-paygent-rakuten-pay', false ) ) {
+			if ( get_option( 'wc-paygent-rakutenpay', false ) ) {
 				$methods[] = 'WC_Gateway_Paygent_Rakuten_Pay';
 			}
 			// Bank Net.

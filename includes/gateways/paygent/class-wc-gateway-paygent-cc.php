@@ -255,6 +255,8 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 			add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'paygent_3ds2_redirect_order' ) );// Payment page.
 			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'tds2_status_change' ) );
 		}
+
+		add_action( 'woocommerce_payment_token_deleted', array( $this, 'paygent_delete_card' ), 10, 2 );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'order_paygent_cc_status_completed' ) );
 	}
 
@@ -452,8 +454,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		if ( $tokens ) {
 			echo '<div id="paygent-new-info" style="display:none">';
 		} else {
-			echo '<!-- Show input boxes for new data -->
-			<div id="paygent-new-info">';
+			echo '<div id="paygent-new-info">';
 		}
 		if ( version_compare( WOOCOMMERCE_VERSION, '2.6.0', '<' ) ) {
 			$this->credit_card_form( array( 'fields_have_names' => true ) );
@@ -696,8 +697,10 @@ jQuery(function(){
 		// get Token Data.
 		$card_token     = $this->jp4wc_framework->get_post( 'paygent_cc-token' );
 		$card_cvc_token = $this->jp4wc_framework->get_post( 'paygent_cc-cvc_token' );
+		$card_type      = $this->jp4wc_framework->get_post( 'card_type' );
 		$order->add_meta_data( '_paygent_card_token', $card_token );
 		$order->add_meta_data( '_paygent_card_cvc_token', $card_cvc_token );
+		$order->add_meta_data( '_paygent_card_type', $card_type );
 		$order->save_meta_data();
 
 		// Create server request using stored or new payment details.
@@ -709,8 +712,7 @@ jQuery(function(){
 
 		// Card information deposit function without EMV-3DS.
 		$set_login = false;
-		$order->add_order_note( $this->tds2_check );
-		if ( is_user_logged_in() && ( 'yes' === $this->store_card_info || true === $subscription ) && 'yes' !== $this->tds2_check ) {
+		if ( is_user_logged_in() && ( 'yes' === $this->store_card_info || true === $subscription ) ) {
 			$set_login = true;
 			if ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' ) {
 				$send_data['customer_card_id'] = $this->jp4wc_framework->get_post( 'stored-info' );
@@ -720,7 +722,6 @@ jQuery(function(){
 			}
 			$order->add_meta_data( '_paygent_customer_card_id', $send_data['customer_card_id'] );
 			$order->save_meta_data();
-			$order->add_order_note( $send_data['customer_card_id'] );
 		}
 		$send_data = $this->set_stored_card( $card_user_id, $card_token, $card_cvc_token, $send_data, $set_login );
 
@@ -737,6 +738,7 @@ jQuery(function(){
 
 		// Check response.
 		if ( '0' === $response['result'] && isset( $response['result'] ) && $response['result_array'] ) {
+			$order->add_meta_data( '_paygent_order_id', $send_data['trading_id'], true );
 			// Success.
 			if ( isset( $response['result_array'][0]['3ds_auth_id'] ) ) {// 3D Secure 2.0.
 				$order->add_meta_data( '_paygent_3ds_response', $response['result_array'][0] );
@@ -755,7 +757,6 @@ jQuery(function(){
 				);
 			}
 			$order->add_order_note( __( 'paygent Payment completed. Transaction ID: ', 'woocommerce-for-paygent-payment-main' ) . $response['result_array'][0]['payment_id'] );
-			$order->add_meta_data( '_paygent_order_id', $send_data['trading_id'], true );
 
 			// set transaction id for Paygent Order Number.
 			$order->payment_complete( wc_clean( $response['result_array'][0]['payment_id'] ) );
@@ -1002,6 +1003,9 @@ jQuery(function(){
 		if ( $payment_class ) {
 			$send_data['payment_class'] = $payment_class;
 		}
+		if ( 'sale' === $this->paymentaction && isset( $this->paymentaction ) ) {
+			$send_data['sales_mode'] = 1;
+		}
 		$split_count = $order->get_meta( '_split_count' );
 		if ( $split_count ) {
 			$send_data['split_count'] = $split_count;
@@ -1009,6 +1013,7 @@ jQuery(function(){
 		$card_token       = $order->get_meta( '_paygent_card_token' );
 		$card_cvc_token   = $order->get_meta( '_paygent_card_cvc_token' );
 		$customer_card_id = $order->get_meta( '_paygent_customer_card_id' );
+		$set_login        = false;
 		if ( $customer_card_id && 'yes' === $this->store_card_info ) {
 			$set_login                     = true;
 			$send_data['customer_card_id'] = $customer_card_id;
@@ -1035,11 +1040,12 @@ jQuery(function(){
 	 *
 	 * @param string $user_id    User ID to store the card for.
 	 * @param string $card_token Token representing the card to store.
+	 * @param object $order      Order object.
 	 * @return mixed Result from add_stored_user_data call
 	 */
-	public function paygent_tds_add_stored_card( $user_id, $card_token ) {
+	public function paygent_tds_add_stored_card( $user_id, $card_token, $order ) {
 		$card_user_id = 'wc' . $user_id;
-		$result       = $this->add_stored_user_data( $card_user_id, $card_token );
+		$result       = $this->add_stored_user_data( $card_user_id, $card_token, $order );
 		return $result;
 	}
 
@@ -1091,10 +1097,13 @@ jQuery(function(){
 				}
 				// If necessary, register customer's card information.
 				if ( 'yes' === $this->store_card_info ) {
-					$card_token      = $order->get_meta( '_paygent_card_token' );
-					$add_card_result = $this->paygent_tds_add_stored_card( $user_id, $card_token );
-					if ( false === $add_card_result ) {
-						$order->add_order_note( __( 'Failed to store card information.', 'woocommerce-for-paygent-payment-main' ) );
+					$card_token = $order->get_meta( '_paygent_card_token' );
+					$user_id    = $order->get_user_id();
+					if ( false === $order->get_meta( '_paygent_customer_card_id' ) ) {
+						$add_card_result = $this->paygent_tds_add_stored_card( $user_id, $card_token, $order );
+						if ( false === $add_card_result ) {
+							$order->add_order_note( __( 'Failed to store card information.', 'woocommerce-for-paygent-payment-main' ) );
+						}
 					}
 
 					$result = $this->paygent_tds_proceed_payment( $order );
@@ -1345,10 +1354,8 @@ jQuery(function(){
 			if ( isset( $this->paymentaction ) && 'sale' === $this->paymentaction ) {
 				$telegram_kind           = '022';
 				$send_data['trading_id'] = $tradind_id;
-				if ( 1 !== $this->paygent_request->site_id ) {
+				if ( '1' !== $this->paygent_request->site_id ) {
 					$send_data['site_id'] = $this->paygent_request->site_id;
-				} else {
-					$send_data['site_id'] = 1;
 				}
 				$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 				if ( '0' !== $response_sale['result'] ) {
@@ -1368,11 +1375,11 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Display payment method in Payment page when user have stored card data
-		 *
-		 * @param  array $tokens Token data.
-		 */
+	/**
+	 * Display payment method in Payment page when user have stored card data
+	 *
+	 * @param  array $tokens Token data.
+	 */
 	public function display_stored_user_data( $tokens ) {
 		foreach ( $tokens as $key => $value ) {
 			foreach ( $value->get_meta_data() as $data_key => $data_value ) {
@@ -1413,31 +1420,31 @@ jQuery(function(){
 			}
 	}
 
-		/**
-		 * Add User card info to Paygent server && Token system in WooCommerce
-		 *
-		 * @param string $user_id      User ID.
-		 * @param string $card_token   Card Token.
-		 * @param object $order WC_Order.
-		 * @return mixed
-		 */
+	/**
+	 * Add User card info to Paygent server && Token system in WooCommerce
+	 *
+	 * @param string $user_id      User ID.
+	 * @param string $card_token   Card Token.
+	 * @param object $order WC_Order.
+	 * @return mixed
+	 */
 	public function add_stored_user_data( $user_id, $card_token, $order = null ) {
 		$telegram_kind = '025';
 		$send_data     = array(
 			'trading_id'      => '',
 			'customer_id'     => $user_id,
-			'valid_check_flg' => '1',
+			'valid_check_flg' => '0',
 		);
 
 		// Check && Set site id.
-		if ( 1 !== $this->paygent_request->site_id ) {
+		if ( '1' !== $this->paygent_request->site_id ) {
 			$send_data['site_id'] = $this->paygent_request->site_id;
 		}
 
 		if ( isset( $card_token ) ) {
 			$send_data['card_token'] = $card_token;
 		} else {
-			wc_add_notice( __( 'Input information of the credit card is not enough.', 'woocommerce-for-paygent-payment-main' ), $notice_type = 'error' );
+			wc_add_notice( __( 'Input information of the credit card is not enough.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 			return false;
 		}
 		$result = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
@@ -1446,7 +1453,7 @@ jQuery(function(){
 				$order->add_order_note( __( 'Card information input error. Fault to stored your card info.', 'woocommerce-for-paygent-payment-main' ) . $result['responseCode'] . ':' . mb_convert_encoding( $result['responseDetail'], 'UTF-8', 'SJIS' ) );
 			}
 			$error_message = $this->make_error_message( $result );
-			wc_add_notice( $error_message . __( 'Card information input error. Fault to stored your card info.', 'woocommerce-for-paygent-payment-main' ), $notice_type = 'error' );
+			wc_add_notice( $error_message . __( 'Card information input error. Fault to stored your card info.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 			return false;
 		} else {
 			if ( ! is_null( $order ) ) {
@@ -1456,28 +1463,35 @@ jQuery(function(){
 			$card_last4       = substr( $result['result_array'][0]['masked_card_number'], -4 );
 			$expiry_month     = substr( $result['result_array'][0]['card_valid_term'], 0, 2 );
 			$expiry_year      = substr( $result['result_array'][0]['card_valid_term'], -2 );
+			$card_type        = $order->get_meta( '_paygent_card_type', true );
 			// Set && save token to WooCommerce.
 			$token = new WC_Payment_Token_CC();
 			$token->set_default( true );
 			$token->set_token( $card_token );
 			$token->set_gateway_id( $this->id );
 			$token->set_last4( $card_last4 );
-			$token->set_card_type( $this->jp4wc_framework->get_post( 'card_type' ) );
+			$token->set_card_type( $card_type );
 			$token->set_expiry_month( $expiry_month );
 			$token->set_expiry_year( '20' . $expiry_year );
 			$token->set_user_id( get_current_user_id() );
 			$token->add_meta_data( 'customer_card_id', $customer_card_id );
 			$token->save();
+			if ( ! is_null( $order ) ) {
+				$order->add_meta_data( '_paygent_customer_card_id', $customer_card_id );
+				$order->save();
+			}
 		}
 		return $result;
 	}
 
-		/**
-		 * Check payment details for valid format
-		 */
+	/**
+	 * Check payment details for valid format
+	 */
 	public function validate_fields() {
 		// Check for saving payment info without having or creating an account.
-		if ( $this->jp4wc_framework->get_post( 'saveinfo' ) && ! is_user_logged_in() && ! $this->jp4wc_framework->get_post( 'createaccount' ) ) {
+		if ( $this->jp4wc_framework->get_post( 'saveinfo' )
+		&& ! is_user_logged_in()
+		&& ! $this->jp4wc_framework->get_post( 'createaccount' ) ) {
 			wc_add_notice( __( 'Sorry, you need to create an account in order for us to save your payment information.', 'woocommerce-for-paygent-payment-main' ), $notice_type = 'error' );
 			return false;
 		}
@@ -1497,10 +1511,14 @@ jQuery(function(){
 			}
 			endif;
 		// 3D Secure 2.0 cardholder name
-		if ( 'yes' === $this->tds2_check && '' === $this->jp4wc_framework->get_post( 'paygent_cardholder_name' ) ) {
-			wc_add_notice( __( 'Please enter the cardholder name.', 'woocommerce-for-paygent-payment-main' ), 'error' );
+		if ( 'yes' === $this->tds2_check
+		&& '' === $this->jp4wc_framework->get_post( 'paygent_cardholder_name' )
+		&& ( 'no' === $stored_payment_info || null === $stored_payment_info ) ) {
+			wc_add_notice( __( 'Please enter the cardholder name.', 'woocommerce-for-paygent-payment-main' ) . $test, 'error' );
 			return false;
-		} elseif ( 'yes' === $this->tds2_check && '' !== $this->jp4wc_framework->get_post( 'paygent_cardholder_name' ) ) {
+		} elseif ( 'yes' === $this->tds2_check
+		&& 'no' === $stored_payment_info
+		&& '' !== $this->jp4wc_framework->get_post( 'paygent_cardholder_name' ) ) {
 			$cardholder_name = $this->jp4wc_framework->get_post( 'paygent_cardholder_name' );
 			if ( ! preg_match( '/^[a-zA-Z\s]+$/', $cardholder_name ) ) {
 				wc_add_notice( __( 'Please enter the cardholder name in alphabet.', 'woocommerce-for-paygent-payment-main' ), 'error' );
@@ -1511,14 +1529,14 @@ jQuery(function(){
 		return true;
 	}
 
-		/**
-		 * Process a refund if supported
-		 *
-		 * @param  int    $order_id Order ID.
-		 * @param  float  $amount Refund amount.
-		 * @param  string $reason Refund reason.
-		 * @return  boolean True or false based on success, or a WP_Error object
-		 */
+	/**
+	 * Process a refund if supported
+	 *
+	 * @param  int    $order_id Order ID.
+	 * @param  float  $amount Refund amount.
+	 * @param  string $reason Refund reason.
+	 * @return  boolean True or false based on success, or a WP_Error object
+	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$telegram_array   = array(
 			'auth_cancel' => '021',
@@ -1528,10 +1546,10 @@ jQuery(function(){
 		);
 		$permit_statuses  = array(
 			0 => array(
-				'auth_cancel' => array( 20 ),
-				'sale_cancel' => array( 40 ),
-				'auth_change' => array( 20 ),
-				'sale_change' => array( 40 ),
+				'auth_cancel' => array( '20' ),
+				'sale_cancel' => array( '40' ),
+				'auth_change' => array( '20' ),
+				'sale_change' => array( '40' ),
 			),
 		);
 		$send_data_refund = array(
@@ -1541,9 +1559,9 @@ jQuery(function(){
 		return $this->paygent_request->paygent_process_refund( $order_id, $amount, $telegram_array, $permit_statuses, $send_data_refund, $this );
 	}
 
-		/**
-		 * Read Paygent Token javascript
-		 */
+	/**
+	 * Read Paygent Token javascript
+	 */
 	public function paygent_token_scripts_method() {
 		if ( '1' === $this->test_mode ) {
 			$paygent_token_js_link = '//sandbox.paygent.co.jp/js/PaygentToken.js';
@@ -1579,17 +1597,17 @@ jQuery(function(){
 		return $html;
 	}
 
-		/**
-		 * Read Paygent Token javascript
-		 *
-		 * @param array $delete_card_data Delete Card Data.
-		 */
+	/**
+	 * Read Paygent Token javascript
+	 *
+	 * @param array $delete_card_data Delete Card Data.
+	 */
 	public function delete_card( $delete_card_data ) {
 		$telegram_kind = '026';
 		$order         = null;
 
 		// Check && Set site id.
-		if ( 1 !== $this->paygent_request->site_id ) {
+		if ( '1' !== $this->paygent_request->site_id ) {
 			$delete_card_data['site_id'] = $this->paygent_request->site_id;
 		}
 		$delete_card_data['trading_id'] = '';
@@ -1598,11 +1616,11 @@ jQuery(function(){
 		return $delete_card_res;
 	}
 
-		/**
-		 * Update Sale from Auth to Paygent System
-		 *
-		 * @param int $order_id Order ID.
-		 */
+	/**
+	 * Update Sale from Auth to Paygent System
+	 *
+	 * @param int $order_id Order ID.
+	 */
 	public function order_paygent_cc_status_completed( $order_id ) {
 		$telegram_kind = '022';
 		$this->paygent_request->order_paygent_status_completed( $order_id, $telegram_kind, $this );
@@ -1692,5 +1710,21 @@ jQuery(function(){
 			$message = __( 'Other exceptions.', 'woocommerce-for-paygent-payment-main' );
 		}
 		return $message;
+	}
+
+	/**
+	 * Deletes a saved payment card from Paygent when it's removed from WooCommerce
+	 *
+	 * @param int              $token_id The ID of the token being deleted.
+	 * @param WC_Payment_Token $token    The payment token object being deleted.
+	 * @return void
+	 */
+	public function paygent_delete_card( $token_id, $token ) {
+		$customer_card_id = $token->get_meta( 'customer_card_id' );
+		$delete_card_data = array(
+			'customer_id'      => 'wc' . get_current_user_id(),
+			'customer_card_id' => $customer_card_id,
+		);
+		$delete_result    = $this->delete_card( $delete_card_data );
 	}
 }

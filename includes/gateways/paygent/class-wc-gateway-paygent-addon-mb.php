@@ -235,20 +235,32 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 		}
 		$send_data = $this->set_send_data( $send_data, $order->get_id() );
 
-		if ( '5' === $send_data['career_type'] ) {// Docomo.
+		if ( 5 === $send_data['career_type'] ) {// Docomo.
 			$career_type = 'docomo';
-		} elseif ( '4' === $send_data['career_type'] ) {// au.
+		} elseif ( 4 === $send_data['career_type'] ) {// au.
 			$career_type = 'au';
-		} elseif ( '6' === $send_data['career_type'] ) {// SoftBank.
+		} elseif ( 6 === $send_data['career_type'] ) {// SoftBank.
 			$career_type = 'sb';
 		}
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions        = wcs_get_subscriptions_for_order( $order );
+		$current_subscription = false;
 		foreach ( $subscriptions as $subscription_id => $subscription ) {
 			if ( isset( $career_type ) ) {
 				$subscription->update_meta_data( '_career_type', $career_type, true );
 				$subscription->save();
 				$current_subscription = $subscription;
 			}
+		}
+		if ( ! $current_subscription ) {
+			// translators: %s: order ID.
+			$message = sprintf( __( 'No subscription found for order %s.', 'woocommerce-for-paygent-payment-main' ), $order->get_id() );
+			if ( '120' === $telegram_kind ) {
+				$message .= __( 'This subscription is first order.', 'woocommerce-for-paygent-payment-main' ) . $career_type;
+			}
+			$this->jp4wc_framework->jp4wc_debug_log( $message, true, 'wc-paygent' );
+			wc_add_notice( $message, 'error' );
+			$order->update_status( 'failed', $message );
+			return array( 'result' => 'failed' );
 		}
 		$send_data['trading_id'] = $this->set_trading_id( $current_subscription );
 		// amount hook.

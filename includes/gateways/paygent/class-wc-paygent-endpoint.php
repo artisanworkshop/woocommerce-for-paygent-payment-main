@@ -27,14 +27,14 @@ class WC_Paygent_Endpoint {
 	 * Callback.
 	 */
 	public function paygent_register_routes() {
-		// POST /wp-json/metaps/v1/check_payment .
+		// POST /wp-json/paygent/v1/check/ .
 		register_rest_route(
 			'paygent/v1',
 			'/check',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'paygent_check_webhook' ),
-				'permission_callback' => array( $this, 'paygent_permission_callback' ),
+				'permission_callback' => '__return_true',
 			)
 		);
 	}

@@ -208,14 +208,33 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 	public function paypay_redirect_order( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$htmls = $order->get_meta( '_paygent_paypay_html', true );
+
+		$allow_redirect_html       = array(
+			'form'  => array(
+				'action'         => array(),
+				'method'         => array(),
+				'name'           => array(),
+				'accept-charset' => array(),
+			),
+			'input' => array(
+				'type'  => array(),
+				'name'  => array(),
+				'value' => array(),
+			),
+		);
+		$javascript_auto_send_code = '
+		<script type="text/javascript">
+		function send_form_submit() {
+			document.form.submit();
+		}
+		window.onload = send_form_submit;
+		</script>';
 		if ( $htmls ) {
 			foreach ( $htmls as $html ) {
-				echo esc_html( $html );
+				echo wp_kses( $html, $allow_redirect_html );
 			}
 			echo '<input type="submit" value="PayPay認証"></form>';
-			echo '<script type="text/javascript">' .
-			esc_js( 'function send_form_submit() { document.form.submit(); } window.onload = send_form_submit;' ) .
-			'</script>';
+			echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 			wc_reduce_stock_levels( $order_id );
 			$order->update_status( 'on-hold' );
 			$order->save();

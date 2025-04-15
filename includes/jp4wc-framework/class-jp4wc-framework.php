@@ -784,6 +784,22 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 		}
 
 		/**
+		 * Create a URL with GET parameters from an array.
+		 *
+		 * @param string $url Base URL.
+		 * @param array  $array Parameters to add as GET variables.
+		 * @return string The URL with added GET parameters.
+		 */
+		public function jp4wc_make_add_get_url( $url, $array ) {
+			if ( substr( $url, -1 ) == '/' ) {
+				$add_url = '?' . http_build_query( $array );
+			} else {
+				$add_url = '&' . http_build_query( $array );
+			}
+			return $url . $add_url;
+		}
+
+		/**
 		 * Get post data if set
 		 *
 		 * @param string $name The name of the POST field.
