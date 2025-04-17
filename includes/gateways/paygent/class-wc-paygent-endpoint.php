@@ -178,9 +178,15 @@ class WC_Paygent_Endpoint {
 		if ( 'not_set' === $status ) {
 			return;
 		}
+
 		$current_status = $order->get_status();
-		$order_type     = $order->get_type();
-		$active_flag    = false;
+		if ( 'pre-ordered' === $current_status ) {
+			$order->add_order_note( __( 'This order is pre-order. Notice status is ', 'woocommerce-for-paygent-payment-main' ) . $status );
+			return;
+		}
+
+		$order_type  = $order->get_type();
+		$active_flag = false;
 		if ( $current_status !== $status ) {
 			$normal_flag = true;
 			if ( 'shop_order' === $order_type ) {
