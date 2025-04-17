@@ -176,6 +176,8 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		add_action( 'woocommerce_order_status_completed', array( $this, 'order_mb_status_completed' ) );
 
 		add_action( 'add_meta_boxes', array( $this, 'paygent_mb_add_meta_box' ), 15, 2 );
+		// Cancel order.
+		add_action( 'woocommerce_before_cart', array( $this, 'paygent_cart_cancel' ) );
 	}
 
 	/**
@@ -385,7 +387,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 
 		// Common header.
 		$telegram_kind           = '100';
-		$send_data['payment_id'] = '100';
+		$send_data['payment_id'] = null;
 
 		$send_data = $this->set_send_data( $send_data, $order_id );
 
@@ -402,8 +404,9 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 	public function payment_mb_process( $order, $send_data, $telegram_kind ) {
 		$payment_url = $this->jp4wc_framework->jp4wc_make_add_get_url( $order->get_checkout_payment_url( true ), array( 'telegram_kind' => $telegram_kind ) );
 		// Check for payment provider - au (type 4) or Docomo (type 5).
-		if ( '4' === $send_data['career_type'] || '5' === $send_data['career_type'] ) {
-			if ( '5' === $send_data['career_type'] ) {
+		unset( $send_data['other_url'] );
+		if ( 4 === $send_data['career_type'] || 5 === $send_data['career_type'] ) {
+			if ( 5 === $send_data['career_type'] ) {
 				$order_open_id = $order->get_meta( 'docomo_open_id', true );
 			} else {
 				$order_open_id = $order->get_meta( 'au_open_id', true );
@@ -413,7 +416,6 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			} else {
 				$send_data['amount']       = null;
 				$send_data['trading_id']   = null;
-				$send_data['payment_id']   = null;
 				$send_data['redirect_url'] = $payment_url;
 				$telegram_kind             = '104';
 				$response_user             = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
@@ -422,7 +424,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 						$order->add_meta_data( 'running_id', $response_user['result_array'][0]['running_id'] );
 					}
 					$order->add_meta_data( '_pc_mobile_type', wc_clean( $send_data['pc_mobile_type'] ), true );
-					if ( '5' === $send_data['career_type'] ) {// Docomo.
+					if ( 5 === $send_data['career_type'] ) {// Docomo.
 						$order->add_meta_data( '_career_type', 'docomo', true );
 						$order->add_meta_data( '_open_id_redirect_html', mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 						$order->save_meta_data();
@@ -452,13 +454,12 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			}
 		}
 		$send_data['first_auto_sales_flg'] = 1;
-		unset( $send_data['other_url'] );
 		// SoftBank Payment or Exist Open_ID.
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 		$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 		// Check response.
 		if ( '0' === $response['result'] && $response['result_array'] ) {
-			if ( '6' === $send_data['career_type'] ) {
+			if ( 6 === $send_data['career_type'] ) {
 				$order->add_meta_data( '_career_type', 'sb', true );
 				$order->add_order_note( 'Career type is Softbank.' );
 			}
@@ -542,7 +543,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		$send_data['trading_id'] = $this->set_trading_id( $order );
 		$post_career_type        = $this->get_post( 'career_type' );
 		if ( isset( $post_career_type ) ) {
-			$send_data['career_type'] = intval( $this->get_post( 'career_type' ) );
+			$send_data['career_type'] = intval( $post_career_type );
 		} else {
 			$career_type              = $order->get_meta( '_career_type', true );
 			$send_data['career_type'] = $this->set_career_type_num( $career_type );
@@ -550,8 +551,8 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		$send_data['amount'] = $order->get_total();
 
 		$send_data['return_url'] = $this->get_return_url( $order );
-		$send_data['cancel_url'] = wc_get_cart_url();
-		$send_data['other_url']  = wc_get_cart_url();
+		$send_data['cancel_url'] = wc_get_cart_url() . '?mb_cancel=yes';
+		$send_data['other_url']  = wc_get_cart_url() . '?mb_cancel=yes';
 		if ( $this->is_device() === 'mb-docomo' ) {
 			$send_data['pc_mobile_type'] = '1';
 		} elseif ( $this->is_device() === 'mb-au' ) {
@@ -594,7 +595,13 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		$order          = wc_get_order( $order_id );
 		$payment_method = $order->get_payment_method();
 		if ( $payment_method === $this->id ) {
-			$javascript_auto_send_code = 'function send_form_submit() { document.submitForm.submit(); }window.onload = send_form_submit;';
+			$javascript_auto_send_code = '
+<script type="text/javascript">
+function send_form_submit() {
+    document.form.submit();
+}
+window.onload = send_form_submit;
+</script>';
 			$send_data                 = array();
 			$career_type               = $order->get_meta( '_career_type', true );
 			$send_data['career_type']  = $this->set_career_type_num( $career_type );
@@ -605,18 +612,29 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			} else {
 				$telegram_kind = '';
 			}
-			if ( '5' === $send_data['career_type'] || '6' === $send_data['career_type'] ) {// docomo and Softbank.
-				$redirect_html = $order->get_meta( '_redirect_html', true );
+			if ( 5 === $send_data['career_type'] || 6 === $send_data['career_type'] ) {// docomo and Softbank.
+				$allow_redirect_html = array(
+					'form'  => array(
+						'action'         => array(),
+						'method'         => array(),
+						'name'           => array(),
+						'accept-charset' => array(),
+					),
+					'input' => array(
+						'type'  => array(),
+						'name'  => array(),
+						'value' => array(),
+					),
+				);
+				$redirect_html       = $order->get_meta( '_redirect_html', true );
 				if ( isset( $_GET['open_id'] ) && ! isset( $_GET['change_proceed'] ) ) {// phpcs:ignore
 					$send_data['first_auto_sales_flg'] = 1;
-					if ( '5' === $send_data['career_type'] ) {
+					if ( 5 === $send_data['career_type'] ) {// docomo.
 						$order->add_meta_data( 'docomo_open_id', wp_unslash( $_GET['open_id'] ), true );// phpcs:ignore
 					}
-					$order->add_meta_data( '_open_id', wp_unslash( $_GET['open_id'] ), true );// phpcs:ignore
 					$send_data = $this->mb_order_send_data( $order_id, $send_data );
 					$response  = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-
-					$cart_url = wc_get_cart_url();
+					$cart_url  = wc_get_cart_url();
 					// Check response.
 					if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
 						$order->add_meta_data( '_paygent_order_id', $response['result_array'][0]['trading_id'], true );
@@ -624,8 +642,8 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 						$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 						// Return thank you redirect.
 						if ( isset( $response['result_array'][0]['redirect_html'] ) ) {
-							echo esc_html( mb_convert_encoding( $response['result_array'][0]['redirect_html'], 'SJIS', 'UTF-8' ) );
-							echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
+							echo wp_kses( $response['result_array'][0]['redirect_html'], $allow_redirect_html );
+							echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 						} else {
 							$order->add_order_note( 'No redirect HTML' );
 							if ( wp_safe_redirect( $cart_url ) ) {
@@ -639,14 +657,14 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 							exit;
 						}
 					}
-				} elseif ( $redirect_html && '6' === $send_data['career_type'] ) {// SoftBank.
-					echo wp_kses_post( $redirect_html );
-					echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
+				} elseif ( $redirect_html && 6 === $send_data['career_type'] ) {// SoftBank.
+					echo wp_kses( $redirect_html, $allow_redirect_html );
+					echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 				} else { // docomo.
-					echo esc_html( $order->get_meta( '_open_id_redirect_html', true ) );
-					echo '<script type="text/javascript">' . esc_js( $javascript_auto_send_code ) . '</script>';
+					echo wp_kses( $order->get_meta( '_open_id_redirect_html', true ), $allow_redirect_html );
+					echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 				}
-			} elseif ( '4' === $send_data['career_type'] ) { // au payment.
+			} elseif ( 4 === $send_data['career_type'] ) { // au payment.
 				if ( isset( $_GET['open_id'] ) ) {// phpcs:ignore
 					$open_id = $_GET['open_id']; // phpcs:ignore
 					$order->add_meta_data( 'au_open_id', wp_unslash( $open_id ), true );
@@ -1009,5 +1027,23 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			esc_html_e( 'This order does not have Running ID.', 'woocommerce-for-paygent-payment-main' );
 		}
 		echo '</div>';
+	}
+
+	/**
+	 * Handle cart cancellation when a mobile payment is cancelled.
+	 *
+	 * Checks for the mb_cancel parameter in the URL and displays a notice to the customer.
+	 * Also updates the order status to cancelled if the order can be found.
+	 */
+	public function paygent_cart_cancel() {
+		if ( isset( $_GET['mb_cancel'] ) && 'yes' === $_GET['mb_cancel'] ) { // phpcs:ignore
+			// Display a notice to the customer that their mobile payment was canceled.
+			wc_add_notice( __( 'Your mobile payment has been canceled.', 'woocommerce-for-paygent-payment-main' ), 'notice' );
+			$order_id = preg_replace( '/[^0-9]/', '', $_GET['trading_id'] ); // phpcs:ignore
+			$order    = wc_get_order( $order_id );
+			if ( $order ) {
+				$order->update_status( 'cancelled', __( 'Mobile payment was canceled.', 'woocommerce-for-paygent-payment-main' ) );
+			}
+		}
 	}
 }

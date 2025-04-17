@@ -1,0 +1,21 @@
+# Directories
+/.wordpress-org
+/.vscode
+/.git
+/.github
+/bin
+/node_modules
+/vendor
+/src
+
+# Files
+.wp-env.json
+.gitattributes
+.distignore
+.gitignore
+composer.json
+composer.lock
+package-lock.json
+package.json
+README.md
+LICENSE

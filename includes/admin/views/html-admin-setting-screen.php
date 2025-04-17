@@ -15,9 +15,15 @@ $this->jp4wc_plugin->show_messages( $this );
 			<div class="wc-paygent-credits">
 				<h3 class="hndle"><?php echo esc_html__( 'WooCommerce Paygent', 'woocommerce-for-paygent-payment-main' ) . ' ' . esc_html( WC_PAYGENT_VERSION ); ?></h3>
 				<div class="inside">
-					<?php $this->jp4wc_plugin->jp4wc_support_notice( 'https://support.artws.info/forums/forum/wordpress-official/woocommerce-for-paygent-plugin/' ); ?>
-					<hr />
-					<?php $this->jp4wc_plugin->jp4wc_update_notice(); ?>
+				<h4 class="inner"><?php esc_html_e( 'Security measures for WooCommerce', 'woocommerce-for-paygent-payment-main' ); ?></h4>
+					<p class="inner">
+						<?php
+						$product_link_url = 'https://wc4jp-pro.work/about-security-service/?utm_source=jp4wc-settings&utm_medium=link&utm_campaign=maintenance-support';
+						/* translators: %s: URL */
+						$explain_product = __( 'One the security, latest update is the most important thing. The credit card security guidelines that will be established from April 2025 are also important. If you need site maintenance support, please consider about <a href="%s" target="_blank" title="Security measures for WooCommerce">Security measures for WooCommerce</a>', 'woocommerce-for-paygent-payment-main' );
+						printf( wp_kses_post( $explain_product ), esc_url( $product_link_url ) );
+						?>
+					</p>
 					<hr />
 					<?php $this->jp4wc_plugin->jp4wc_community_info(); ?>
 					<hr />

@@ -248,7 +248,7 @@ class WC_Gateway_Paygent_Request {
 	public function order_paygent_status_completed( $order_id, $telegram_kind, $payment, $send_data = array() ) {
 		$order                = wc_get_order( $order_id );
 		$order_payment_method = $order->get_payment_method();
-		if ( isset( $object->paymentaction ) && 'sale' !== $payment->paymentaction && $order_payment_method === $payment->id ) {
+		if ( isset( $payment->paymentaction ) && 'sale' !== $payment->paymentaction && $order_payment_method === $payment->id ) {
 			$send_data['payment_id'] = $order->get_transaction_id();
 			// Set Order ID for Paygent.
 			$paygent_order_id = $order->get_meta( '_paygent_order_id' );
@@ -260,15 +260,13 @@ class WC_Gateway_Paygent_Request {
 				$send_data['trading_id'] = 'wc_' . $order_id;
 			}
 			// Set Site ID.
-			if ( 1 !== $this->site_id ) {
+			if ( '1' !== $this->site_id ) {
 				$send_data['site_id'] = $this->site_id;
-			} else {
-				$send_data['site_id'] = 1;
 			}
 			$response = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind, $send_data, $payment->debug );
 			if ( '0' === $response['result'] ) {
 				$order->add_order_note( __( 'Success this order set to sale at Paygent.', 'woocommerce-for-paygent-payment-main' ) );
-			} elseif ( $order->get_payment_method() === 'paygent_paidy' ) {
+			} elseif ( 'paygent_paidy' === $order_payment_method ) {
 				// Paidy Payment.
 					$send_data['trading_id'] = $order_id;
 					$response_again          = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind, $send_data, $payment->debug );
@@ -310,9 +308,10 @@ class WC_Gateway_Paygent_Request {
 		}
 		$send_data_refund['payment_id'] = $transaction_id;
 		$send_data_refund['trading_id'] = $send_data_check['trading_id'];
-		$telegram_kind_check            = '094';
-		$order_result                   = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind_check, $send_data_check, $payment->debug );
-		$order_total                    = $order->get_total();
+
+		$telegram_kind_check = '094';// Information inquiry.
+		$order_result        = $this->send_paygent_request( $payment->test_mode, $order, $telegram_kind_check, $send_data_check, $payment->debug );
+		$order_total         = $order->get_total();
 		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
 			unset( $send_data_refund['payment_id'] );
 		}

@@ -372,8 +372,8 @@ class WC_Gateway_Paygent_CS extends WC_Payment_Gateway {
 
 		$send_data['payment_amount'] = $order->get_total();
 		// Customer Name.
-		$send_data['customer_family_name'] = $order->get_billing_last_name();
-		$send_data['customer_name']        = $order->get_billing_first_name();
+		$send_data['customer_family_name'] = mb_convert_encoding( $order->get_billing_last_name(), 'SJIS', 'UTF-8' );
+		$send_data['customer_name']        = mb_convert_encoding( $order->get_billing_first_name(), 'SJIS', 'UTF-8' );
 		$send_data['customer_tel']         = str_replace( '-', '', $order->get_billing_phone() );
 
 		$send_data['payment_limit_date'] = $this->payment_limit_date;// Payment limit date.

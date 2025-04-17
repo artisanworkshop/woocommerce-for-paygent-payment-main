@@ -177,7 +177,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 		$send_data['payment_amount']   = $order->get_total();
 		$send_data['merchandise_type'] = 1;
 		$send_data['pc_mobile_type']   = '0';
-		if ( $this->jp4wc_framework->isSmartPhone() ) {
+		if ( $this->jp4wc_framework->is_smart_phone() ) {
 			$send_data['pc_mobile_type'] = 4;
 		}
 		$send_data['button_type'] = $this->button_type;
@@ -276,11 +276,30 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 	public function paygent_rakutenpay_redirect_order( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$html  = $order->get_meta( '_paygent_rakuten_html', true );
+
+		$allow_redirect_html       = array(
+			'form'  => array(
+				'action'         => array(),
+				'method'         => array(),
+				'name'           => array(),
+				'accept-charset' => array(),
+			),
+			'input' => array(
+				'type'  => array(),
+				'name'  => array(),
+				'value' => array(),
+			),
+		);
+		$javascript_auto_send_code = '
+		<script type="text/javascript">
+		function send_form_submit() {
+			document.form.submit();
+		}
+		window.onload = send_form_submit;
+		</script>';
 		if ( isset( $html ) ) {
-			echo esc_html( $html );
-			echo '<script type="text/javascript">' .
-			esc_js( 'function send_form_submit() { document.form.submit(); } window.onload = send_form_submit;' ) .
-			'</script>';
+			echo wp_kses( $html, $allow_redirect_html );
+			echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 		}
 	}
 
