@@ -682,12 +682,7 @@ jQuery(function(){
 
 		// Common header.
 		$telegram_kind = '020';// Auth.
-		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
-		if ( $prefix_order ) {
-			$send_data['trading_id'] = $prefix_order . $order_id;
-		} else {
-			$send_data['trading_id'] = 'wc_' . $order_id;
-		}
+
 		$send_data['payment_id']        = '';
 		$send_data['security_code_use'] = 1;
 		$send_data['3dsecure_ryaku']    = 1;
@@ -723,6 +718,14 @@ jQuery(function(){
 			$order->add_meta_data( '_paygent_customer_card_id', $send_data['customer_card_id'] );
 			$order->save_meta_data();
 		}
+
+		$prefix_order = get_option( 'wc-paygent-prefix_order' );
+		if ( $prefix_order ) {
+			$send_data['trading_id'] = $prefix_order . $order_id;
+		} else {
+			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+
 		$send_data = $this->set_stored_card( $card_user_id, $card_token, $card_cvc_token, $send_data, $set_login );
 
 		// Set Number of Payments && Payment times.
