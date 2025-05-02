@@ -1120,20 +1120,6 @@ jQuery(function(){
 						wp_safe_redirect( wc_get_checkout_url() );
 						exit;
 					}
-				} elseif ( '31012' === $_GET['response_code'] ) {// phpcs:ignore
-					$this->paygent_no_tds_card_response( $order );
-				} elseif ( '31013' === $_GET['response_code'] ) {// phpcs:ignore
-					// Timeout.
-					wc_increase_stock_levels( $order_id );
-					$order->update_status( 'cancelled', __( '3D Secure 2.0 Timeout', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( $_GET['response_detail'] ) . ']' );// phpcs:ignore
-					wp_safe_redirect( wc_get_checkout_url() );
-					exit;
-				} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
-					wc_increase_stock_levels( $order_id );
-					$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( $_GET['response_detail'] ) . ']' );// phpcs:ignore
-					wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
-					wp_safe_redirect( wc_get_checkout_url() );
-					exit;
 				} else {
 					wc_increase_stock_levels( $order_id );
 					$error_message = __( 'The response from the payment company was strange.', 'woocommerce-for-paygent-payment-main' );
@@ -1142,6 +1128,12 @@ jQuery(function(){
 					wp_safe_redirect( wc_get_checkout_url() );
 					exit;
 				}
+			} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
+				wc_increase_stock_levels( $order_id );
+				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( urldecode( $_GET['response_detail'] ) ) . ']' );// phpcs:ignore
+				wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
+				wp_safe_redirect( wc_get_checkout_url() );
+				exit;
 			}
 		} elseif ( $html && $order->get_payment_method() === $this->id ) {// First redirect to 3D Secure 2.0 Challenge flow.
 			$before = array( '<html>', '<body onload="OnLoadEvent();">', '</body>', '</html>' );
