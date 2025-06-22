@@ -433,6 +433,33 @@ class WC_Gateway_Paygent_Request {
 	}
 
 	/**
+	 * Get payment status from Paygent API
+	 *
+	 * @param WC_Order $order        Order object.
+	 * @param object   $this_gateway Payment gateway object.
+	 * @return array   Response from Paygent API
+	 */
+	public function paygent_get_payment_status( $order, $this_gateway ) {
+		$telegram_kind           = '094'; // Information inquiry.
+		$transaction_id          = $order->get_transaction_id();
+		$send_data['payment_id'] = $transaction_id;
+		// Set Order ID for Paygent.
+		$paygent_order_id = $order->get_meta( '_paygent_order_id' );
+		if ( $paygent_order_id ) {
+			$send_data['trading_id'] = $paygent_order_id;
+		} else {
+			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+		$order_result = $this->send_paygent_request( $this_gateway->test_mode, $order, $telegram_kind, $send_data, $this_gateway->debug );
+		if ( '0' !== $order_result['result'] ) {
+			// No response or unexpected response.
+			$this->error_response( $order_result, $order );
+			return false;
+		}
+		return $order_result['result_array'][0];
+	}
+
+	/**
 	 * Error text for Paygemnt
 	 *
 	 * @return array

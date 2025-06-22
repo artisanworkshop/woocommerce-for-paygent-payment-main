@@ -1171,21 +1171,21 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Error code for 3D Secure 2.0 Requestor
-		 *
-		 * @param object $user WP_User.
-		 * @return void
-		 */
+	/**
+	 * Error code for 3D Secure 2.0 Requestor
+	 *
+	 * @param object $user WP_User.
+	 * @return void
+	 */
 	public function jp4wc_password_update( $user ) {
 		update_user_meta( $user->ID, 'jp4wc_password_update', time() );
 	}
 
-		/**
-		 * Make the Error message by response data
-		 *
-		 * @return void
-		 */
+	/**
+	 * Make the Error message by response data
+	 *
+	 * @return void
+	 */
 	private function attention_to_ie_user() {
 		echo '<span style="color:#ff0000; font-weight:bold;">';
 		// Attention display for IE users.
@@ -1198,12 +1198,12 @@ jQuery(function(){
 		echo '</span>';
 	}
 
-		/**
-		 * Make the Error message by response data
-		 *
-		 * @param  array $response_data Response Data.
-		 * @return  string
-		 */
+	/**
+	 * Make the Error message by response data
+	 *
+	 * @param  array $response_data Response Data.
+	 * @return  string
+	 */
 	public function make_error_message( $response_data ) {
 		if ( 'P009' === $response_data['responseCode'] ) {// Number of digits error.
 			if ( strpos( $response_data['responseDetail'], 'card_conf_number' ) !== false ) {
@@ -1237,13 +1237,13 @@ jQuery(function(){
 		return $error_message;
 	}
 
-		/**
-		 * Three D secure Error at Thank you page.
-		 *
-		 * @param string $text Default text.
-		 * @param object $order WP_Order.
-		 * @return  string
-		 */
+	/**
+	 * Three D secure Error at Thank you page.
+	 *
+	 * @param string $text Default text.
+	 * @param object $order WP_Order.
+	 * @return  string
+	 */
 	public function woocommerce_thankyou_order_received_td( $text, $order ) {
 		if ( $order && $this->id === $order->get_payment_method() ) {
 			if ( isset( $_GET['result'] ) && '1' === $_GET['result'] ) {// phpcs:ignore
@@ -1617,16 +1617,38 @@ jQuery(function(){
 	 * @param int $order_id Order ID.
 	 */
 	public function order_paygent_cc_status_completed( $order_id ) {
+		$order                        = wc_get_order( $order_id );
+		$check_paygent_payment_status = $this->paygent_request->paygent_get_payment_status( $order, $this );
+		if ( ! $check_paygent_payment_status ) {
+			return;
+		}
+		if ( '40' !== $check_paygent_payment_status['status'] ) {
+			return;
+		}
 		$telegram_kind = '022';
-		$this->paygent_request->order_paygent_status_completed( $order_id, $telegram_kind, $this );
+		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
+		if ( $prefix_order ) {
+			$send_data['trading_id'] = $prefix_order . $order_id;
+		} else {
+			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+		if ( 1 !== $this->paygent_request->site_id ) {
+			$send_data['site_id'] = $this->paygent_request->site_id;
+		} else {
+			$send_data['site_id'] = 1;
+		}
+		$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+		if ( 0 !== $response_sale['result'] ) {
+			$this->paygent_request->error_response( $response_sale, $order );
+		}
 	}
 
-		/**
-		 * Get the error message by error code
-		 *
-		 * @param  string $error_code Error Code.
-		 * @return  string
-		 */
+	/**
+	 * Get the error message by error code
+	 *
+	 * @param  string $error_code Error Code.
+	 * @return  string
+	 */
 	public function tdsecure_requestor_error_codes( $error_code ) {
 		$error_codes_message = array(
 			'R1001' => __( 'Could not connect to system.', 'woocommerce-for-paygent-payment-main' ),
