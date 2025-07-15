@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
 use ArtisanWorkshop\WooCommerce\PluginFramework\v2_0_13 as Framework;
+
 /**
  * WC_Paygent_Endpoint class.
  */
@@ -158,8 +158,10 @@ class WC_Paygent_Endpoint {
 		$remote_ip        = $request->get_header( 'x_real_ip' );
 		$is_permitted     = false;
 
-		$paygent_cc = new WC_Gateway_Paygent_CC();
-		// if ( $paygent_cc->test_mode ) {
+		if ( in_array( $remote_ip, $is_permitted_ips, true ) ) {
+			$is_permitted = true;
+		}
+		if ( ! $is_permitted ) {
 			$wc_logger = wc_get_logger();
 			$wc_logger->info(
 				'Paygent test mode is enabled. IP address check is skipped.',
@@ -168,10 +170,6 @@ class WC_Paygent_Endpoint {
 					'source'    => 'paygent-endpoint',
 				)
 			);
-		// }
-
-		if ( in_array( $remote_ip, $is_permitted_ips, true ) ) {
-			$is_permitted = true;
 		}
 		$is_permitted = true;
 
