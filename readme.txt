@@ -3,8 +3,8 @@ Contributors: artisan-workshop-1, shohei.tanaka
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=info@artws.info&item_name=Donation+for+Artisan&currency_code=JPY
 Tags: woocommerce, payment Gateway, japan
 Requires at least: 5.0
-Tested up to: 6.7.2
-Stable tag: 2.3.3
+Tested up to: 6.8.2
+Stable tag: 2.4.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -23,8 +23,8 @@ Note! : When performing a major or other update from version 1.2 to 2.0 or versi
 5. ATM Payment
 6. Carrier Payment
 7. Paidy Payment
-
-[youtube https://www.youtube.com/watch?v=gN9FDGCxCS0]
+8. PayPay Payment
+9. Rakuten Payment
 
 == Frequently Asked Questions ==
 
@@ -45,17 +45,10 @@ A: We support with paid support. <a herf="https://wc.artws.info/product/payment-
 
 == Changelog ==
 
-= 2.3.2 - 2024-08-02 =
-* Fixed - Credit Card Payment bug for 3DS 2.0.
-* Dev - card holder name input for 3DS 2.0.
-* Dev - No EMV 3DS Card accept.
-* Dev - Automatic delete Epired card data.
-
-= 2.3.0 - 2023-11-27 =
-* Fixed - Stored Credit Card bug for 3DS2.0.
-* Fixed - Payment Credit Card bug for 3DS2.0.
-* Fixed - Endpoint Credit Card bug.
-* Dev - Implementation of carrier payment subscription.
+= 2.4.0 - 2025-07-16 =
+* Fixed - Compliant with WordPress PHP coding standards.
+* Fixed - Registering a credit card when there is no purchase history.
+* Dev - Preparation for checkout & cart block support for the upcoming major version (3.0).
 
 == Upgrade Notice ==
 

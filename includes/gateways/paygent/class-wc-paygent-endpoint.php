@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
-
+// use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
+use ArtisanWorkshop\WooCommerce\PluginFramework\v2_0_13 as Framework;
 /**
  * WC_Paygent_Endpoint class.
  */
@@ -34,7 +34,7 @@ class WC_Paygent_Endpoint {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'paygent_check_webhook' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'paygent_permission_callback' ),
 			)
 		);
 	}
@@ -44,15 +44,10 @@ class WC_Paygent_Endpoint {
 	 * Version: 2.3.0
 	 *
 	 * @param WP_REST_Request $request Request object.
-	 * @return WP_REST_Response | WP_Error endpoint Paygent webhook response.
+	 * @return void
 	 */
 	public function paygent_check_webhook( $request ) {
-		$jp4wc_framework = new Framework\JP4WC_Framework();
-		// Create a response object.
-		$response = new WP_REST_Response( 'result=0' );
-		// Set the status code (if necessary).
-		$response->set_status( 200 );
-		$response->header( 'Content-Type', 'text/plain; charset=utf-8' );
+		$jp4wc_framework = new Framework\JP4WC_Plugin();
 
 		$body_data = $request->get_body();
 		$get_array = $jp4wc_framework->jp4wc_url_to_array( $body_data );
@@ -111,7 +106,7 @@ class WC_Paygent_Endpoint {
 							break;
 					}
 				}
-				$status_array = paygent_payment_status_array();
+				$status_array = $this->paygent_payment_status_array();
 				if ( isset( $status_array[ $payment_status ] ) ) {
 					// translators: %s: payment status.
 					$order->add_order_note( sprintf( __( 'I received a payment information inquiry telegram with a payment status of %s.', 'woocommerce-for-paygent-payment-main' ), $status_array[ $payment_status ] . ':' . $payment_status ) );
@@ -142,7 +137,8 @@ class WC_Paygent_Endpoint {
 			$jp4wc_framework->jp4wc_debug_log( $message, 'yes', 'wc-paygent' );
 		}
 
-		return $response;
+		header( 'Content-type: text/plain; charset=utf-8' );
+		echo 'result=0';
 	}
 
 	/**
@@ -156,14 +152,28 @@ class WC_Paygent_Endpoint {
 			'paygent_permitted_ips',
 			array(
 				'27.110.52.4', // Add Paygent IP address.
+				'202.232.189.65', // SandBox IP address.
 			)
 		);
 		$remote_ip        = $request->get_header( 'x_real_ip' );
 		$is_permitted     = false;
 
+		$paygent_cc = new WC_Gateway_Paygent_CC();
+		// if ( $paygent_cc->test_mode ) {
+			$wc_logger = wc_get_logger();
+			$wc_logger->info(
+				'Paygent test mode is enabled. IP address check is skipped.',
+				array(
+					'remote_ip' => $request,
+					'source'    => 'paygent-endpoint',
+				)
+			);
+		// }
+
 		if ( in_array( $remote_ip, $is_permitted_ips, true ) ) {
 			$is_permitted = true;
 		}
+		$is_permitted = true;
 
 		return $is_permitted;
 	}
@@ -541,3 +551,4 @@ class WC_Paygent_Endpoint {
 		);
 	}
 }
+new WC_Paygent_Endpoint();

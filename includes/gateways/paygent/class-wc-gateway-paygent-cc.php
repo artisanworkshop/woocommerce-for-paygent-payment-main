@@ -456,13 +456,9 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		} else {
 			echo '<div id="paygent-new-info">';
 		}
-		if ( version_compare( WOOCOMMERCE_VERSION, '2.6.0', '<' ) ) {
-			$this->credit_card_form( array( 'fields_have_names' => true ) );
-		} else {
-			$payment_gateway_cc     = new WC_Payment_Gateway_CC();
-			$payment_gateway_cc->id = $this->id;
-			$payment_gateway_cc->form();
-		}
+		$payment_gateway_cc     = new WC_Payment_Gateway_CC();
+		$payment_gateway_cc->id = $this->id;
+		$payment_gateway_cc->form();
 		if ( '1' === $this->test_mode ) {
 			$merchant_id = get_option( 'wc-paygent-test-mid' );
 			$token_key   = get_option( 'wc-paygent-test-tokenkey' );
@@ -1120,20 +1116,6 @@ jQuery(function(){
 						wp_safe_redirect( wc_get_checkout_url() );
 						exit;
 					}
-				} elseif ( '31012' === $_GET['response_code'] ) {// phpcs:ignore
-					$this->paygent_no_tds_card_response( $order );
-				} elseif ( '31013' === $_GET['response_code'] ) {// phpcs:ignore
-					// Timeout.
-					wc_increase_stock_levels( $order_id );
-					$order->update_status( 'cancelled', __( '3D Secure 2.0 Timeout', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( $_GET['response_detail'] ) . ']' );// phpcs:ignore
-					wp_safe_redirect( wc_get_checkout_url() );
-					exit;
-				} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
-					wc_increase_stock_levels( $order_id );
-					$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( $_GET['response_detail'] ) . ']' );// phpcs:ignore
-					wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
-					wp_safe_redirect( wc_get_checkout_url() );
-					exit;
 				} else {
 					wc_increase_stock_levels( $order_id );
 					$error_message = __( 'The response from the payment company was strange.', 'woocommerce-for-paygent-payment-main' );
@@ -1142,6 +1124,12 @@ jQuery(function(){
 					wp_safe_redirect( wc_get_checkout_url() );
 					exit;
 				}
+			} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
+				wc_increase_stock_levels( $order_id );
+				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( urldecode( $_GET['response_detail'] ) ) . ']' );// phpcs:ignore
+				wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
+				wp_safe_redirect( wc_get_checkout_url() );
+				exit;
 			}
 		} elseif ( $html && $order->get_payment_method() === $this->id ) {// First redirect to 3D Secure 2.0 Challenge flow.
 			$before = array( '<html>', '<body onload="OnLoadEvent();">', '</body>', '</html>' );
@@ -1179,21 +1167,21 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Error code for 3D Secure 2.0 Requestor
-		 *
-		 * @param object $user WP_User.
-		 * @return void
-		 */
+	/**
+	 * Error code for 3D Secure 2.0 Requestor
+	 *
+	 * @param object $user WP_User.
+	 * @return void
+	 */
 	public function jp4wc_password_update( $user ) {
 		update_user_meta( $user->ID, 'jp4wc_password_update', time() );
 	}
 
-		/**
-		 * Make the Error message by response data
-		 *
-		 * @return void
-		 */
+	/**
+	 * Make the Error message by response data
+	 *
+	 * @return void
+	 */
 	private function attention_to_ie_user() {
 		echo '<span style="color:#ff0000; font-weight:bold;">';
 		// Attention display for IE users.
@@ -1206,12 +1194,12 @@ jQuery(function(){
 		echo '</span>';
 	}
 
-		/**
-		 * Make the Error message by response data
-		 *
-		 * @param  array $response_data Response Data.
-		 * @return  string
-		 */
+	/**
+	 * Make the Error message by response data
+	 *
+	 * @param  array $response_data Response Data.
+	 * @return  string
+	 */
 	public function make_error_message( $response_data ) {
 		if ( 'P009' === $response_data['responseCode'] ) {// Number of digits error.
 			if ( strpos( $response_data['responseDetail'], 'card_conf_number' ) !== false ) {
@@ -1245,13 +1233,13 @@ jQuery(function(){
 		return $error_message;
 	}
 
-		/**
-		 * Three D secure Error at Thank you page.
-		 *
-		 * @param string $text Default text.
-		 * @param object $order WP_Order.
-		 * @return  string
-		 */
+	/**
+	 * Three D secure Error at Thank you page.
+	 *
+	 * @param string $text Default text.
+	 * @param object $order WP_Order.
+	 * @return  string
+	 */
 	public function woocommerce_thankyou_order_received_td( $text, $order ) {
 		if ( $order && $this->id === $order->get_payment_method() ) {
 			if ( isset( $_GET['result'] ) && '1' === $_GET['result'] ) {// phpcs:ignore
@@ -1466,7 +1454,11 @@ jQuery(function(){
 			$card_last4       = substr( $result['result_array'][0]['masked_card_number'], -4 );
 			$expiry_month     = substr( $result['result_array'][0]['card_valid_term'], 0, 2 );
 			$expiry_year      = substr( $result['result_array'][0]['card_valid_term'], -2 );
-			$card_type        = $order->get_meta( '_paygent_card_type', true );
+			if ( $order ) {
+				$card_type = $order->get_meta( '_paygent_card_type', true );
+			} else {
+				$card_type = $this->jp4wc_framework->get_post( 'card_type' );
+			}
 			// Set && save token to WooCommerce.
 			$token = new WC_Payment_Token_CC();
 			$token->set_default( true );
@@ -1616,6 +1608,15 @@ jQuery(function(){
 		$delete_card_data['trading_id'] = '';
 
 		$delete_card_res = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $delete_card_data, $this->debug );
+		if ( '0' === $delete_card_res['result'] ) {
+			// Set the remaining card as the default.
+			$tokens = WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), $this->id );
+			if ( ! empty( $tokens ) ) {
+				$default_token = reset( $tokens );
+				$default_token->set_default( true );
+				$default_token->save();
+			}
+		}
 		return $delete_card_res;
 	}
 
@@ -1625,16 +1626,38 @@ jQuery(function(){
 	 * @param int $order_id Order ID.
 	 */
 	public function order_paygent_cc_status_completed( $order_id ) {
+		$order                        = wc_get_order( $order_id );
+		$check_paygent_payment_status = $this->paygent_request->paygent_get_payment_status( $order, $this );
+		if ( ! $check_paygent_payment_status ) {
+			return;
+		}
+		if ( '20' !== $check_paygent_payment_status['payment_status'] ) {
+			return;
+		}
 		$telegram_kind = '022';
-		$this->paygent_request->order_paygent_status_completed( $order_id, $telegram_kind, $this );
+		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
+		if ( $prefix_order ) {
+			$send_data['trading_id'] = $prefix_order . $order_id;
+		} else {
+			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+		if ( 1 !== $this->paygent_request->site_id ) {
+			$send_data['site_id'] = $this->paygent_request->site_id;
+		} else {
+			$send_data['site_id'] = 1;
+		}
+		$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+		if ( '0' !== $response_sale['result'] ) {
+			$this->paygent_request->error_response( $response_sale, $order );
+		}
 	}
 
-		/**
-		 * Get the error message by error code
-		 *
-		 * @param  string $error_code Error Code.
-		 * @return  string
-		 */
+	/**
+	 * Get the error message by error code
+	 *
+	 * @param  string $error_code Error Code.
+	 * @return  string
+	 */
 	public function tdsecure_requestor_error_codes( $error_code ) {
 		$error_codes_message = array(
 			'R1001' => __( 'Could not connect to system.', 'woocommerce-for-paygent-payment-main' ),
