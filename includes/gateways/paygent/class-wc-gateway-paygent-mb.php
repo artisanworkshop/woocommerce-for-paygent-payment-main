@@ -158,13 +158,22 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		// Set Carrier type.
 		$this->carrier_types = array();
 		if ( 'yes' === $this->setting_ct_04 ) {
-			$this->carrier_types = array_merge( $this->carrier_types, array( '04' => __( 'au Easy Payment', 'woocommerce-for-paygent-payment-main' ) ) );
+			$this->carrier_types = array_merge(
+				$this->carrier_types,
+				array( '04' => __( 'au Easy Payment', 'woocommerce-for-paygent-payment-main' ) )
+			);
 		}
 		if ( 'yes' === $this->setting_ct_05 ) {
-			$this->carrier_types = array_merge( $this->carrier_types, array( '05' => __( 'Docomo Payment', 'woocommerce-for-paygent-payment-main' ) ) );
+			$this->carrier_types = array_merge(
+				$this->carrier_types,
+				array( '05' => __( 'Docomo Payment', 'woocommerce-for-paygent-payment-main' ) )
+			);
 		}
 		if ( 'yes' === $this->setting_ct_06 ) {
-			$this->carrier_types = array_merge( $this->carrier_types, array( '06' => __( 'SoftBank Matomete Payment(B)', 'woocommerce-for-paygent-payment-main' ) ) );
+			$this->carrier_types = array_merge(
+				$this->carrier_types,
+				array( '06' => __( 'SoftBank Matomete Payment(B)', 'woocommerce-for-paygent-payment-main' ) )
+			);
 		}
 
 		// Actions.
@@ -429,7 +438,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 						$order->add_meta_data( '_open_id_redirect_html', mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 						$order->save_meta_data();
 						$order->save();
-						// translators: Carrier name.
+						// translators: Payment method name.
 						$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':docomo' ) );
 						return array(
 							'result'   => 'success',
@@ -440,7 +449,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 						$order->add_meta_data( '_open_id_redirect_url', wc_clean( $response_user['result_array'][0]['redirect_url'] ), true );
 						$order->save_meta_data();
 						$order->save();
-						// translators: Carrier name.
+						// translators: Payment method name.
 						$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':au' ) );
 						return array(
 							'result'   => 'success',
@@ -469,8 +478,11 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			}
 			$order->save_meta_data();
 			$order->save();
-			// translators: Carrier name.
-			$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':SB' ) );
+			$order->update_status(
+				'pending',
+				// translators: Payment method name.
+				sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':SB' )
+			);
 			// Return thank you redirect.
 			if ( isset( $response['result_array'][0]['redirect_url'] ) ) {
 				return array(

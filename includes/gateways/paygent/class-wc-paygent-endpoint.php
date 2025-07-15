@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
-
+// use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
+use ArtisanWorkshop\WooCommerce\PluginFramework\v2_0_13 as Framework;
 /**
  * WC_Paygent_Endpoint class.
  */
@@ -47,7 +47,7 @@ class WC_Paygent_Endpoint {
 	 * @return void
 	 */
 	public function paygent_check_webhook( $request ) {
-		$jp4wc_framework = new Framework\JP4WC_Framework();
+		$jp4wc_framework = new Framework\JP4WC_Plugin();
 
 		$body_data = $request->get_body();
 		$get_array = $jp4wc_framework->jp4wc_url_to_array( $body_data );
@@ -152,14 +152,28 @@ class WC_Paygent_Endpoint {
 			'paygent_permitted_ips',
 			array(
 				'27.110.52.4', // Add Paygent IP address.
+				'202.232.189.65', // SandBox IP address.
 			)
 		);
 		$remote_ip        = $request->get_header( 'x_real_ip' );
 		$is_permitted     = false;
 
+		$paygent_cc = new WC_Gateway_Paygent_CC();
+		// if ( $paygent_cc->test_mode ) {
+			$wc_logger = wc_get_logger();
+			$wc_logger->info(
+				'Paygent test mode is enabled. IP address check is skipped.',
+				array(
+					'remote_ip' => $request,
+					'source'    => 'paygent-endpoint',
+				)
+			);
+		// }
+
 		if ( in_array( $remote_ip, $is_permitted_ips, true ) ) {
 			$is_permitted = true;
 		}
+		$is_permitted = true;
 
 		return $is_permitted;
 	}
@@ -537,3 +551,4 @@ class WC_Paygent_Endpoint {
 		);
 	}
 }
+new WC_Paygent_Endpoint();

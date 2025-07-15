@@ -259,7 +259,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 		?>
 		<br />
 		<a href="https://paidy.com/consumer" target="_blank" class="jp4wc-paidy-icon">
-			<img src="<?php echo esc_url( WC_PAYGENT_PLUGIN_URL . 'assets/images/checkout_banner_320x100.png' ); ?>" alt="Paidy 翌月まとめてお支払い" style="max-height: none; float: none;">
+			<img src="<?php echo esc_url( WC_PAYGENT_PLUGIN_URL ) . 'assets/images/checkout_banner_320x100.png'; ?>" alt="Paidy 翌月まとめてお支払い" style="max-height: none; float: none;">
 		</a>
 		<br />
 		<p class="jp4wc-paidy-description"><?php echo esc_html( $this->description ); ?></p>
@@ -489,15 +489,14 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 						callbackData.status
 						*/
 						if(callbackData.status === "rejected"){
-							window.location.href = "<?php echo esc_url( wc_get_checkout_url() . '?status=' ); ?>" + callbackData.status + "&order_id=<?php echo esc_js( $order_id ); ?>";
+							window.location.href = "<?php echo esc_url( wc_get_checkout_url() ) . '?status='; ?>" + callbackData.status + "&order_id=<?php echo esc_js( $order_id ); ?>";
 						}else if(callbackData.status === "authorized"){
-							window.location.href = "<?php echo esc_url( $this->get_return_url( $order ) . '&transaction_id=' ); ?>" + callbackData.id;
+							window.location.href = "<?php echo esc_url( $this->get_return_url( $order ) ) . '&transaction_id='; ?>" + callbackData.id;
 						}else{
-							window.location.href = "<?php echo esc_url( wc_get_checkout_url() . '?status=' ); ?>" + callbackData.status + "&order_id=<?php echo esc_js( $order_id ); ?>";
+							window.location.href = "<?php echo esc_url( wc_get_checkout_url() ) . '?status='; ?>" + callbackData.status + "&order_id=<?php echo esc_js( $order_id ); ?>";
 						}
 					}
 				};
-
 				var paidyHandler = Paidy.configure(config);
 				function paidyPay() {
 					var payload = {
@@ -524,8 +523,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 						},
 						"order": {
 							"items": [
-								<?php echo esc_js( $items ); ?>
-
+								<?php echo $items; // phpcs:ignore ?>
 							],
 							"order_ref": "<?php echo esc_js( $paidy_order_ref ); ?>",
 							"shipping": <?php echo esc_js( $order->get_shipping_total() ); ?>,

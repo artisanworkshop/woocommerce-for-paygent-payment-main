@@ -456,13 +456,9 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		} else {
 			echo '<div id="paygent-new-info">';
 		}
-		if ( version_compare( WOOCOMMERCE_VERSION, '2.6.0', '<' ) ) {
-			$this->credit_card_form( array( 'fields_have_names' => true ) );
-		} else {
-			$payment_gateway_cc     = new WC_Payment_Gateway_CC();
-			$payment_gateway_cc->id = $this->id;
-			$payment_gateway_cc->form();
-		}
+		$payment_gateway_cc     = new WC_Payment_Gateway_CC();
+		$payment_gateway_cc->id = $this->id;
+		$payment_gateway_cc->form();
 		if ( '1' === $this->test_mode ) {
 			$merchant_id = get_option( 'wc-paygent-test-mid' );
 			$token_key   = get_option( 'wc-paygent-test-tokenkey' );
@@ -1458,7 +1454,11 @@ jQuery(function(){
 			$card_last4       = substr( $result['result_array'][0]['masked_card_number'], -4 );
 			$expiry_month     = substr( $result['result_array'][0]['card_valid_term'], 0, 2 );
 			$expiry_year      = substr( $result['result_array'][0]['card_valid_term'], -2 );
-			$card_type        = $order->get_meta( '_paygent_card_type', true );
+			if ( $order ) {
+				$card_type = $order->get_meta( '_paygent_card_type', true );
+			} else {
+				$card_type = $this->jp4wc_framework->get_post( 'card_type' );
+			}
 			// Set && save token to WooCommerce.
 			$token = new WC_Payment_Token_CC();
 			$token->set_default( true );
@@ -1608,6 +1608,15 @@ jQuery(function(){
 		$delete_card_data['trading_id'] = '';
 
 		$delete_card_res = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $delete_card_data, $this->debug );
+		if ( '0' === $delete_card_res['result'] ) {
+			// Set the remaining card as the default.
+			$tokens = WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), $this->id );
+			if ( ! empty( $tokens ) ) {
+				$default_token = reset( $tokens );
+				$default_token->set_default( true );
+				$default_token->save();
+			}
+		}
 		return $delete_card_res;
 	}
 
@@ -1622,7 +1631,7 @@ jQuery(function(){
 		if ( ! $check_paygent_payment_status ) {
 			return;
 		}
-		if ( '40' !== $check_paygent_payment_status['status'] ) {
+		if ( '20' !== $check_paygent_payment_status['payment_status'] ) {
 			return;
 		}
 		$telegram_kind = '022';
@@ -1638,7 +1647,7 @@ jQuery(function(){
 			$send_data['site_id'] = 1;
 		}
 		$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
-		if ( 0 !== $response_sale['result'] ) {
+		if ( '0' !== $response_sale['result'] ) {
 			$this->paygent_request->error_response( $response_sale, $order );
 		}
 	}

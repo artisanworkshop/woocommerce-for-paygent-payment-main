@@ -338,7 +338,7 @@ class WC_Gateway_Paygent_Request {
 			} elseif ( '0' === $del_result['result'] ) {
 				$message = __( 'This order has been successfully refunded by Paygent.', 'woocommerce-for-paygent-payment-main' );
 				$order->add_order_note( $message );
-				return new \WP_Error( 'wc_' . $order_id . '_refund_failed', $message );
+				return true;
 			} else {
 				$message = __( 'Failed Refund.', 'woocommerce-for-paygent-payment-main' );
 				$order->add_order_note( $message );
