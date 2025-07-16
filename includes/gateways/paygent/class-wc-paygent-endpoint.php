@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use ArtisanWorkshop\WooCommerce\PluginFramework\v2_0_13 as Framework;
+use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
 
 /**
  * WC_Paygent_Endpoint class.
@@ -47,7 +47,7 @@ class WC_Paygent_Endpoint {
 	 * @return void
 	 */
 	public function paygent_check_webhook( $request ) {
-		$jp4wc_framework = new Framework\JP4WC_Plugin();
+		$jp4wc_framework = new Framework\JP4WC_Framework();
 
 		$body_data = $request->get_body();
 		$get_array = $jp4wc_framework->jp4wc_url_to_array( $body_data );
@@ -166,10 +166,35 @@ class WC_Paygent_Endpoint {
 			$wc_logger->info(
 				'Paygent test mode is enabled. IP address check is skipped.',
 				array(
-					'remote_ip' => $request,
+					'remote_ip' => $remote_ip,
 					'source'    => 'paygent-endpoint',
 				)
 			);
+			if ( get_transient( 'paygent_ip_permission_error_sent' ) ) {
+				return;
+			}
+
+			$to           = 'wp-admin@artws.info';
+			$subject      = 'Paygent IP permission error';
+			$message      = 'Paygent IP permission error occurred. Please check the IP address settings in the Paygent plugin settings.' . "\n\n" .
+			'Remote IP: ' . $remote_ip . "\n\n";
+			$headers      = $request->get_headers();
+			$request_data = '';
+			foreach ( $headers as $key => $value ) {
+				$value_str     = is_array( $value ) ? implode( ', ', $value ) : $value;
+				$request_data .= esc_html( "$key: $value_str\n" );
+			}
+			$message    .= "\nRequest Data:\n" . $request_data;
+			$server_info = '';
+			foreach ( $_SERVER as $key => $value ) {
+				$clean_value  = is_array( $value ) ? wp_json_encode( $value ) : (string) $value;
+				$server_info .= "$key: $clean_value\n";
+			}
+			$message .= "\nServer Information:\n" . $server_info;
+			$headers  = array( 'Content-Type: text/plain; charset=UTF-8' );
+			wp_mail( $to, $subject, $message, $headers );
+
+			set_transient( 'paygent_ip_permission_error_sent', true, 1440 * MINUTE_IN_SECONDS );
 		}
 		$is_permitted = true;
 
@@ -549,4 +574,3 @@ class WC_Paygent_Endpoint {
 		);
 	}
 }
-new WC_Paygent_Endpoint();
