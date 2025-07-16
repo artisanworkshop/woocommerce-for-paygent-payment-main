@@ -48,6 +48,7 @@ A: We support with paid support. <a herf="https://wc.artws.info/product/payment-
 = 2.4.0 - 2025-07-16 =
 * Fixed - Compliant with WordPress PHP coding standards.
 * Fixed - Registering a credit card when there is no purchase history.
+* Fixed - Endpoint bug fixed.
 * Dev - Preparation for checkout & cart block support for the upcoming major version (3.0).
 
 == Upgrade Notice ==
