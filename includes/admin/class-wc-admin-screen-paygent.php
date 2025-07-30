@@ -4,7 +4,7 @@
  *
  * Admin Page control
  *
- * @version 2.2.0
+ * @version 2.4.1
  * @package Paygeng_For_WooCommerce
  * @author  ArtisanWorkshop
  */
@@ -454,7 +454,7 @@ class WC_Admin_Screen_Paygent {
 			// Client Cert File upload.
 			if ( isset( $_FILES['clientc_file'] ) ) {
 				if ( isset( $_FILES['clientc_file']['name'] ) && substr( sanitize_file_name( $_FILES['clientc_file']['name'] ), strrpos( sanitize_file_name( $_FILES['clientc_file']['name'] ), '.' ) + 1 ) === 'pem' ) {
-					if ( isset( $_FILES['clientc_file']['tmp_name'] ) && move_uploaded_file( sanitize_file_name( $_FILES['clientc_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem' ) ) {
+					if ( isset( $_FILES['clientc_file']['tmp_name'] ) && move_uploaded_file( sanitize_text_field( $_FILES['clientc_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem' ) ) {
 						$wp_filesystem->chmod( WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem', 0644 );
 					} else {
 						$this->jp4wc_plugin->add_error( __( 'Client Cert File have not been uploaded.', 'woocommerce-for-paygent-payment-main' ), $this );
@@ -467,7 +467,7 @@ class WC_Admin_Screen_Paygent {
 			// CA Cert File upload.
 			if ( isset( $_FILES['cac_file'] ) ) {
 				if ( isset( $_FILES['cac_file']['name'] ) && substr( sanitize_file_name( $_FILES['cac_file']['name'] ), strrpos( sanitize_file_name( $_FILES['cac_file']['name'] ), '.' ) + 1 ) === 'crt' ) {
-					if ( isset( $_FILES['cac_file']['tmp_name'] ) && move_uploaded_file( sanitize_file_name( $_FILES['cac_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt' ) ) {
+					if ( isset( $_FILES['cac_file']['tmp_name'] ) && move_uploaded_file( sanitize_text_field( $_FILES['cac_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt' ) ) {
 						$wp_filesystem->chmod( WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt', 0644 );
 					} else {
 						$this->jp4wc_plugin->add_error( __( 'CA Cert File have not been uploaded.', 'woocommerce-for-paygent-payment-main' ), $this );
