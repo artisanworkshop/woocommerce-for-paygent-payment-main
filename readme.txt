@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=info@art
 Tags: woocommerce, payment Gateway, japan
 Requires at least: 5.0
 Tested up to: 6.8.2
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -44,6 +44,9 @@ A: We support with paid support. <a herf="https://wc.artws.info/product/payment-
 5. Convenience Store Payment setting
 
 == Changelog ==
+
+= 2.4.1 - 2025-07-30 =
+* Fixed - Update crt file and pem file bugs.
 
 = 2.4.0 - 2025-07-16 =
 * Fixed - Compliant with WordPress PHP coding standards.
