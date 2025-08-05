@@ -5,7 +5,7 @@
  * Provides integration between WooCommerce and Paygent's Credit Card payment processing service.
  * This class handles all credit card payment operations including authorization, capture, and refund.
  *
- * @version 2.4.0
+ * @version 2.4.2
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author ArtisanWorkshop
@@ -1104,22 +1104,15 @@ jQuery(function(){
 							$order->add_order_note( __( 'Failed to store card information.', 'woocommerce-for-paygent-payment-main' ) );
 						}
 					}
+				}
 
-					$result = $this->paygent_tds_proceed_payment( $order );
-					if ( '0' === $result ) {
-						wp_safe_redirect( $this->get_return_url( $order ) );
-						exit;
-					} else {
-						wc_increase_stock_levels( $order_id );
-						$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) );
-						wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
-						wp_safe_redirect( wc_get_checkout_url() );
-						exit;
-					}
+				$result = $this->paygent_tds_proceed_payment( $order );
+				if ( '0' === $result ) {
+					wp_safe_redirect( $this->get_return_url( $order ) );
+					exit;
 				} else {
 					wc_increase_stock_levels( $order_id );
-					$error_message = __( 'The response from the payment company was strange.', 'woocommerce-for-paygent-payment-main' );
-					$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' )  );// phpcs:ignore
+					$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) );
 					wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 					wp_safe_redirect( wc_get_checkout_url() );
 					exit;
@@ -1136,7 +1129,10 @@ jQuery(function(){
 			$after  = array( '<!--<html>', '<body onload="OnLoadEvent();">-->', '', '' );
 			$html   = str_replace( $before, $after, $html );
 			echo $html;// phpcs:ignore
-			echo '<script type="text/javascript">' . esc_js( 'function send_form_submit() { document.submitForm.submit(); }window.onload = send_form_submit;' ) . '</script>';
+			echo '<script type="text/javascript">'
+			. esc_js( 'function send_form_submit() { if ( document.submitForm ) { document.submitForm.submit(); } }' )
+			. "window.addEventListener('load', send_form_submit);"
+			. '</script>';
 		}
 	}
 
