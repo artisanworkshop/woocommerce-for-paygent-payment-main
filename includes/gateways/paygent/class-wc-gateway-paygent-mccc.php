@@ -736,7 +736,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 	 *
 	 * @param int $order_id Order ID.
 	 */
-	public function order_paygent_cc_status_completed( $order_id ) {
+	public function order_paygent_mccc_status_completed( $order_id ) {
 		$order                        = wc_get_order( $order_id );
 		$check_paygent_payment_status = $this->paygent_request->paygent_get_payment_status( $order, $this );
 		if ( ! $check_paygent_payment_status ) {
