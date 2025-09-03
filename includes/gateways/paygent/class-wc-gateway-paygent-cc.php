@@ -985,19 +985,23 @@ jQuery(function(){
 	 * @param object $order WC_Order.
 	 * @param string $paymentaction Payment action (sale or authorization).
 	 * @param string $store_card_info Whether to store card info.
+	 * @param string $telegram_kind Telegram kind setting.
 	 * @param string $test_mode Test mode setting.
 	 * @param string $debug Debug mode setting.
+	 * @param string $currency_code Currency code.
 	 * @return mixed int or bool
 	 */
-	public function paygent_tds_proceed_payment( $order, $paymentaction, $store_card_info, $test_mode, $debug ) {
-		$telegram_kind = '020';
-		$order_id      = $order->get_id();
-		$order         = wc_get_order( $order_id );
-		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
+	public function paygent_tds_proceed_payment( $order, $paymentaction, $store_card_info, $telegram_kind, $test_mode, $debug, $currency_code = 'JPY' ) {
+		$order_id     = $order->get_id();
+		$order        = wc_get_order( $order_id );
+		$prefix_order = get_option( 'wc-paygent-prefix_order' );
 		if ( $prefix_order ) {
 			$send_data['trading_id'] = $prefix_order . $order_id;
 		} else {
 			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+		if ( 'JPY' !== $currency_code ) {
+			$send_data['currency_code'] = $currency_code;
 		}
 		unset( $send_data['card_token'] );
 		$send_data['payment_id']        = '';
@@ -1112,7 +1116,7 @@ jQuery(function(){
 					}
 				}
 
-				$result = $this->paygent_tds_proceed_payment( $order, $this->paymentaction, $this->store_card_info, $this->test_mode, $this->debug );
+				$result = $this->paygent_tds_proceed_payment( $order, $this->paymentaction, $this->store_card_info, '020', $this->test_mode, $this->debug );
 				if ( '0' === $result ) {
 					wp_safe_redirect( $this->get_return_url( $order ) );
 					exit;
@@ -1619,6 +1623,9 @@ jQuery(function(){
 			return;
 		}
 		if ( '20' !== $check_paygent_payment_status['payment_status'] ) {
+			return;
+		}
+		if ( $order->get_payment_method() !== $this->id ) {
 			return;
 		}
 		$telegram_kind = '022';

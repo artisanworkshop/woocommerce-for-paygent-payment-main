@@ -368,6 +368,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 		// Get Currency infomation.
 		$currency                   = get_woocommerce_currency();
 		$send_data['currency_code'] = $currency;
+		$order->add_meta_data( '_paygent_currency_code', $currency );
 
 		$send_data['term_url'] = $this->get_return_url( $order );
 
@@ -408,7 +409,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 			$order->payment_complete( wc_clean( $response['result_array'][0]['payment_id'] ) );
 
 			if ( 'sale' === $this->paymentaction && isset( $this->paymentaction ) ) {
-				$telegram_kind = '022';
+				$telegram_kind = '182';
 				$response_sale = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 				if ( '0' !== $response_sale['result'] ) {
 					$this->paygent_request->error_response( $response_sale, $order );
@@ -465,7 +466,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 
 			// Sale payment action.
 			if ( isset( $this->paymentaction ) && 'sale' === $this->paymentaction ) {
-				$telegram_kind           = '022';
+				$telegram_kind           = '182';
 				$send_data['trading_id'] = $tradind_id;
 				if ( '1' !== $this->paygent_request->site_id ) {
 					$send_data['site_id'] = $this->paygent_request->site_id;
@@ -565,8 +566,8 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 						}
 					}
 				}
-
-				$result = $this->paygent_cc->paygent_tds_proceed_payment( $order, $this->paymentaction, $this->store_card_info, $this->test_mode, $this->debug );
+				$currency = $order->get_meta( '_paygent_currency_code' );
+				$result   = $this->paygent_cc->paygent_tds_proceed_payment( $order, $this->paymentaction, $this->store_card_info, '180', $this->test_mode, $this->debug, $currency );
 				if ( '0' === $result ) {
 					wp_safe_redirect( $this->get_return_url( $order ) );
 					exit;
@@ -719,9 +720,9 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 		$permit_statuses  = array(
 			0 => array(
 				'auth_cancel' => array( '20' ),
-				'sale_cancel' => array( '40' ),
+				'sale_cancel' => array( '35', '40' ),
 				'auth_change' => array( '20' ),
-				'sale_change' => array( '40' ),
+				'sale_change' => array( '35', '40' ),
 			),
 		);
 		$send_data_refund = array(
@@ -745,7 +746,10 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 		if ( '20' !== $check_paygent_payment_status['payment_status'] ) {
 			return;
 		}
-		$telegram_kind = '022';
+		if ( $order->get_payment_method() !== $this->id ) {
+			return;
+		}
+		$telegram_kind = '182';
 		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
 		if ( $prefix_order ) {
 			$send_data['trading_id'] = $prefix_order . $order_id;
