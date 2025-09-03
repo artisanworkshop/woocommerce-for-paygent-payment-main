@@ -246,7 +246,33 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				if ( get_option( 'wc-paygent-atm' ) ) {
 					unset( $methods['paygent_atm'] );
 				}
-				if ( get_option( 'wc-paygent-mccc' ) ) {
+			} elseif ( get_option( 'wc-paygent-mccc' ) ) {
+				$available_currencies = array(
+					'USD',
+					'EUR',
+					'GBP',
+					'KRW',
+					'CNY',
+					'TWD',
+					'HKD',
+					'SGD',
+					'AUD',
+					'CAD',
+					'DKK',
+					'INR',
+					'MYR',
+					'NOK',
+					'PHP',
+					'RUB',
+					'VND',
+					'SEK',
+					'CHF',
+					'THB',
+					'BRL',
+					'IDR',
+					'AED',
+				);
+				if ( ! in_array( $currency, $available_currencies, true ) ) {
 					unset( $methods['paygent_mccc'] );
 				}
 			}
@@ -303,6 +329,10 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			// ATM Payment.
 			if ( get_option( 'wc-paygent-atm', false ) ) {
 				$methods[] = 'WC_Gateway_Paygent_ATM';
+			}
+			// Multi-currency credit card payments.
+			if ( get_option( 'wc-paygent-mccc', false ) ) {
+				$methods[] = 'WC_Gateway_Paygent_MCCC';
 			}
 			return $methods;
 		}

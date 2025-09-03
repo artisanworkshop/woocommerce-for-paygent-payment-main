@@ -445,7 +445,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 			<?php
 			$tokens = WC_Payment_Tokens::get_customer_tokens( $user_id, $this->id );
 			if ( 'yes' === $this->store_card_info ) {
-				$this->display_stored_user_data( $tokens );
+				$this->display_stored_user_data( $tokens, $this->id );
 			}
 			?>
 			<?php
@@ -469,7 +469,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		if ( 'yes' === $this->tds2_check ) {
 			self::input_cardholder_name();
 		}
-		$this->paygent_token_js( $merchant_id, $token_key, $tokens );
+		$this->paygent_token_js( $merchant_id, $token_key, $tokens, $this->id );
 
 		echo '</div>';
 		if ( $this->payment_method ) {
@@ -515,34 +515,35 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	 * @param string $merchant_id Merchant ID.
 	 * @param string $token_key Token Key.
 	 * @param object $tokens Tokens.
+	 * @param string $id Payment Gateway ID.
 	 * @return void
 	 */
-	public function paygent_token_js( $merchant_id, $token_key, $tokens ) {
+	public function paygent_token_js( $merchant_id, $token_key, $tokens, $id ) {
 		echo '
-            <input type="hidden" name="paygent_cc-token" id="paygent_cc-token" value="" />
-            <input type="hidden" name="paygent_cc-valid_until" id="paygent_cc-valid_until" value="" />
-            <input type="hidden" name="paygent_cc-masked_card_number" id="paygent_cc-masked_card_number" value="" />
-            <input type="hidden" name="paygent_cc-cvc_token" id="paygent_cc-cvc_token" value="" />
+            <input type="hidden" name="' . esc_attr( $id ) . '-token" id="' . esc_attr( $id ) . '-token" value="" />
+            <input type="hidden" name="' . esc_attr( $id ) . '-valid_until" id="' . esc_attr( $id ) . '-valid_until" value="" />
+            <input type="hidden" name="' . esc_attr( $id ) . '-masked_card_number" id="' . esc_attr( $id ) . '-masked_card_number" value="" />
+            <input type="hidden" name="' . esc_attr( $id ) . '-cvc_token" id="' . esc_attr( $id ) . '-cvc_token" value="" />
             <input type="hidden" name="card_type" id="card_type" value="" />';
 		echo '
             <script type="text/javascript">';
 		if ( is_user_logged_in() && 'yes' === $this->store_card_info && ! empty( $tokens ) ) {// Set stored card.
 			echo "
-			document.getElementById('paygent_cc-stored-card-cvc').addEventListener('input', sendPaygentToken);";
+			document.getElementById('" . esc_attr( $id ) . "-stored-card-cvc').addEventListener('input', sendPaygentToken);";
 		}
 		echo '
-            document.getElementById("paygent_cc-card-cvc").addEventListener("input", sendPaygentToken);
-            document.getElementById("paygent_cc-card-number").addEventListener("input", sendPaygentToken);
-            document.getElementById("paygent_cc-card-expiry").addEventListener("input", sendPaygentToken);
+            document.getElementById("' . esc_attr( $id ) . '-card-cvc").addEventListener("input", sendPaygentToken);
+            document.getElementById("' . esc_attr( $id ) . '-card-number").addEventListener("input", sendPaygentToken);
+            document.getElementById("' . esc_attr( $id ) . '-card-expiry").addEventListener("input", sendPaygentToken);
             // Definition of the send function. Processing when pressing send button of card information entry form.
             function sendPaygentToken() {
-                var paygent_card_number = document.getElementById("paygent_cc-card-number").value;
+                var paygent_card_number = document.getElementById("' . esc_attr( $id ) . '-card-number").value;
                 paygent_card_number = paygent_card_number.replace(/ /g, "");
-                var paygent_cvc = document.getElementById("paygent_cc-card-cvc").value;
+                var paygent_cvc = document.getElementById("' . esc_attr( $id ) . '-card-cvc").value;
 		';
 		if ( is_user_logged_in() && 'yes' === $this->store_card_info && ! empty( $tokens ) ) {// Set CVC.
 			echo "
-			var paygent_stored_cvc = document.getElementById('paygent_cc-stored-card-cvc').value;
+			var paygent_stored_cvc = document.getElementById('" . esc_attr( $id ) . "-stored-card-cvc').value;
 			if(paygent_cvc.length < 3 && paygent_stored_cvc.length < 3){
 				return false;
 			}else if(paygent_stored_cvc.length == 0){
@@ -553,7 +554,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 			var paygent_stored_cvc = paygent_cvc;';
 		}
 		echo "
-			var exp_my = document.getElementById('paygent_cc-card-expiry').value ;
+			var exp_my = document.getElementById('" . esc_attr( $id ) . "-card-expiry').value ;
 			exp_my = exp_my.replace(/ /g, '');
 			exp_my = exp_my.replace('/', '');
 			var paygent_exp_m = exp_my.substr(0,2);
@@ -584,18 +585,18 @@ function execPurchase(response) {
 	//	var form = document.forms.checkout;
 	if (response.result == '0000') { //When the result of the token processing is normal.
 		// Delete input information from card information entry form. (Do not send input card information.)
-        let paygent_card_number = document.getElementById('paygent_cc-card-number').value;
+        let paygent_card_number = document.getElementById('" . esc_attr( $id ) . "-card-number').value;
         paygent_card_number = paygent_card_number.replace(/ /g, '');
-        let token = document.getElementById('paygent_cc-token').value;
+        let token = document.getElementById('" . esc_attr( $id ) . "-token').value;
         const place_order = jQuery('#place_order');
-        document.getElementById('paygent_cc-card-number').removeAttribute('name');
-        document.getElementById('paygent_cc-card-expiry').removeAttribute('name');
-        document.getElementById('paygent_cc-card-cvc').removeAttribute('name');
+        document.getElementById('" . esc_attr( $id ) . "-card-number').removeAttribute('name');
+        document.getElementById('" . esc_attr( $id ) . "-card-expiry').removeAttribute('name');
+        document.getElementById('" . esc_attr( $id ) . "-card-cvc').removeAttribute('name');
         //form.name.removeAttribute(\'name\');
         // Set token that was responded from createToken () to the hidden item token which we made in advance.
-        document.getElementById('paygent_cc-token').value = response.tokenizedCardObject.token;
-        document.getElementById('paygent_cc-masked_card_number').value = response.tokenizedCardObject.masked_card_number;
-        document.getElementById('paygent_cc-valid_until').value = response.tokenizedCardObject.valid_until;
+        document.getElementById('" . esc_attr( $id ) . "-token').value = response.tokenizedCardObject.token;
+        document.getElementById('" . esc_attr( $id ) . "-masked_card_number').value = response.tokenizedCardObject.masked_card_number;
+        document.getElementById('" . esc_attr( $id ) . "-valid_until').value = response.tokenizedCardObject.valid_until;
         if(token != ''){
             place_order.prop('disabled', false);
         }
@@ -619,9 +620,9 @@ function execPurchase(response) {
 // Definition of callback function. Processing after token acquisition
 function execCVCToken(response) {
 	if (response.result == '0000') { //When the result of the token processing is normal.
-		var token = document.getElementById('paygent_cc-cvc_token').value;
+		var token = document.getElementById('" . esc_attr( $id ) . "-cvc_token').value;
 		// Set token that was responded from createToken () to the hidden item token which we made in advance.
-		document.getElementById('paygent_cc-cvc_token').value = response.tokenizedCardObject.token;
+		document.getElementById('" . esc_attr( $id ) . "-cvc_token').value = response.tokenizedCardObject.token;
 		if(token != ''){
 			jQuery('#place_order').prop('disabled', false);
 		}
@@ -630,21 +631,21 @@ function execCVCToken(response) {
 
 jQuery(function(){
 	jQuery('#place_order').focus(function (){
-		jQuery('#paygent_cc-card-number').prop('disabled', true);
-		jQuery('#paygent_cc-card-expiry').prop('disabled', true);
-		jQuery('#paygent_cc-card-cvc').prop('disabled', true);
+		jQuery('#" . esc_attr( $id ) . "-card-number').prop('disabled', true);
+		jQuery('#" . esc_attr( $id ) . "-card-expiry').prop('disabled', true);
+		jQuery('#" . esc_attr( $id ) . "-card-cvc').prop('disabled', true);
 	});
 	jQuery('#place_order').blur(function (){
-		jQuery('#paygent_cc-card-number').prop('disabled', false);
-		jQuery('#paygent_cc-card-expiry').prop('disabled', false);
-		jQuery('#paygent_cc-card-cvc').prop('disabled', false);
+		jQuery('#" . esc_attr( $id ) . "-card-number').prop('disabled', false);
+		jQuery('#" . esc_attr( $id ) . "-card-expiry').prop('disabled', false);
+		jQuery('#" . esc_attr( $id ) . "-card-cvc').prop('disabled', false);
 	});
 	jQuery(\"input[name='paygent-use-stored-payment-info']:radio\").change( function(){
-		jQuery('#paygent_cc-card-number').val('');
-		jQuery('#paygent_cc-card-expiry').val('');
-		jQuery('#paygent_cc-card-cvc').val('');
-		jQuery('#paygent_cc-stored-card-cvc').val('');
-		jQuery('#paygent_cc-token').val('');
+		jQuery('#" . esc_attr( $id ) . "-card-number').val('');
+		jQuery('#" . esc_attr( $id ) . "-card-expiry').val('');
+		jQuery('#" . esc_attr( $id ) . "-card-cvc').val('');
+		jQuery('#" . esc_attr( $id ) . "-stored-card-cvc').val('');
+		jQuery('#" . esc_attr( $id ) . "-token').val('');
 	});
 });
 </script>
@@ -708,7 +709,7 @@ jQuery(function(){
 			if ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' ) {
 				$send_data['customer_card_id'] = $this->jp4wc_framework->get_post( 'stored-info' );
 			} else {
-				$stored_user_card_data         = $this->add_stored_user_data( $card_user_id, $card_token, $order );
+				$stored_user_card_data         = $this->add_stored_user_data( $card_user_id, $card_token, $this->test_mode, $this->debug, $order );
 				$send_data['customer_card_id'] = $stored_user_card_data['result_array'][0]['customer_card_id'];
 			}
 			$order->add_meta_data( '_paygent_customer_card_id', $send_data['customer_card_id'] );
@@ -731,7 +732,7 @@ jQuery(function(){
 		// 3D Secure 2.0 Setting.
 		if ( 'yes' === $this->tds2_check ) {
 			$telegram_kind = '450';// 3D Secure 2.0 Challenge Flow.
-			$send_data     = $this->set_send_data_for_tds2( $send_data, $order );
+			$send_data     = $this->set_send_data_for_tds2( $send_data, $this->merchant_name, $order );
 		}
 		$response = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
@@ -858,16 +859,17 @@ jQuery(function(){
 	 * Add payer information for 3D Secure 2.0.
 	 *
 	 * @param array  $send_data Send Data.
+	 * @param string $merchant_name Merchant Name.
 	 * @param object $order WC_Order.
 	 *
 	 * @return array $send_data
 	 */
-	public function set_send_data_for_tds2( $send_data, $order ) {
+	public function set_send_data_for_tds2( $send_data, $merchant_name, $order ) {
 		unset( $send_data['3dsecure_ryaku'] );
 		$send_data['http_accept']         = isset( $_SERVER['HTTP_ACCEPT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) : '';
 		$send_data['http_user_agent']     = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		$send_data['term_url']            = $order->get_checkout_payment_url( true );
-		$send_data['merchant_name']       = $this->merchant_name;
+		$send_data['merchant_name']       = $merchant_name;
 		$send_data['authentication_type'] = '01';
 		// Specify card information.
 		if ( isset( $send_data['customer_card_id'] ) ) {
@@ -978,20 +980,28 @@ jQuery(function(){
 	}
 
 	/**
-	 * Undocumented function
+	 * Process 3D Secure payment after authentication
 	 *
 	 * @param object $order WC_Order.
+	 * @param string $paymentaction Payment action (sale or authorization).
+	 * @param string $store_card_info Whether to store card info.
+	 * @param string $telegram_kind Telegram kind setting.
+	 * @param string $test_mode Test mode setting.
+	 * @param string $debug Debug mode setting.
+	 * @param string $currency_code Currency code.
 	 * @return mixed int or bool
 	 */
-	public function paygent_tds_proceed_payment( $order ) {
-		$telegram_kind = '020';
-		$order_id      = $order->get_id();
-		$order         = wc_get_order( $order_id );
-		$prefix_order  = get_option( 'wc-paygent-prefix_order' );
+	public function paygent_tds_proceed_payment( $order, $paymentaction, $store_card_info, $telegram_kind, $test_mode, $debug, $currency_code = 'JPY' ) {
+		$order_id     = $order->get_id();
+		$order        = wc_get_order( $order_id );
+		$prefix_order = get_option( 'wc-paygent-prefix_order' );
 		if ( $prefix_order ) {
 			$send_data['trading_id'] = $prefix_order . $order_id;
 		} else {
 			$send_data['trading_id'] = 'wc_' . $order_id;
+		}
+		if ( 'JPY' !== $currency_code ) {
+			$send_data['currency_code'] = $currency_code;
 		}
 		unset( $send_data['card_token'] );
 		$send_data['payment_id']        = '';
@@ -1002,7 +1012,7 @@ jQuery(function(){
 		if ( $payment_class ) {
 			$send_data['payment_class'] = $payment_class;
 		}
-		if ( 'sale' === $this->paymentaction && isset( $this->paymentaction ) ) {
+		if ( 'sale' === $paymentaction && isset( $paymentaction ) ) {
 			$send_data['sales_mode'] = 1;
 		}
 		$split_count = $order->get_meta( '_split_count' );
@@ -1013,7 +1023,7 @@ jQuery(function(){
 		$card_cvc_token   = $order->get_meta( '_paygent_card_cvc_token' );
 		$customer_card_id = $order->get_meta( '_paygent_customer_card_id' );
 		$set_login        = false;
-		if ( $customer_card_id && 'yes' === $this->store_card_info ) {
+		if ( $customer_card_id && 'yes' === $store_card_info ) {
 			$set_login                     = true;
 			$send_data['customer_card_id'] = $customer_card_id;
 		}
@@ -1021,7 +1031,7 @@ jQuery(function(){
 		$send_data    = $this->set_stored_card( $card_user_id, $card_token, $card_cvc_token, $send_data, $set_login );
 
 		$send_data['payment_amount'] = $order->get_total();
-		$proceed_response            = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+		$proceed_response            = $this->paygent_request->send_paygent_request( $test_mode, $order, $telegram_kind, $send_data, $debug );
 		if ( isset( $proceed_response['result'] ) && $proceed_response['result_array'] ) {
 			if ( '0' === $proceed_response['result'] ) {
 				// set transaction id for Paygent Order Number.
@@ -1044,7 +1054,7 @@ jQuery(function(){
 	 */
 	public function paygent_tds_add_stored_card( $user_id, $card_token, $order ) {
 		$card_user_id = 'wc' . $user_id;
-		$result       = $this->add_stored_user_data( $card_user_id, $card_token, $order );
+		$result       = $this->add_stored_user_data( $card_user_id, $card_token, $this->test_mode, $this->debug, $order );
 		return $result;
 	}
 
@@ -1106,7 +1116,7 @@ jQuery(function(){
 					}
 				}
 
-				$result = $this->paygent_tds_proceed_payment( $order );
+				$result = $this->paygent_tds_proceed_payment( $order, $this->paymentaction, $this->store_card_info, '020', $this->test_mode, $this->debug );
 				if ( '0' === $result ) {
 					wp_safe_redirect( $this->get_return_url( $order ) );
 					exit;
@@ -1266,7 +1276,7 @@ jQuery(function(){
 			$order      = null;
 			$card_token = $this->jp4wc_framework->get_post( 'paygent_cc-token' );
 
-			$result = $this->add_stored_user_data( $user_id, $card_token, $order );
+			$result = $this->add_stored_user_data( $user_id, $card_token, $this->test_mode, $this->debug, $order );
 			if ( $result ) {
 				return array(
 					'result'   => 'success',
@@ -1281,11 +1291,11 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Get 3D Secure 2.0 Payment Status && update Woo Order Status
-		 *
-		 * @param  int $order_id Order ID.
-		 */
+	/**
+	 * Get 3D Secure 2.0 Payment Status && update Woo Order Status
+	 *
+	 * @param  int $order_id Order ID.
+	 */
 	public function tds2_status_change( $order_id ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_payment_method() === $this->id && isset( $_GET['3ds_auth_id'] ) ) {// phpcs:ignore
@@ -1307,11 +1317,11 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Get 3D Secure Payment Status && update Woo Order Status
-		 *
-		 * @param  int $order_id Order ID.
-		 */
+	/**
+	 * Get 3D Secure Payment Status && update Woo Order Status
+	 *
+	 * @param  int $order_id Order ID.
+	 */
 	public function tds_status_change( $order_id ) {
 		$order            = wc_get_order( $order_id );
 		$payment_method   = $order->get_payment_method();
@@ -1366,8 +1376,9 @@ jQuery(function(){
 	 * Display payment method in Payment page when user have stored card data
 	 *
 	 * @param  array $tokens Token data.
+	 * @param  int   $id     User ID.
 	 */
-	public function display_stored_user_data( $tokens ) {
+	public function display_stored_user_data( $tokens, $id ) {
 		foreach ( $tokens as $key => $value ) {
 			foreach ( $value->get_meta_data() as $data_key => $data_value ) {
 				$main_key = 'key';
@@ -1392,8 +1403,8 @@ jQuery(function(){
 			<?php } ?>
 		</select>
 		<p class="form-row form-row-first woocommerce-validated">
-			<label for="paygent_cc-stored-card-cvc"><?php echo esc_html__( 'Card code', 'woocommerce' ); ?><span class="required">*</span></label>
-			<input id="paygent_cc-stored-card-cvc" class="input-text wc-credit-card-form-card-cvc" inputmode="numeric" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel" maxlength="4" placeholder="CVC" name="paygent_cc-stored-card-cvc" style="width:100px">
+			<label for="<?php echo esc_attr( $id ); ?>-stored-card-cvc"><?php echo esc_html__( 'Card code', 'woocommerce' ); ?><span class="required">*</span></label>
+			<input id="<?php echo esc_attr( $id ); ?>-stored-card-cvc" class="input-text wc-credit-card-form-card-cvc" inputmode="numeric" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel" maxlength="4" placeholder="CVC" name="<?php echo esc_attr( $id ); ?>-stored-card-cvc" style="width:100px">
 		</p>
 		</fieldset>
 		<fieldset>
@@ -1412,10 +1423,12 @@ jQuery(function(){
 	 *
 	 * @param string $user_id      User ID.
 	 * @param string $card_token   Card Token.
+	 * @param bool   $test_mode    Test mode.
+	 * @param bool   $debug        Debug mode.
 	 * @param object $order WC_Order.
 	 * @return mixed
 	 */
-	public function add_stored_user_data( $user_id, $card_token, $order = null ) {
+	public function add_stored_user_data( $user_id, $card_token, $test_mode, $debug, $order = null ) {
 		$telegram_kind = '025';
 		$send_data     = array(
 			'trading_id'      => '',
@@ -1434,7 +1447,7 @@ jQuery(function(){
 			wc_add_notice( __( 'Input information of the credit card is not enough.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 			return false;
 		}
-		$result = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+		$result = $this->paygent_request->send_paygent_request( $test_mode, $order, $telegram_kind, $send_data, $debug );
 		if ( '1' === $result['result'] ) {
 			if ( ! is_null( $order ) ) {
 				$order->add_order_note( __( 'Card information input error. Fault to stored your card info.', 'woocommerce-for-paygent-payment-main' ) . $result['responseCode'] . ':' . mb_convert_encoding( $result['responseDetail'], 'UTF-8', 'SJIS' ) );
@@ -1570,24 +1583,6 @@ jQuery(function(){
 		}
 	}
 
-		/**
-		 * Read Paygent Token javascript
-		 *
-		 * @param  string $html Default html.
-		 */
-	public function paygent_token_order_button_html( $html ) {
-		$currency = get_woocommerce_currency();
-		if ( 'JPY' === $currency ) {
-			$html .= '
-            <input type="hidden" name="paygent_cc-token" id="paygent_cc-token" value="" />
-            <input type="hidden" name="paygent_cc-valid_until" id="paygent_cc-valid_until" value="" />
-            <input type="hidden" name="paygent_cc-masked_card_number" id="paygent_cc-masked_card_number" value="" />
-            <input type="hidden" name="paygent_cc-cvc_token" id="paygent_cc-cvc_token" value="" />
-            <input type="hidden" name="card_type" id="card_type" value="" />';
-		}
-		return $html;
-	}
-
 	/**
 	 * Read Paygent Token javascript
 	 *
@@ -1628,6 +1623,9 @@ jQuery(function(){
 			return;
 		}
 		if ( '20' !== $check_paygent_payment_status['payment_status'] ) {
+			return;
+		}
+		if ( $order->get_payment_method() !== $this->id ) {
 			return;
 		}
 		$telegram_kind = '022';
