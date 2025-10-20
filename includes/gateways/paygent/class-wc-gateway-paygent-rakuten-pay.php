@@ -32,6 +32,13 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 	public $jp4wc_framework;
 
 	/**
+	 * Button type for Rakuten Pay
+	 *
+	 * @var string
+	 */
+	public $button_type;
+
+	/**
 	 * Debug mode
 	 *
 	 * @var string
@@ -44,6 +51,13 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 	 * @var string
 	 */
 	public $test_mode;
+
+	/**
+	 * Environment mode
+	 *
+	 * @var string
+	 */
+	public $environment;
 
 	/**
 	 * Set paygent request class

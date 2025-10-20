@@ -47,6 +47,13 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	public $test_mode;
 
 	/**
+	 * 3D secure Check (for backward compatibility)
+	 *
+	 * @var string
+	 */
+	public $tds_check;
+
+	/**
 	 * 3D secure 2.0 Check
 	 *
 	 * @var string

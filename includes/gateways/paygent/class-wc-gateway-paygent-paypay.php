@@ -53,6 +53,13 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 	public $paygent_request;
 
 	/**
+	 * Environment
+	 *
+	 * @var string
+	 */
+	public $environment;
+
+	/**
 	 * Constructor for the gateway.
 	 *
 	 * @access public

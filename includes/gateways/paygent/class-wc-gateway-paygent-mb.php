@@ -936,11 +936,24 @@ window.onload = send_form_submit;
 	/**
 	 * Display payment information on the management screen
 	 *
-	 * @param string $screen_id Screen ID.
-	 * @param object $order WC_Order object.
+	 * @param string $post_type Post type.
+	 * @param object $post WP_Post object.
 	 * @return void
 	 */
-	public function paygent_mb_add_meta_box( $screen_id, $order ) {
+	public function paygent_mb_add_meta_box( $post_type, $post ) {
+		// Check post.
+		if ( ! $post ) {
+			return;
+		}
+		// Check post type.
+		if ( ! $post->ID || ( 'shop_order' !== $post->post_type && 'shop_subscription' !== $post->post_type ) ) {
+			return;
+		}
+		$order = wc_get_order( $post->ID );
+		if ( $order->get_payment_method() !== $this->id ) {
+			return;
+		}
+		// Add meta boxes.
 		add_meta_box(
 			'paygent-information',
 			__( 'Payment Information', 'woocommerce-for-paygent-payment-main' ),
@@ -975,6 +988,8 @@ window.onload = send_form_submit;
 			$order_id = $_GET['post'];// phpcs:ignore
 		} elseif ( isset( $_GET['id'] ) ) {// phpcs:ignore
 			$order_id = $_GET['id'];// phpcs:ignore
+		} else {
+			return;// No order ID found.
 		}
 		$order       = wc_get_order( $order_id );
 		$career_type = $order->get_meta( '_career_type', true );
@@ -1005,6 +1020,8 @@ window.onload = send_form_submit;
 			$order_id = $_GET['post'];// phpcs:ignore
 		} elseif ( isset( $_GET['id'] ) ) {// phpcs:ignore
 			$order_id = $_GET['id'];// phpcs:ignore
+		} else {
+			return;// No order ID found.
 		}
 		$order      = wc_get_order( $order_id );
 		$running_id = $order->get_meta( 'running_id', true );

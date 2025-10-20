@@ -35,7 +35,7 @@ add_action( 'plugins_loaded', 'wc_gateway_paygent_plugin' );
  * Initialize the Paygent plugin.
  */
 function wc_gateway_paygent_plugin() {
-	if ( is_woocommerce_active() ) {
+	if ( is_woocommerce_active() && class_exists( 'WooCommerce' ) ) {
 		WC_Gateway_Paygent::instance()->init();
 	} else {
 		add_action( 'admin_notices', 'wc_gateway_paygent_fallback_notice' );

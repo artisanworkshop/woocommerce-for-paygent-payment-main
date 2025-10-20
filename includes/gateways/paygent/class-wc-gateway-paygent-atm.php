@@ -32,6 +32,27 @@ class WC_Gateway_Paygent_ATM extends WC_Payment_Gateway {
 	public $jp4wc_framework;
 
 	/**
+	 * Payment detail for ATM display
+	 *
+	 * @var string
+	 */
+	public $payment_detail;
+
+	/**
+	 * Payment detail in kana for ATM display
+	 *
+	 * @var string
+	 */
+	public $payment_detail_kana;
+
+	/**
+	 * Payment limit date in days
+	 *
+	 * @var string
+	 */
+	public $payment_limit_date;
+
+	/**
 	 * Debug mode
 	 *
 	 * @var string
