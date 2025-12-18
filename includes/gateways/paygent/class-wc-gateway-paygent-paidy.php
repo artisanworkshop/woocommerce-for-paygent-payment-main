@@ -47,6 +47,13 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 	public $order_button_text;
 
 	/**
+	 * Test mode.
+	 *
+	 * @var bool
+	 */
+	public $test_mode;
+
+	/**
 	 * Environment.
 	 *
 	 * @var string
@@ -115,6 +122,13 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 	 * @var array
 	 */
 	public $account_details;
+
+	/**
+	 * Paygent Request instance.
+	 *
+	 * @var WC_Gateway_Paygent_Request
+	 */
+	public $paygent_request;
 
 	/**
 	 * Constructor for the gateway.

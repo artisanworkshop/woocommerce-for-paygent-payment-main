@@ -8,9 +8,9 @@
  * Author: Artisan Workshop
  * Author URI: https://wc.artws.info/
  * Requires at least: 5.0
- * Tested up to: 6.8.2
- * WC requires at least: 3.0.0
- * WC tested up to: 10.0.2
+ * Tested up to: 6.9.0
+ * WC requires at least: 8.0.0
+ * WC tested up to: 10.4.2
  *
  * Text Domain: woocommerce-for-paygent-payment-main
  * Domain Path: /i18n/
@@ -35,7 +35,7 @@ add_action( 'plugins_loaded', 'wc_gateway_paygent_plugin' );
  * Initialize the Paygent plugin.
  */
 function wc_gateway_paygent_plugin() {
-	if ( is_woocommerce_active() ) {
+	if ( is_woocommerce_active() && class_exists( 'WooCommerce' ) ) {
 		WC_Gateway_Paygent::instance()->init();
 	} else {
 		add_action( 'admin_notices', 'wc_gateway_paygent_fallback_notice' );

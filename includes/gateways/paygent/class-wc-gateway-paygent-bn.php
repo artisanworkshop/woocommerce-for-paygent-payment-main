@@ -33,6 +33,34 @@ class WC_Gateway_Paygent_BN extends WC_Payment_Gateway {
 	public $jp4wc_framework;
 
 	/**
+	 * Claim kanji text for invoice detail.
+	 *
+	 * @var string
+	 */
+	public $claim_kanji_text;
+
+	/**
+	 * Claim kana text for invoice detail.
+	 *
+	 * @var string
+	 */
+	public $claim_kana_text;
+
+	/**
+	 * Receipt name in kana characters.
+	 *
+	 * @var string
+	 */
+	public $receipt_name_kana;
+
+	/**
+	 * Receipt name in kanji characters.
+	 *
+	 * @var string
+	 */
+	public $receipt_name;
+
+	/**
 	 * Debug mode
 	 *
 	 * @var string
