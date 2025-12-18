@@ -3,7 +3,7 @@
  * WooCommerce Paygent Payment Gateway
  *
  * @package WooCommerce\Paygent
- * @version 2.4.2
+ * @version 2.4.3
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,7 +24,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '2.4.2';
+		public $version = '2.4.3';
 
 		/**
 		 * Paygent Payment Gateways for WooCommerce Framework version.
@@ -77,7 +77,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			$this->define_constants();
 			register_activation_hook( WC_PAYGENT_PLUGIN_FILE, array( $this, 'on_activation' ) );
 			register_deactivation_hook( WC_PAYGENT_PLUGIN_FILE, array( $this, 'on_deactivation' ) );
-			add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), 20 );
+			add_action( 'init', array( $this, 'on_plugins_loaded' ), 0 );
 		}
 
 		/**
@@ -95,8 +95,8 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 		 * @return void
 		 */
 		public function on_plugins_loaded() {
-			$this->includes();
 			$this->load_plugin_textdomain();
+			$this->includes();
 		}
 
 		/**
@@ -117,7 +117,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 		/**
 		 * Load Localisation files.
 		 */
-		protected function load_plugin_textdomain() {
+		public function load_plugin_textdomain() {
 			$locale = apply_filters( 'paygent_for_wc_plugin_locale', get_locale(), 'woocommerce-for-paygent-payment-main' );
 			// Load plugin text domain.
 			unload_textdomain( 'woocommerce-for-paygent-payment-main', true );

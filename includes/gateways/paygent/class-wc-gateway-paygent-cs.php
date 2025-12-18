@@ -546,8 +546,18 @@ class WC_Gateway_Paygent_CS extends WC_Payment_Gateway {
 	 */
 	public function change_description_to_customer( $description_array ) {
 		if ( isset( $this->cs_connection_type ) && 'd' === $this->cs_connection_type ) {
-			$description_array['00C002'] = __( 'Make a note of the reported "Payment receipt number" and go to Lawson or Ministop store. Please enter the number into the multimedia terminal Loppi or MINISTOPLoppi installed in the store and pay at the cash register with the application ticket issued.', 'woocommerce-for-paygent-payment-main' );
-			$description_array['00C004'] = __( 'Make a note of the reported "Payment receipt number" and go to Lawson or Ministop store. Please enter the number into the multimedia terminal Loppi or MINISTOPLoppi installed in the store and pay at the cash register with the application ticket issued.', 'woocommerce-for-paygent-payment-main' );
+			$message = sprintf(
+				// translators: %s: Customer number and confirmation number details for convenience store payment.
+				__(
+					'Make a note of the reported %s and go to Lawson or Ministop store.
+					 Please enter the number into the multimedia terminal Loppi or MINISTOPLoppi installed in the store and pay at the cash register with the application ticket issued.',
+					'woocommerce-for-paygent-payment-main'
+				),
+				__( '"Customer number" and "confirmation number(400008)"', 'woocommerce-for-paygent-payment-main' )
+			);
+
+			$description_array['00C002'] = $message;
+			$description_array['00C004'] = $message;
 		}
 		return $description_array;
 	}
