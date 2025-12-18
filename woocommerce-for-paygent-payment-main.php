@@ -3,7 +3,7 @@
  * Plugin Name: PAYGENT for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/woocommerce-for-paygent-payment-main/
  * Description: Paygent Payments for WooCommerce in Japan
- * Version: 2.4.2
+ * Version: 2.4.4
  * Requires Plugins: woocommerce
  * Author: Artisan Workshop
  * Author URI: https://wc.artws.info/
