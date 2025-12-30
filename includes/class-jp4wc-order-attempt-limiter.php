@@ -79,8 +79,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			add_action( 'woocommerce_checkout_order_processed', array( $this, 'record_order_attempt' ) );
 
 			// AJAX handlers.
-			add_action( 'wp_ajax_wcoal_get_fingerprint', array( $this, 'ajax_get_fingerprint' ) );
-			add_action( 'wp_ajax_nopriv_wcoal_get_fingerprint', array( $this, 'ajax_get_fingerprint' ) );
+			add_action( 'wp_ajax_jp4wcoal_get_fingerprint', array( $this, 'ajax_get_fingerprint' ) );
+			add_action( 'wp_ajax_nopriv_jp4wcoal_get_fingerprint', array( $this, 'ajax_get_fingerprint' ) );
 		}
 
 		/**
@@ -117,9 +117,9 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		 * @return void
 		 */
 		private function set_default_options() {
-			add_option( 'wcoal_max_attempts', 3 );
-			add_option( 'wcoal_lockout_duration', 60 ); // minutes.
-			add_option( 'wcoal_cleanup_interval', 24 ); // hours.
+			add_option( 'jp4wcoal_max_attempts', 3 );
+			add_option( 'jp4wcoal_lockout_duration', 60 ); // minutes.
+			add_option( 'jp4wcoal_cleanup_interval', 24 ); // hours.
 		}
 
 		/**
@@ -141,7 +141,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 
 				// Enqueue our script.
 				wp_enqueue_script(
-					'wcoal-checkout',
+					'jp4wcoal-checkout',
 					$this->plugin_url . 'assets/js/checkout.js',
 					array( 'jquery', 'fingerprintjs' ),
 					$this->version,
@@ -150,11 +150,11 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 
 				// Localize script.
 				wp_localize_script(
-					'wcoal-checkout',
-					'wcoal_ajax',
+					'jp4wcoal-checkout',
+					'jp4wcoal_ajax',
 					array(
 						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'wcoal_fingerprint_nonce' ),
+						'nonce'    => wp_create_nonce( 'jp4wcoal_fingerprint_nonce' ),
 					)
 				);
 			}
@@ -173,7 +173,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			}
 
 			wp_enqueue_style(
-				'wcoal-admin',
+				'jp4wcoal-admin',
 				$this->plugin_url . 'assets/css/admin.css',
 				array(),
 				$this->version
@@ -189,8 +189,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		public function add_admin_menu() {
 			add_submenu_page(
 				'woocommerce',
-				__( 'Order Attempt Limiter', 'wc-order-limiter' ),
-				__( 'Order Limiter', 'wc-order-limiter' ),
+				__( 'Order Attempt Limiter', 'woocommerce-for-paygent-payment-main' ),
+				__( 'Order Limiter', 'woocommerce-for-paygent-payment-main' ),
 				'manage_woocommerce',
 				'wc-order-limiter',
 				array( $this, 'admin_page' )
@@ -208,8 +208,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		 */
 		public function register_settings() {
 			register_setting(
-				'wcoal_settings',
-				'wcoal_max_attempts',
+				'jp4wcoal_settings',
+				'jp4wcoal_max_attempts',
 				array(
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
@@ -218,8 +218,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			);
 
 			register_setting(
-				'wcoal_settings',
-				'wcoal_lockout_duration',
+				'jp4wcoal_settings',
+				'jp4wcoal_lockout_duration',
 				array(
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
@@ -228,8 +228,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			);
 
 			register_setting(
-				'wcoal_settings',
-				'wcoal_cleanup_interval',
+				'jp4wcoal_settings',
+				'jp4wcoal_cleanup_interval',
 				array(
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
@@ -238,6 +238,15 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			);
 		}
 
+		/**
+		 * Displays the Order Attempt Limiter admin page
+		 *
+		 * This function renders the admin interface for configuring order attempt limits,
+		 * displaying statistics, and managing cleanup operations.
+		 *
+		 * @since 1.0.0
+		 * @return void
+		 */
 		public function admin_page() {
 			?>
 		<div class="wrap">
@@ -245,63 +254,63 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			
 			<form action="options.php" method="post">
 				<?php
-				settings_fields( 'wcoal_settings' );
+				settings_fields( 'jp4wcoal_settings' );
 				?>
 				
 				<table class="form-table">
 					<tr>
 						<th scope="row">
-							<label for="wcoal_max_attempts">
-								<?php esc_html_e( 'Maximum Order Attempts', 'wc-order-limiter' ); ?>
+							<label for="jp4wcoal_max_attempts">
+								<?php esc_html_e( 'Maximum Order Attempts', 'woocommerce-for-paygent-payment-main' ); ?>
 							</label>
 						</th>
 						<td>
 							<input type="number" 
-									id="wcoal_max_attempts" 
-									name="wcoal_max_attempts" 
-									value="<?php echo esc_attr( get_option( 'wcoal_max_attempts', 3 ) ); ?>" 
+									id="jp4wcoal_max_attempts" 
+									name="jp4wcoal_max_attempts" 
+									value="<?php echo esc_attr( get_option( 'jp4wcoal_max_attempts', 3 ) ); ?>" 
 									min="1" 
 									max="10" />
 							<p class="description">
-								<?php esc_html_e( 'Maximum number of order attempts allowed before lockout.', 'wc-order-limiter' ); ?>
+								<?php esc_html_e( 'Maximum number of order attempts allowed before lockout.', 'woocommerce-for-paygent-payment-main' ); ?>
 							</p>
 						</td>
 					</tr>
 					
 					<tr>
 						<th scope="row">
-							<label for="wcoal_lockout_duration">
-								<?php esc_html_e( 'Lockout Duration (minutes)', 'wc-order-limiter' ); ?>
+							<label for="jp4wcoal_lockout_duration">
+								<?php esc_html_e( 'Lockout Duration (minutes)', 'woocommerce-for-paygent-payment-main' ); ?>
 							</label>
 						</th>
 						<td>
 							<input type="number" 
-									id="wcoal_lockout_duration" 
-									name="wcoal_lockout_duration" 
-									value="<?php echo esc_attr( get_option( 'wcoal_lockout_duration', 60 ) ); ?>" 
+									id="jp4wcoal_lockout_duration" 
+									name="jp4wcoal_lockout_duration" 
+									value="<?php echo esc_attr( get_option( 'jp4wcoal_lockout_duration', 60 ) ); ?>" 
 									min="1" 
 									max="1440" />
 							<p class="description">
-								<?php esc_html_e( 'How long users are locked out after exceeding maximum attempts.', 'wc-order-limiter' ); ?>
+								<?php esc_html_e( 'How long users are locked out after exceeding maximum attempts.', 'woocommerce-for-paygent-payment-main' ); ?>
 							</p>
 						</td>
 					</tr>
 					
 					<tr>
 						<th scope="row">
-							<label for="wcoal_cleanup_interval">
-								<?php esc_html_e( 'Cleanup Interval (hours)', 'wc-order-limiter' ); ?>
+							<label for="jp4wcoal_cleanup_interval">
+								<?php esc_html_e( 'Cleanup Interval (hours)', 'woocommerce-for-paygent-payment-main' ); ?>
 							</label>
 						</th>
 						<td>
 							<input type="number" 
-									id="wcoal_cleanup_interval" 
-									name="wcoal_cleanup_interval" 
-									value="<?php echo esc_attr( get_option( 'wcoal_cleanup_interval', 24 ) ); ?>" 
+									id="jp4wcoal_cleanup_interval" 
+									name="jp4wcoal_cleanup_interval" 
+									value="<?php echo esc_attr( get_option( 'jp4wcoal_cleanup_interval', 24 ) ); ?>" 
 									min="1" 
 									max="168" />
 							<p class="description">
-								<?php esc_html_e( 'How often to clean up old attempt records from the database.', 'wc-order-limiter' ); ?>
+								<?php esc_html_e( 'How often to clean up old attempt records from the database.', 'woocommerce-for-paygent-payment-main' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -312,22 +321,22 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			
 			<hr />
 			
-			<h2><?php esc_html_e( 'Current Statistics', 'wc-order-limiter' ); ?></h2>
+			<h2><?php esc_html_e( 'Current Statistics', 'woocommerce-for-paygent-payment-main' ); ?></h2>
 				<?php $this->display_statistics(); ?>
 			
 			<form method="post" action="">
-				<?php wp_nonce_field( 'wcoal_cleanup_action', 'wcoal_cleanup_nonce' ); ?>
+				<?php wp_nonce_field( 'jp4wcoal_cleanup_action', 'jp4wcoal_cleanup_nonce' ); ?>
 				<p>
-					<button type="submit" name="wcoal_cleanup_now" class="button">
-						<?php esc_html_e( 'Clean Up Old Records Now', 'wc-order-limiter' ); ?>
+					<button type="submit" name="jp4wcoal_cleanup_now" class="button">
+						<?php esc_html_e( 'Clean Up Old Records Now', 'woocommerce-for-paygent-payment-main' ); ?>
 					</button>
 				</p>
 			</form>
 			
 				<?php
-				if ( isset( $_POST['wcoal_cleanup_now'] ) && wp_verify_nonce( $_POST['wcoal_cleanup_nonce'], 'wcoal_cleanup_action' ) ) {
+				if ( isset( $_POST['jp4wcoal_cleanup_now'] ) && wp_verify_nonce( $_POST['jp4wcoal_cleanup_nonce'], 'jp4wcoal_cleanup_action' ) ) {
 					$this->cleanup_old_attempts();
-					echo '<div class="notice notice-success"><p>' . __( 'Old records cleaned up successfully.', 'wc-order-limiter' ) . '</p></div>';
+					echo '<div class="notice notice-success"><p>' . esc_html__( 'Old records cleaned up successfully.', 'woocommerce-for-paygent-payment-main' ) . '</p></div>';
 				}
 				?>
 		</div>
@@ -347,15 +356,15 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		<table class="widefat">
 			<tbody>
 				<tr>
-					<td><strong><?php esc_html_e( 'Total Attempts Recorded:', 'wc-order-limiter' ); ?></strong></td>
+					<td><strong><?php esc_html_e( 'Total Attempts Recorded:', 'woocommerce-for-paygent-payment-main' ); ?></strong></td>
 					<td><?php echo esc_html( $total_attempts ); ?></td>
 				</tr>
 				<tr>
-					<td><strong><?php esc_html_e( 'Currently Locked Users:', 'wc-order-limiter' ); ?></strong></td>
+					<td><strong><?php esc_html_e( 'Currently Locked Users:', 'woocommerce-for-paygent-payment-main' ); ?></strong></td>
 					<td><?php echo esc_html( $locked_users ); ?></td>
 				</tr>
 				<tr>
-					<td><strong><?php esc_html_e( 'Attempts in Last 24 Hours:', 'wc-order-limiter' ); ?></strong></td>
+					<td><strong><?php esc_html_e( 'Attempts in Last 24 Hours:', 'woocommerce-for-paygent-payment-main' ); ?></strong></td>
 					<td><?php echo esc_html( $recent_attempts ); ?></td>
 				</tr>
 			</tbody>
@@ -366,8 +375,8 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		private function get_currently_locked_users_count() {
 			global $wpdb;
 
-			$max_attempts     = get_option( 'wcoal_max_attempts', 3 );
-			$lockout_duration = get_option( 'wcoal_lockout_duration', 60 );
+			$max_attempts     = get_option( 'jp4wcoal_max_attempts', 3 );
+			$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 
 			$sql = "SELECT COUNT(DISTINCT fingerprint) FROM (
             SELECT fingerprint, COUNT(*) as attempt_count 
@@ -381,7 +390,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		}
 
 		public function ajax_get_fingerprint() {
-			check_ajax_referer( 'wcoal_fingerprint_nonce', 'nonce' );
+			check_ajax_referer( 'jp4wcoal_fingerprint_nonce', 'nonce' );
 
 			$fingerprint = isset( $_POST['fingerprint'] ) ? sanitize_text_field( wp_unslash( $_POST['fingerprint'] ) ) : '';
 
@@ -393,7 +402,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			if ( ! session_id() ) {
 				session_start();
 			}
-			$_SESSION['wcoal_fingerprint'] = $fingerprint;
+			$_SESSION['jp4wcoal_fingerprint'] = $fingerprint;
 
 			wp_send_json_success();
 		}
@@ -404,7 +413,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 				session_start();
 			}
 
-			$fingerprint = isset( $_SESSION['wcoal_fingerprint'] ) ? $_SESSION['wcoal_fingerprint'] : '';
+			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? $_SESSION['jp4wcoal_fingerprint'] : '';
 
 			if ( empty( $fingerprint ) ) {
 				// Fallback to IP-based fingerprint if JavaScript fingerprint not available.
@@ -412,9 +421,9 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			}
 
 			if ( $this->is_user_locked( $fingerprint ) ) {
-				$lockout_duration = get_option( 'wcoal_lockout_duration', 60 );
+				$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 				$error_message    = sprintf(
-					__( 'You have exceeded the maximum number of order attempts. Please try again after %d minutes.', 'wc-order-limiter' ),
+					__( 'You have exceeded the maximum number of order attempts. Please try again after %d minutes.', 'woocommerce-for-paygent-payment-main' ),
 					$lockout_duration
 				);
 				wc_add_notice( $error_message, 'error' );
@@ -429,7 +438,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 				session_start();
 			}
 
-			$fingerprint = isset( $_SESSION['wcoal_fingerprint'] ) ? $_SESSION['wcoal_fingerprint'] : '';
+			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? $_SESSION['jp4wcoal_fingerprint'] : '';
 
 			if ( empty( $fingerprint ) ) {
 				$fingerprint = $this->get_ip_fingerprint();
@@ -450,17 +459,17 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			);
 
 			// Schedule cleanup if not already scheduled.
-			if ( ! wp_next_scheduled( 'wcoal_cleanup_cron' ) ) {
-				$cleanup_interval = get_option( 'wcoal_cleanup_interval', 24 ) * HOUR_IN_SECONDS;
-				wp_schedule_event( time(), 'daily', 'wcoal_cleanup_cron' );
+			if ( ! wp_next_scheduled( 'jp4wcoal_cleanup_cron' ) ) {
+				$cleanup_interval = get_option( 'jp4wcoal_cleanup_interval', 24 ) * HOUR_IN_SECONDS;
+				wp_schedule_event( time(), 'daily', 'jp4wcoal_cleanup_cron' );
 			}
 		}
 
 		private function is_user_locked( $fingerprint ) {
 			global $wpdb;
 
-			$max_attempts     = get_option( 'wcoal_max_attempts', 3 );
-			$lockout_duration = get_option( 'wcoal_lockout_duration', 60 );
+			$max_attempts     = get_option( 'jp4wcoal_max_attempts', 3 );
+			$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 
 			$attempts = $wpdb->get_var(
 				$wpdb->prepare(
@@ -512,7 +521,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		public function cleanup_old_attempts() {
 			global $wpdb;
 
-			$cleanup_interval = get_option( 'wcoal_cleanup_interval', 24 );
+			$cleanup_interval = get_option( 'jp4wcoal_cleanup_interval', 24 );
 
 			$wpdb->query(
 				$wpdb->prepare(
