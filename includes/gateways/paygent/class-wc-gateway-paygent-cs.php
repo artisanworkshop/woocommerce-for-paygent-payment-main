@@ -339,7 +339,7 @@ class WC_Gateway_Paygent_CS extends WC_Payment_Gateway {
 		// Description of payment method from settings.
 		if ( $this->description ) {
 			?>
-			<p><?php echo esc_html( $this->description ); ?></p>
+			<p><?php echo wp_kses_post( $this->description ); ?></p>
 		<?php } ?>
 		<fieldset  style="padding-left: 40px;">
 		<p><?php echo esc_html__( 'Please select Convenience Store where you want to pay', 'woocommerce-for-paygent-payment-main' ); ?></p>

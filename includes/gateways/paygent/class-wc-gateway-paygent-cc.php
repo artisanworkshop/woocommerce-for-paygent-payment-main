@@ -439,7 +439,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	public function payment_fields() {
 		// Description of payment method from settings.
 		if ( $this->description ) { ?>
-		<p><?php echo esc_html( $this->description ); ?></p>
+		<p><?php echo wp_kses_post( $this->description ); ?></p>
 				<?php
 		}
 		$this->attention_to_ie_user();

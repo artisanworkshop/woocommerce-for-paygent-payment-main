@@ -33,7 +33,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'scheduled_subscription_mb_payment' ), 10, 2 );
 			add_filter( 'wcs_view_subscription_actions', array( $this, 'paygent_mb_change_amout_payment' ), 10, 2 );
 			add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'change_subscriptions_price' ) );
-						add_action( 'woocommerce_subscription_checkout_switch_order_processed', array( $this, 'paygent_mb_wcs_switch_upgrade_order' ), 10, 2 );
+			add_action( 'woocommerce_subscription_checkout_switch_order_processed', array( $this, 'paygent_mb_wcs_switch_upgrade_order' ), 10, 2 );
 			add_action( 'woocommerce_review_order_after_order_total', array( $this, 'paygent_mb_checkout_explain' ), 100 );
 			add_action( 'woocommerce_payment_complete', array( $this, 'paygent_mb_wcs_switch_upgrade_action' ), 10, 2 );
 		}
