@@ -4,7 +4,7 @@
  *
  * Provides a Convenience Store Payment Gateway for WooCommerce using Paygent.
  *
- * @version 2.4.0
+ * @version 2.4.5
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop

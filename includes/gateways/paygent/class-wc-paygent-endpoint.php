@@ -3,6 +3,7 @@
  * Paygent Endpoint
  *
  * @package PaygentForWooCommerce
+ * @version 2.4.5
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,6 +14,8 @@ use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
 
 /**
  * WC_Paygent_Endpoint class.
+ *
+ * @version 2.4.5
  */
 class WC_Paygent_Endpoint {
 
@@ -41,7 +44,6 @@ class WC_Paygent_Endpoint {
 
 	/**
 	 * Paygent Webhook response.
-	 * Version: 2.3.0
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return void
