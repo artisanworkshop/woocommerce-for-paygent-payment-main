@@ -5,7 +5,7 @@
  * Provides integration between WooCommerce and Paygent's Credit Card payment processing service.
  * This class handles all credit card payment operations including authorization, capture, and refund.
  *
- * @version 2.4.2
+ * @version 2.4.5
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author ArtisanWorkshop
@@ -439,7 +439,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	public function payment_fields() {
 		// Description of payment method from settings.
 		if ( $this->description ) { ?>
-		<p><?php echo esc_html( $this->description ); ?></p>
+		<p><?php echo wp_kses_post( $this->description ); ?></p>
 				<?php
 		}
 		$this->attention_to_ie_user();

@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Mobile Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.0
+ * @version 2.4.5
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop
@@ -184,7 +184,10 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'mb_thankyou' ) );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'order_mb_status_completed' ) );
 
-		add_action( 'add_meta_boxes', array( $this, 'paygent_mb_add_meta_box' ), 15, 2 );
+		// Add meta boxes for both traditional and HPOS orders.
+		add_action( 'add_meta_boxes', array( $this, 'paygent_mb_add_meta_box' ), 24, 2 );
+		add_action( 'add_meta_boxes_woocommerce_page_wc-orders', array( $this, 'paygent_mb_add_meta_box' ), 24, 2 );
+		add_action( 'add_meta_boxes_woocommerce_page_wc-orders--shop_subscription', array( $this, 'paygent_mb_add_meta_box' ), 24, 2 );
 		// Cancel order.
 		add_action( 'woocommerce_before_cart', array( $this, 'paygent_cart_cancel' ) );
 	}
@@ -262,7 +265,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 	public function payment_fields() {
 		// Description of payment method from settings.
 		if ( $this->description ) { ?>
-			<p><?php echo esc_html( $this->description ); ?></p>
+			<p><?php echo wp_kses_post( $this->description ); ?></p>
 		<?php } ?>
 		<fieldset  style="padding-left: 40px;">
 			<p><?php esc_html_e( 'Please select carrier type where you want to pay', 'woocommerce-for-paygent-payment-main' ); ?></p>
@@ -936,48 +939,78 @@ window.onload = send_form_submit;
 	/**
 	 * Display payment information on the management screen
 	 *
-	 * @param string $post_type Post type.
-	 * @param object $post WP_Post object.
+	 * @param string|object $post_type_or_order Post type/screen ID or WC_Order object (for HPOS).
+	 * @param object|null   $post WP_Post object (for traditional) or null (for HPOS).
 	 * @return void
 	 */
-	public function paygent_mb_add_meta_box( $post_type, $post ) {
-		// Check post.
-		if ( ! $post ) {
+	public function paygent_mb_add_meta_box( $post_type_or_order, $post = null ) {
+		// Get order ID based on context (traditional or HPOS).
+		$order_id = null;
+		$order    = null;
+
+		// HPOS: First parameter is a WC_Order object.
+		if ( $post_type_or_order instanceof WC_Order ) {
+			$order    = $post_type_or_order;
+			$order_id = $order->get_id();
+		} elseif ( $post && isset( $post->ID ) ) {
+			// Traditional: $post is a WP_Post object.
+			$order_id = $post->ID;
+			$order    = wc_get_order( $order_id );
+		}
+
+		// Check if we have a valid order.
+		if ( ! $order || ! $order_id ) {
 			return;
 		}
-		// Check post type.
-		if ( ! $post->ID || ( 'shop_order' !== $post->post_type && 'shop_subscription' !== $post->post_type ) ) {
-			return;
-		}
-		$order = wc_get_order( $post->ID );
+
+		// Check if this is the correct payment method.
 		if ( $order->get_payment_method() !== $this->id ) {
 			return;
 		}
-		// Add meta boxes.
-		add_meta_box(
-			'paygent-information',
-			__( 'Payment Information', 'woocommerce-for-paygent-payment-main' ),
-			array( &$this, 'paygent_mb_payment_information' ),
-			'shop_order',
-			'side',
-			'low'
-		);
-		add_meta_box(
-			'paygent-information',
-			__( 'Payment Information', 'woocommerce-for-paygent-payment-main' ),
-			array( &$this, 'paygent_mb_payment_information' ),
-			'shop_subscription',
-			'side',
-			'low'
-		);
-		add_meta_box(
-			'paygent-running-type',
-			__( 'Running Status', 'woocommerce-for-paygent-payment-main' ),
-			array( &$this, 'paygent_mb_running_status' ),
-			'shop_subscription',
-			'side',
-			'low'
-		);
+
+		// Check if HPOS is enabled.
+		$hpos_enabled = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+
+		// Check if this is a subscription.
+		$is_subscription = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order );
+
+		if ( $is_subscription ) {
+			// Determine screen for subscription.
+			$screen = $hpos_enabled ? 'woocommerce_page_wc-orders--shop_subscription' : 'shop_subscription';
+
+			// Add payment information meta box for subscription.
+			add_meta_box(
+				'paygent-information',
+				__( 'Payment Information', 'woocommerce-for-paygent-payment-main' ),
+				array( &$this, 'paygent_mb_payment_information' ),
+				$screen,
+				'side',
+				'default'
+			);
+
+			// Add running status meta box for subscription.
+			add_meta_box(
+				'paygent-running-type',
+				__( 'Running Status', 'woocommerce-for-paygent-payment-main' ),
+				array( &$this, 'paygent_mb_running_status' ),
+				$screen,
+				'side',
+				'default'
+			);
+		} else {
+			// Determine the screen ID for regular orders.
+			$screen = $hpos_enabled ? 'woocommerce_page_wc-orders' : 'shop_order';
+
+			// Add meta box for regular orders.
+			add_meta_box(
+				'paygent-information',
+				__( 'Payment Information', 'woocommerce-for-paygent-payment-main' ),
+				array( &$this, 'paygent_mb_payment_information' ),
+				$screen,
+				'side',
+				'default'
+			);
+		}
 	}
 
 	/**

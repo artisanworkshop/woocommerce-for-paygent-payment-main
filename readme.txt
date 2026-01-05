@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=info@art
 Tags: woocommerce, payment Gateway, japan
 Requires at least: 5.0
 Tested up to: 6.9.0
-Stable tag: 2.4.4
+Stable tag: 2.4.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -45,12 +45,18 @@ A: We support with paid support. <a herf="https://wc.artws.info/product/payment-
 
 == Changelog ==
 
-= 2.4.3 & 2.4.4 - 2025-12-18 =
+= 2.4.5 - 2026-01-05 =
+* Update - Minor updates and improvements.
+
+= 2.4.4 - 2025-12-18 =
 * Add - Add wordfence-vendor.txt for Security verification.
 * Fixed - Convenience Store Payment's Lawson and Ministop text.
 * Fixed - Function _load_textdomain_just_in_time bug.
 * Fixed - Paidy deprication bug.
 * Fixed - Multi Currency Credit Card Payment bugs.
+
+= 2.4.3 - 2025-12-18 =
+* Fixed - Minor bug fixes.
 
 = 2.4.2 - 2025-08-06 =
 * Fixed - 3DS 2.0 Credit Card bugs.

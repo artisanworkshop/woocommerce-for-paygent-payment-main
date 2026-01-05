@@ -3,6 +3,7 @@
  * Paygent Endpoint
  *
  * @package PaygentForWooCommerce
+ * @version 2.4.5
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,6 +14,8 @@ use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
 
 /**
  * WC_Paygent_Endpoint class.
+ *
+ * @version 2.4.5
  */
 class WC_Paygent_Endpoint {
 
@@ -41,7 +44,6 @@ class WC_Paygent_Endpoint {
 
 	/**
 	 * Paygent Webhook response.
-	 * Version: 2.3.0
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return void
@@ -155,16 +157,29 @@ class WC_Paygent_Endpoint {
 				'202.232.189.65', // SandBox IP address.
 			)
 		);
-		$remote_ip        = $request->get_header( 'x_real_ip' );
-		$is_permitted     = false;
 
-		if ( in_array( $remote_ip, $is_permitted_ips, true ) ) {
+		// Get remote IP address from various sources.
+		$remote_ip = '';
+
+		// Check common headers for real IP.
+		if ( ! empty( $_SERVER['HTTP_X_REAL_IP'] ) ) {
+			$remote_ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_REAL_IP'] ) );
+		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+			$remote_ip     = trim( $forwarded_ips[0] );
+		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$remote_ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		$is_permitted = false;
+
+		if ( ! empty( $remote_ip ) && in_array( $remote_ip, $is_permitted_ips, true ) ) {
 			$is_permitted = true;
 		}
 		if ( ! $is_permitted ) {
 			$wc_logger = wc_get_logger();
 			$wc_logger->info(
-				'Paygent test mode is enabled. IP address check is skipped.',
+				__( 'Paygent IP permission error.', 'woocommerce-for-paygent-payment-main' ),
 				array(
 					'remote_ip' => $remote_ip,
 					'source'    => 'paygent-endpoint',
@@ -196,7 +211,6 @@ class WC_Paygent_Endpoint {
 
 			set_transient( 'paygent_ip_permission_error_sent', true, 1440 * MINUTE_IN_SECONDS );
 		}
-		$is_permitted = true;
 
 		return $is_permitted;
 	}

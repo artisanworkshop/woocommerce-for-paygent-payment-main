@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Multi-currency Credit Card Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.0
+ * @version 2.4.5
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop
@@ -58,6 +58,55 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 	 * @var string
 	 */
 	public $tds2_check;
+
+	/**
+	 * Paygent CC instance
+	 *
+	 * @var WC_Gateway_Paygent_CC
+	 */
+	public $paygent_cc;
+
+	/**
+	 * Attempt notice email address
+	 *
+	 * @var string
+	 */
+	public $attempt_notice_email;
+
+	/**
+	 * Attempt classification setting
+	 *
+	 * @var string
+	 */
+	public $attempt;
+
+	/**
+	 * Merchant name for payment
+	 *
+	 * @var string
+	 */
+	public $merchant_name;
+
+	/**
+	 * Payment action setting
+	 *
+	 * @var string
+	 */
+	public $paymentaction;
+
+	/**
+	 * 3D Secure 2.0 hash key
+	 *
+	 * @var string
+	 */
+	public $tds2_hashkey;
+
+	/**
+	 * Store card information setting
+	 *
+	 * @var string
+	 */
+	public $store_card_info;
 
 	/**
 	 * Constructor for the gateway.
@@ -228,7 +277,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 	public function payment_fields() {
 		// Description of payment method from settings.
 		if ( $this->description ) { ?>
-		<p><?php echo esc_html( $this->description ); ?></p>
+		<p><?php echo wp_kses_post( $this->description ); ?></p>
 				<?php
 		}
 

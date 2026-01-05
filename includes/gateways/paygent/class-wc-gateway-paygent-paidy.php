@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Paidy Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.0
+ * @version 2.4.5
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop
@@ -276,7 +276,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 			<img src="<?php echo esc_url( WC_PAYGENT_PLUGIN_URL ) . 'assets/images/checkout_banner_320x100.png'; ?>" alt="Paidy 翌月まとめてお支払い" style="max-height: none; float: none;">
 		</a>
 		<br />
-		<p class="jp4wc-paidy-description"><?php echo esc_html( $this->description ); ?></p>
+		<p class="jp4wc-paidy-description"><?php echo wp_kses_post( $this->description ); ?></p>
 		<br />
 		<?php
 		if ( empty( $this->paidy_description ) ) {
