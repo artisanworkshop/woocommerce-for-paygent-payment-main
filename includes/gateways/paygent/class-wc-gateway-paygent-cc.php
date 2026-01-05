@@ -258,8 +258,14 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		}
 		// 3D secure 2.0.
 		if ( 'yes' === $this->tds2_check ) {
+			// Remove any existing hooks before adding to prevent duplicates.
+			remove_action( 'password_reset', array( $this, 'jp4wc_password_update' ), 10 );
 			add_action( 'password_reset', array( $this, 'jp4wc_password_update' ), 10 );
+
+			remove_action( 'woocommerce_receipt_' . $this->id, array( $this, 'paygent_3ds2_redirect_order' ) );
 			add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'paygent_3ds2_redirect_order' ) );// Payment page.
+
+			remove_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'tds2_status_change' ) );
 			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'tds2_status_change' ) );
 		}
 
@@ -1073,6 +1079,15 @@ jQuery(function(){
 	public function paygent_3ds2_redirect_order( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$html  = $order->get_meta( '_out_acs_html' );
+
+		// Countermeasures for double display.
+		global $jp4wc_cc_num;
+		if ( $jp4wc_cc_num >= 1 ) {
+			$jp4wc_cc_num = 0;
+			return;
+		}
+		++$jp4wc_cc_num;
+
 		if ( isset( $_GET['result'] ) && $order->get_payment_method() === $this->id ) {// phpcs:ignore
 			if ( $_GET['3dsecure_requestor_error_code'] ) {// phpcs:ignore
 				$message = $this->tdsecure_requestor_error_codes( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) );// phpcs:ignore
@@ -1147,8 +1162,16 @@ jQuery(function(){
 			$html   = str_replace( $before, $after, $html );
 			echo $html;// phpcs:ignore
 			echo '<script type="text/javascript">'
-			. esc_js( 'function send_form_submit() { if ( document.submitForm ) { document.submitForm.submit(); } }' )
-			. "window.addEventListener('load', send_form_submit);"
+			. 'if (!window.paygent_3ds2_executed) {'
+			. '  window.paygent_3ds2_executed = true;'
+			. '  function send_form_submit() {'
+			. '    var form = document.submitForm || document.getElementById("submitForm");'
+			. '    if (form && typeof form.submit === "function") {'
+			. '      form.submit();'
+			. '    }'
+			. '  }'
+			. '  window.addEventListener("load", send_form_submit);'
+			. '}'
 			. '</script>';
 		}
 	}
