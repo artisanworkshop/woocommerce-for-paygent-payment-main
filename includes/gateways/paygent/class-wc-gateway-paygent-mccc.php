@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Multi-currency Credit Card Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.5
+ * @version 2.4.6
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop
