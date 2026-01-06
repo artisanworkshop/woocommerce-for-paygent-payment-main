@@ -503,19 +503,21 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 		 * Get user's IP address
 		 *
 		 * Attempts to get the user's real IP address by checking various server variables.
-		 * Handles cases where the user is behind a proxy.
+		 * REMOTE_ADDR is checked first as it's the most reliable and cannot be spoofed.
+		 * Other headers are used as fallback only.
 		 *
 		 * @since 1.0.0
 		 * @return string Sanitized IP address
 		 */
 		private function get_user_ip() {
-			if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+			if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+				return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+			} elseif ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
 				return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
 			} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 				return sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-			} else {
-				return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 			}
+			return '';
 		}
 
 		public function cleanup_old_attempts() {
