@@ -3,7 +3,7 @@
  * Paygent Endpoint
  *
  * @package PaygentForWooCommerce
- * @version 2.4.5
+ * @version 2.4.7
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ use ArtisanWorkshop\PluginFramework\v2_0_13 as Framework;
 /**
  * WC_Paygent_Endpoint class.
  *
- * @version 2.4.5
+ * @version 2.4.7
  */
 class WC_Paygent_Endpoint {
 
