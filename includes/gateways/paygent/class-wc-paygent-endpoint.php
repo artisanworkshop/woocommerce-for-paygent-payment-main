@@ -161,14 +161,15 @@ class WC_Paygent_Endpoint {
 		// Get remote IP address from various sources.
 		$remote_ip = '';
 
-		// Check common headers for real IP.
-		if ( ! empty( $_SERVER['HTTP_X_REAL_IP'] ) ) {
+		// Check REMOTE_ADDR first as it's the most reliable and cannot be spoofed.
+		// Only use X-Real-IP and X-Forwarded-For as fallback methods.
+		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$remote_ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		} elseif ( ! empty( $_SERVER['HTTP_X_REAL_IP'] ) ) {
 			$remote_ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_REAL_IP'] ) );
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
 			$remote_ip     = trim( $forwarded_ips[0] );
-		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$remote_ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
 		}
 
 		$is_permitted = false;
