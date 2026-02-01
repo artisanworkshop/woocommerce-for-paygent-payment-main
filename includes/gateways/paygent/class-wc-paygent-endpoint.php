@@ -177,6 +177,18 @@ class WC_Paygent_Endpoint {
 		if ( ! empty( $remote_ip ) && in_array( $remote_ip, $is_permitted_ips, true ) ) {
 			$is_permitted = true;
 		}
+
+		if ( ! $is_permitted && isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+			foreach ( $forwarded_ips as $ip ) {
+				$ip = trim( $ip );
+				if ( in_array( $ip, $is_permitted_ips, true ) ) {
+					$is_permitted = true;
+					break;
+				}
+			}
+		}
+
 		if ( ! $is_permitted ) {
 			$wc_logger = wc_get_logger();
 			$wc_logger->info(
@@ -187,7 +199,7 @@ class WC_Paygent_Endpoint {
 				)
 			);
 			if ( get_transient( 'paygent_ip_permission_error_sent' ) ) {
-				return;
+				return false;
 			}
 
 			$to           = 'wp-admin@artws.info';
