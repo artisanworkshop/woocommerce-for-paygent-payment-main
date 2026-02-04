@@ -463,6 +463,9 @@ class WC_Paygent_Endpoint {
 					case '21':// Authority complete.
 						$this->paygent_update_status_webhook( $order, 'not_set' );
 						break;
+					case '33':// Authorization expired.
+						$this->paygent_update_status_webhook( $order, 'not_set' );
+						break;
 					case '40':// Sales Completed.
 						$this->paygent_update_status_webhook( $order, 'active' );
 						break;
