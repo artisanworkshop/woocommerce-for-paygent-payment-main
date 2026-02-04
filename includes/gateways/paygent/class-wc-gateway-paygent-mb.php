@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Mobile Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.5
+ * @version 2.4.8
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop
@@ -190,6 +190,9 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 		add_action( 'add_meta_boxes_woocommerce_page_wc-orders--shop_subscription', array( $this, 'paygent_mb_add_meta_box' ), 24, 2 );
 		// Cancel order.
 		add_action( 'woocommerce_before_cart', array( $this, 'paygent_cart_cancel' ) );
+
+		// Allow redirects to Paygent payment gateway domains.
+		add_filter( 'allowed_redirect_hosts', array( $this, 'add_allowed_redirect_hosts' ) );
 	}
 
 	/**
@@ -437,28 +440,23 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 					}
 					$order->add_meta_data( '_pc_mobile_type', wc_clean( $send_data['pc_mobile_type'] ), true );
 					if ( 5 === $send_data['career_type'] ) {// Docomo.
+						$mb_type = 'docomo';
 						$order->add_meta_data( '_career_type', 'docomo', true );
 						$order->add_meta_data( '_open_id_redirect_html', mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
-						$order->save_meta_data();
-						$order->save();
-						// translators: Payment method name.
-						$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':docomo' ) );
-						return array(
-							'result'   => 'success',
-							'redirect' => $payment_url,
-						);
 					} else { // au-payment.
+						$mb_type = 'au';
 						$order->add_meta_data( '_career_type', 'au', true );
-						$order->add_meta_data( '_open_id_redirect_url', wc_clean( $response_user['result_array'][0]['redirect_url'] ), true );
-						$order->save_meta_data();
-						$order->save();
-						// translators: Payment method name.
-						$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':au' ) );
-						return array(
-							'result'   => 'success',
-							'redirect' => $response_user['result_array'][0]['redirect_url'],
-						);
+						$order->add_meta_data( '_redirect_url', esc_url_raw( $response_user['result_array'][0]['redirect_url'] ) );
+						$payment_url = $response_user['result_array'][0]['redirect_url'];
 					}
+					$order->save_meta_data();
+					$order->save();
+					// translators: Payment method name.
+					$order->update_status( 'pending', sprintf( __( 'Pending %s', 'woocommerce-for-paygent-payment-main' ), __( 'Carrier Payment', 'woocommerce-for-paygent-payment-main' ) . ':' . $mb_type ) );
+					return array(
+						'result'   => 'success',
+						'redirect' => $payment_url,
+					);
 				} else {
 					$this->paygent_request->error_response( $response_user, $order );
 					return array( 'result' => 'failed' );
@@ -523,10 +521,11 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 				$trading_id = $response['result_array'][0]['trading_id'];
 			}
 			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
-				$subscription_parent   = wcs_get_subscriptions_for_order( $order );
-				$keys                  = array_keys( $subscription_parent );
-				$subscription          = wcs_get_subscription( $keys[0] );
-				$dates['next_payment'] = date_i18n( 'Y-m-01 H:i:s', strtotime( date_i18n( 'Y-m-01 H:i:s' ) . '+1 month' ) - 9 * 3600 );
+				$subscription_parent = wcs_get_subscriptions_for_order( $order );
+				$keys                = array_keys( $subscription_parent );
+				$subscription        = wcs_get_subscription( $keys[0] );
+				// Set next payment date to first of next month with random time between 12:00:00 and 23:59:59.
+				$dates['next_payment'] = $this->calculate_next_payment_date();
 				$subscription->update_dates( $dates );
 				if ( isset( $running_id ) ) {
 					$subscription->update_meta_data( 'running_id', wc_clean( $running_id ) );
@@ -661,16 +660,14 @@ window.onload = send_form_submit;
 							echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 						} else {
 							$order->add_order_note( 'No redirect HTML' );
-							if ( wp_safe_redirect( $cart_url ) ) {
-								wc_add_notice( __( 'Payment has failed. Please try again.', 'woocommerce-for-paygent-payment-main' ) );
-								exit;
-							}
+							wc_add_notice( __( 'Payment has failed. Please try again.', 'woocommerce-for-paygent-payment-main' ), 'error' );
+							wp_safe_redirect( $cart_url );
+							exit;
 						}
 					} else {
 						$this->paygent_request->error_response( $response, $order );
-						if ( wp_safe_redirect( $cart_url ) ) {
-							exit;
-						}
+						wp_safe_redirect( $cart_url );
+						exit;
 					}
 				} elseif ( $redirect_html && 6 === $send_data['career_type'] ) {// SoftBank.
 					echo wp_kses( $redirect_html, $allow_redirect_html );
@@ -690,7 +687,8 @@ window.onload = send_form_submit;
 					} else {
 						$send_data['sales_flg'] = 1;
 					}
-					$order->add_meta_data( '_open_id', wp_unslash( $open_id ), true );
+					$order->save_meta_data();
+					$order->save();
 					$send_data = $this->mb_order_send_data( $order_id, $send_data );
 					$response  = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 					// Check response.
@@ -698,14 +696,16 @@ window.onload = send_form_submit;
 						$this->save_trading_id_running_id( $telegram_kind, $order, $response );
 						// Return thank you redirect.
 						if ( isset( $response['result_array'][0]['redirect_url'] ) ) {
-							if ( wp_safe_redirect( $response['result_array'][0]['redirect_url'] ) ) {
-								exit;
-							}
+							$order->add_meta_data( '_redirect_url', esc_url_raw( $response['result_array'][0]['redirect_url'] ), true );
+							$order->save_meta_data();
+							$order->save();
+							// Redirect to Paygent payment gateway (whitelisted via allowed_redirect_hosts filter).
+							wp_safe_redirect( $response['result_array'][0]['redirect_url'] );
+							exit;
 						} else {
 							$order->add_order_note( 'No redirect URL' );
-							if ( wp_safe_redirect( wc_get_cart_url() ) ) {
-								exit;
-							}
+							wp_safe_redirect( wc_get_cart_url() );
+							exit;
 						}
 					} else {
 						$this->paygent_request->error_response( $response, $order );
@@ -765,6 +765,44 @@ window.onload = send_form_submit;
 	}
 
 	/**
+	 * Calculate the next payment date for subscription.
+	 *
+	 * Sets the next payment date to the first day of next month
+	 * with a random time between 12:00:00 and 23:59:59.
+	 * Uses WordPress timezone settings via current_datetime().
+	 *
+	 * @return string Formatted date string in 'Y-m-d H:i:s' format (in WordPress timezone).
+	 */
+	private function calculate_next_payment_date() {
+		$random_hour   = wp_rand( 12, 23 );
+		$random_minute = wp_rand( 0, 59 );
+		$random_second = 0;
+		// Get current date/time in WordPress timezone.
+		$current_date = current_datetime();
+
+		// Calculate next month's year and month.
+		$current_year  = (int) $current_date->format( 'Y' );
+		$current_month = (int) $current_date->format( 'm' );
+
+		// Increment month.
+		$next_month = $current_month + 1;
+		$next_year  = $current_year;
+
+		// Handle year rollover (December -> January).
+		if ( $next_month > 12 ) {
+			$next_month = 1;
+			++$next_year;
+		}
+
+		// Create new date object for first day of next month.
+		// Note: current_datetime() returns DateTimeImmutable, so setDate() and setTime() return new objects.
+		$next_month_date = $current_date->setDate( $next_year, $next_month, 1 );
+		$next_month_date = $next_month_date->setTime( $random_hour, $random_minute, $random_second );
+
+		return $next_month_date->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
 	 * Process the order status when the order is completed.
 	 *
 	 * @param int $order_id Order ID.
@@ -785,10 +823,11 @@ window.onload = send_form_submit;
 			}
 			$order->save();
 			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
-				$subscription_parent   = wcs_get_subscriptions_for_order( $order );
-				$keys                  = array_keys( $subscription_parent );
-				$subscription          = wcs_get_subscription( $keys[0] );
-				$dates['next_payment'] = date_i18n( 'Y-m-01 H:i:s', strtotime( date_i18n( 'Y-m-01 H:i:s' ) . '+1 month' ) - 9 * 3600 );
+				$subscription_parent = wcs_get_subscriptions_for_order( $order );
+				$keys                = array_keys( $subscription_parent );
+				$subscription        = wcs_get_subscription( $keys[0] );
+				// Set next payment date to first of next month with random time between 12:00:00 and 23:59:59.
+				$dates['next_payment'] = $this->calculate_next_payment_date();
 				$subscription->update_dates( $dates );
 				if ( isset( $_GET['running_id'] ) ) {// phpcs:ignore
 					if ( isset( $_GET['trading_id'] ) ) {// phpcs:ignore
@@ -922,6 +961,23 @@ window.onload = send_form_submit;
 				$this->paygent_request->order_paygent_status_completed( $order_id, $telegram_kind, $this, $send_sales_data );
 			}
 		}
+	}
+
+	/**
+	 * Add allowed redirect hosts for Paygent payment gateway
+	 *
+	 * @param array $hosts Array of allowed hosts.
+	 * @return array Modified array of allowed hosts.
+	 */
+	public function add_allowed_redirect_hosts( $hosts ) {
+		// Add Paygent payment gateway domains.
+		$paygent_hosts = array(
+			'connect.auone.jp',        // au Easy Payment.
+			'id.smt.docomo.ne.jp',     // Docomo Payment.
+			'link.paygent.co.jp',      // Paygent general domain.
+		);
+
+		return array_merge( $hosts, $paygent_hosts );
 	}
 
 	/**

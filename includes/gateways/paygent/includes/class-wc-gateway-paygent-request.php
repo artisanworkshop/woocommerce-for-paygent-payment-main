@@ -5,7 +5,7 @@
  * Functions of a Paygent Payment Gateway.
  *
  * @class       WC_Gateway_Paygent_Request
- * @version     2.3.0
+ * @version     2.4.8
  * @package     PaygentForWooCommerce
  * @author      Artisan Workshop
  */
@@ -394,13 +394,15 @@ class WC_Gateway_Paygent_Request {
 		if ( '1' === $response['result'] ) {// System Error
 			// Other transaction error.
 			$code        = str_replace( '″', '', $response['responseDetail'] );
+			$code        = str_replace( '”', '', $response['responseDetail'] );
 			$error_texts = $this->error_text();
 			if ( isset( $error_texts[ $code ] ) ) {
 				$message = $code . ':' . $error_texts[ $code ];
 			} else {
 				$message = $response['responseDetail'];
 			}
-			$order->add_order_note( __( 'paygent Payment failed. Sysmte Error: ', 'woocommerce-for-paygent-payment-main' ) . $response['responseCode'] . ':' . mb_convert_encoding( $message, 'UTF-8', 'auto' ) );
+
+			$order->add_order_note( __( 'paygent Payment failed. Sysmte Error: ', 'woocommerce-for-paygent-payment-main' ) . $response['responseCode'] . ':' . mb_convert_encoding( $message, 'UTF-8', 'auto' ) . ':' . $response['responseDetail'] );
 			if ( is_checkout() ) {
 				wc_add_notice( __( 'Sorry, there was an error: ', 'woocommerce-for-paygent-payment-main' ) . $response['responseCode'] . ':' . mb_convert_encoding( $message, 'UTF-8', 'auto' ), 'error' );
 			}
