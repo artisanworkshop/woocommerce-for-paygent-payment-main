@@ -5,7 +5,7 @@
  * Functions of a Paygent Payment Gateway.
  *
  * @class       WC_Gateway_Paygent_Request
- * @version     2.3.0
+ * @version     2.4.8
  * @package     PaygentForWooCommerce
  * @author      Artisan Workshop
  */

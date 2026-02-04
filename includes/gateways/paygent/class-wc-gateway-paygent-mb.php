@@ -4,7 +4,7 @@
  *
  * Provides a Paygent Mobile Payment Gateway integration for WooCommerce.
  *
- * @version 2.4.5
+ * @version 2.4.8
  * @package WooCommerce/Gateways
  * @category Payment Gateways
  * @author Artisan Workshop

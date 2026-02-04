@@ -3,7 +3,7 @@
  * WooCommerce Paygent Payment Gateway
  *
  * @package WooCommerce\Paygent
- * @version 2.4.7
+ * @version 2.4.8
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,7 +24,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '2.4.7';
+		public $version = '2.4.8';
 
 		/**
 		 * Paygent Payment Gateways for WooCommerce Framework version.

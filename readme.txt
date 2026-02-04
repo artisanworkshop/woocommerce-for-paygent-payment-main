@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=info@art
 Tags: woocommerce, payment Gateway, japan
 Requires at least: 5.0
 Tested up to: 6.9.0
-Stable tag: 2.4.7
+Stable tag: 2.4.8
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -44,6 +44,12 @@ A: We support with paid support. <a herf="https://wc.artws.info/product/payment-
 5. Convenience Store Payment setting
 
 == Changelog ==
+
+= 2.4.8 - 2026-02-05 =
+* Fixed - Refactor next payment date calculation for subscriptions to use a dedicated method.
+* Fixed - Handle expired authorization status in Paygent webhook response.
+* Fixed - Add allowed redirect hosts for Paygent payment gateway and improve IP address permission checks.
+* Fixed - Enhance error handling by including detailed response information in order notes.
 
 = 2.4.7 - 2026-01-06 =
 * Security - Improved IP address acquisition reliability by prioritizing REMOTE_ADDR to prevent IP spoofing. HTTP headers (X-Forwarded-For, X-Real-IP) are now used only as fallback methods.
