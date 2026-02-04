@@ -525,11 +525,7 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 				$keys                = array_keys( $subscription_parent );
 				$subscription        = wcs_get_subscription( $keys[0] );
 				// Set next payment date to first of next month with random time between 12:00:00 and 23:59:59.
-				$random_hour           = wp_rand( 12, 23 );
-				$random_minute         = wp_rand( 0, 59 );
-				$random_second         = wp_rand( 0, 59 );
-				$random_time           = sprintf( '%02d:%02d:%02d', $random_hour, $random_minute, $random_second );
-				$dates['next_payment'] = date_i18n( 'Y-m-01 ' . $random_time, strtotime( date_i18n( 'Y-m-01' ) . ' +1 month' ) );
+				$dates['next_payment'] = $this->calculate_next_payment_date();
 				$subscription->update_dates( $dates );
 				if ( isset( $running_id ) ) {
 					$subscription->update_meta_data( 'running_id', wc_clean( $running_id ) );
@@ -769,6 +765,44 @@ window.onload = send_form_submit;
 	}
 
 	/**
+	 * Calculate the next payment date for subscription.
+	 *
+	 * Sets the next payment date to the first day of next month
+	 * with a random time between 12:00:00 and 23:59:59.
+	 * Uses WordPress timezone settings via current_datetime().
+	 *
+	 * @return string Formatted date string in 'Y-m-d H:i:s' format (in WordPress timezone).
+	 */
+	private function calculate_next_payment_date() {
+		$random_hour   = wp_rand( 12, 23 );
+		$random_minute = wp_rand( 0, 59 );
+		$random_second = 0;
+		// Get current date/time in WordPress timezone.
+		$current_date = current_datetime();
+
+		// Calculate next month's year and month.
+		$current_year  = (int) $current_date->format( 'Y' );
+		$current_month = (int) $current_date->format( 'm' );
+
+		// Increment month.
+		$next_month = $current_month + 1;
+		$next_year  = $current_year;
+
+		// Handle year rollover (December -> January).
+		if ( $next_month > 12 ) {
+			$next_month = 1;
+			++$next_year;
+		}
+
+		// Create new date object for first day of next month.
+		// Note: current_datetime() returns DateTimeImmutable, so setDate() and setTime() return new objects.
+		$next_month_date = $current_date->setDate( $next_year, $next_month, 1 );
+		$next_month_date = $next_month_date->setTime( $random_hour, $random_minute, $random_second );
+
+		return $next_month_date->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
 	 * Process the order status when the order is completed.
 	 *
 	 * @param int $order_id Order ID.
@@ -793,11 +827,7 @@ window.onload = send_form_submit;
 				$keys                = array_keys( $subscription_parent );
 				$subscription        = wcs_get_subscription( $keys[0] );
 				// Set next payment date to first of next month with random time between 12:00:00 and 23:59:59.
-				$random_hour           = wp_rand( 12, 23 );
-				$random_minute         = wp_rand( 0, 59 );
-				$random_second         = wp_rand( 0, 59 );
-				$random_time           = sprintf( '%02d:%02d:%02d', $random_hour, $random_minute, $random_second );
-				$dates['next_payment'] = date_i18n( 'Y-m-01 ' . $random_time, strtotime( date_i18n( 'Y-m-01' ) . ' +1 month' ) );
+				$dates['next_payment'] = $this->calculate_next_payment_date();
 				$subscription->update_dates( $dates );
 				if ( isset( $_GET['running_id'] ) ) {// phpcs:ignore
 					if ( isset( $_GET['trading_id'] ) ) {// phpcs:ignore
