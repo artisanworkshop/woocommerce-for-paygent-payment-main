@@ -15,5 +15,10 @@
 		"WP_DEBUG_DISPLAY": false,
 		"SCRIPT_DEBUG": true,
 		"ALTERNATE_WP_CRON": false
-    }
+    },
+	"env": {
+		"development": {
+			"phpmyadminPort": 9001
+		}
+	}
 }

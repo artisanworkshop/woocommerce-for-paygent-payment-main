@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for dir in ~/.wp-env/*/)",
+      "Bash(do if [ -d \"$dir/wp-content/themes/twentytwentyfour\" ])",
+      "Bash(then echo \"$dir\")",
+      "Bash(git -C \"$dir\" status --short)",
+      "Bash(fi:*)",
+      "Bash(done)",
+      "Bash(do if [ -d \"$dir\" ])",
+      "Bash(then echo \"=== $dir ===\")"
+    ]
+  }
+}

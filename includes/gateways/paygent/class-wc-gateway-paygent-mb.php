@@ -771,7 +771,7 @@ window.onload = send_form_submit;
 	 * with a random time between 12:00:00 and 23:59:59.
 	 * Uses WordPress timezone settings via current_datetime().
 	 *
-	 * @return string Formatted date string in 'Y-m-d H:i:s' format (in WordPress timezone).
+	 * @return string Formatted date string in 'Y-m-d H:i:s' format (in UTC).
 	 */
 	private function calculate_next_payment_date() {
 		$random_hour   = wp_rand( 12, 23 );
@@ -798,6 +798,9 @@ window.onload = send_form_submit;
 		// Note: current_datetime() returns DateTimeImmutable, so setDate() and setTime() return new objects.
 		$next_month_date = $current_date->setDate( $next_year, $next_month, 1 );
 		$next_month_date = $next_month_date->setTime( $random_hour, $random_minute, $random_second );
+
+		// Convert to UTC timezone.
+		$next_month_date = $next_month_date->setTimezone( new DateTimeZone( 'UTC' ) );
 
 		return $next_month_date->format( 'Y-m-d H:i:s' );
 	}
