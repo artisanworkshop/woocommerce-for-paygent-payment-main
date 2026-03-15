@@ -136,6 +136,12 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 		} else {
 			$this->paygent_request->error_response( $response, $subscription );
 			$subscription->add_order_note( __( 'Fail cancel subscription.', 'woocommerce-for-paygent-payment-main' ) . $add_message );
+			$this->jp4wc_framework->jp4wc_debug_log( 'Cancel subscription failed. Subscription ID: ' . $subscription_id, true, 'wc-paygent' );
+			$this->jp4wc_framework->send_notice_email(
+				get_option( 'admin_email' ),
+				__( 'Cancel subscription failed', 'woocommerce-for-paygent-payment-main' ),
+				__( 'Cancel subscription failed. Subscription ID: ', 'woocommerce-for-paygent-payment-main' ) . $subscription_id
+			);
 		}
 	}
 
