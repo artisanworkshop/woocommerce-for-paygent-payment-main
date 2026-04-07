@@ -7,6 +7,7 @@
 /node_modules
 /vendor
 /src
+/.claude
 
 # Files
 .wp-env.json

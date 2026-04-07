@@ -26,3 +26,6 @@ Thumbs.db
 
 # wp-env config
 .wp-env.override.json
+
+# Claude's local config
+.claude/settings.local.json
