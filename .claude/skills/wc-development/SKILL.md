@@ -10,7 +10,7 @@ description: >
   references WooCommerce hooks, filters, or classes. This skill targets WooCommerce 10.x (current stable: 10.6)
   on WordPress 6.6+ / 7.0+.
 compatibility: >
-  WooCommerce 9.0–10.6+ on WordPress 6.6–7.0+. PHP 8.0+. HPOS required for all new extensions.
+  WooCommerce 9.0–10.6+ on WordPress 6.7–7.0+. PHP 8.2+. HPOS required for all new extensions.
   Some workflows use WP-CLI with WooCommerce commands.
 ---
 
