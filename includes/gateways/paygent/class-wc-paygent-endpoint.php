@@ -409,7 +409,74 @@ class WC_Paygent_Endpoint {
 	 */
 	public function paygent_mb_webhook( $order, $get_array ) {
 		if ( isset( $get_array['payment_status'] ) ) {
-			if ( $order->get_type() === 'shop_order' ) {
+			if ( ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) ) ||
+				( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) ) {
+				$renewal_status      = 'not_set';
+				$subscription_status = 'not_set';
+				switch ( $get_array['payment_status'] ) {
+					case '10':// Apply.
+						$renewal_status      = 'on-hold';
+						$subscription_status = 'on-hold';
+						break;
+					case '15':// Application interruption.
+						$renewal_status      = 'cancelled';
+						$subscription_status = 'cancelled';
+						break;
+					case '20':// Authority OK.
+						$renewal_status      = 'processing';
+						$subscription_status = 'active';
+						break;
+					case '21':// Authority complete.
+						$renewal_status      = 'processing';
+						$subscription_status = 'not_set';
+						break;
+					case '32':// Approval revoked.
+						$renewal_status      = 'cancelled';
+						$subscription_status = 'cancelled';
+						break;
+					case '33':// Authorization expired.
+						$renewal_status      = 'cancelled';
+						$subscription_status = 'not_set';
+						break;
+					case '36':// Sales hold.
+						$renewal_status      = 'on-hold';
+						$subscription_status = 'on-hold';
+						break;
+					case '40':// Sales Completed.
+						$renewal_status      = 'processing';
+						$subscription_status = 'active';
+						break;
+					case '41':// Sales Completed (no change more).
+						$renewal_status      = 'not_set';
+						$subscription_status = 'not_set';
+						break;
+					case '43':// Breaking news detected.
+						$renewal_status      = 'processing';
+						$subscription_status = 'active';
+						break;
+					case '44':// Sales Completed.
+						$renewal_status      = 'processing';
+						$subscription_status = 'active';
+						break;
+					case '50':// Sales canceled.
+						$renewal_status      = 'cancelled';
+						$subscription_status = 'cancelled';
+						break;
+					case '60':// Sales canceled.
+						$renewal_status      = 'refunded';
+						$subscription_status = 'cancelled';
+						break;
+					case '62':// Cancellation completed.
+						$renewal_status      = 'cancelled';
+						$subscription_status = 'cancelled';
+						break;
+				}
+				$this->paygent_update_status_webhook( $order, $renewal_status );
+				$subscriptions = wcs_get_subscriptions_for_order( $order );
+				foreach ( $subscriptions as $subscription ) {
+					$this->paygent_update_status_webhook( $subscription, $subscription_status );
+				}
+			} elseif ( $order->get_type() === 'shop_order' ) {
 				switch ( $get_array['payment_status'] ) {
 					case '10':// Apply.
 						$this->paygent_update_status_webhook( $order, 'on-hold' );
