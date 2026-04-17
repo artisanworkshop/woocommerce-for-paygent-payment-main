@@ -1,14 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(for dir in ~/.wp-env/*/)",
-      "Bash(do if [ -d \"$dir/wp-content/themes/twentytwentyfour\" ])",
-      "Bash(then echo \"$dir\")",
-      "Bash(git -C \"$dir\" status --short)",
-      "Bash(fi:*)",
-      "Bash(done)",
-      "Bash(do if [ -d \"$dir\" ])",
-      "Bash(then echo \"=== $dir ===\")"
+      "Bash(cp -r /Users/shoheitanaka/Dev/saai-ten4wc/.claude/skills/wc-development /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/)",
+      "Bash(cp -r /Users/shoheitanaka/Dev/saai-ten4wc/.claude/skills/woo-marketplace-content /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/)",
+      "Bash(cp -r /Users/shoheitanaka/Dev/saai-ten4wc/.claude/skills/woo-marketplace-extension /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/)",
+      "Bash(cp -r /Users/shoheitanaka/Dev/saai-ten4wc/.claude/skills/woo-marketplace-pricing /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/)",
+      "Bash(cp -r /Users/shoheitanaka/Dev/saai-ten4wc/.claude/skills/woo-marketplace-qit /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/)",
+      "Bash(composer phpstan:*)",
+      "Bash(composer phpcs:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(head -3 /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/woo-marketplace-content/references/*.md)",
+      "Bash(head -3 /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/woo-marketplace-submission/references/*.md)",
+      "Bash(wc -l /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/woo-marketplace-content/references/*.md)",
+      "Bash(wc -l /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/woo-marketplace-submission/references/*.md)",
+      "Bash(head:*)",
+      "Bash(sed -i '' 's/Targets WordPress 6\\\\.9+ \\(PHP 7\\\\.2\\\\.24+\\)\\\\. Filesystem-based agent with bash + node\\\\. Some workflows require WP-CLI\\\\./Targets WordPress 6.7+ \\\\/ WooCommerce 9.0+ \\(PHP 8.2+\\). Filesystem-based agent with bash + node. Some workflows require WP-CLI./g' /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/wp-block-development/SKILL.md /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/wp-plugin-development/SKILL.md /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/wp-rest-api/SKILL.md)",
+      "Bash(sed -i '' 's/Targets WordPress 6\\\\.9+ \\(PHP 7\\\\.2\\\\.24+\\)\\\\. Requires WP-CLI in the execution environment\\\\./Targets WordPress 6.7+ \\\\/ WooCommerce 9.0+ \\(PHP 8.2+\\). Requires WP-CLI in the execution environment./g' /Users/shoheitanaka/Dev/saai-wccom-plugin-template/.claude/skills/wp-wpcli-and-ops/SKILL.md)"
     ]
   }
 }
