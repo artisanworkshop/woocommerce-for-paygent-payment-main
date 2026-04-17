@@ -117,6 +117,84 @@ Please back up your database and plugin files before updating. If you do a major
 - Fixed - Endpoint bug fixed.
 - Dev - Preparation for checkout & cart block support for the upcoming major version (3.0).
 
+## Development with Claude Code
+
+このプロジェクトはClaude Codeによる開発をサポートしています。決済仕様書（`2025docs/`）を正とするスキルファイルと、PDFアップデート検知ワークフローを整備しています。
+
+### Claude Code スキル
+
+`.claude/skills/` に5つのスキルが定義されており、Paygent決済の実装・修正時に自動的に発動します。
+
+| スキル名 | 対象決済 |
+| --- | --- |
+| `paygent-core` | 共通API通信、ハッシュチェック、認証、エラーハンドリング |
+| `paygent-cc` | クレジットカード（トークン決済、3DS2、継続課金、多通貨） |
+| `paygent-digital` | PayPay、Paidy、楽天ペイ、Apple Pay、Google Pay、Alipay、銀聯 |
+| `paygent-bank` | コンビニ決済、仮想口座（ATM）、銀行ネット、口座振替 |
+| `paygent-carrier` | キャリア決済（auかんたん決済、d払い、ソフトバンク）都度課金・継続課金 |
+
+各スキルの詳細は `.claude/skills/<skill-name>/SKILL.md` を参照してください。
+
+### PDF仕様書アップデート検知ワークフロー
+
+`2025docs/` 配下のPaygent公式仕様書PDFが更新された際に、対応するスキルのレビューが必要かどうかを検知するスクリプトを用意しています。
+
+**前提条件**: `pdftotext` コマンドが必要です（`brew install poppler`）。
+
+#### 基本的な使い方
+
+```bash
+# 1. PDFが更新されたかチェック
+./scripts/check-pdf-updates.sh
+
+# 2. 変更がある場合、更新されたPDFの内容を確認
+pdftotext "2025docs/<更新されたPDF>" - | less
+
+# 3. 対応するスキルファイルを更新
+#    .claude/skills/<skill>/SKILL.md
+#    .claude/skills/<skill>/references/*.md
+
+# 4. レビュー完了後、ハッシュを更新
+./scripts/update-pdf-hashes.sh
+```
+
+#### 各スクリプトの役割
+
+| スクリプト | 説明 |
+| --- | --- |
+| `scripts/check-pdf-updates.sh` | 仕様書PDFのMD5ハッシュを `.claude/pdf-hashes.txt` と比較し、変更があったPDFとレビューが必要なスキルを表示 |
+| `scripts/update-pdf-hashes.sh` | 現在のPDFのハッシュを記録（スキルレビュー完了後に実行） |
+
+#### 出力例（変更あり）
+
+```text
+======================================
+PDF FILES UPDATED - SKILL REVIEW NEEDED
+======================================
+
+Changed PDFs:
+  - PayPay/02_PG外部インターフェース仕様説明書（別紙：PayPay）.pdf
+
+Skills requiring review:
+  - paygent-digital → .claude/skills/paygent-digital/
+```
+
+#### PDFとスキルのマッピング
+
+| PDF（2025docs/内） | 対応スキル |
+| --- | --- |
+| `system/モジュールタイプ/02_PG外部インターフェース仕様説明書.pdf` | paygent-core, paygent-cc, paygent-bank |
+| `system/モジュールタイプ/02_PG外部インターフェース仕様説明書（トークン決済）.pdf` | paygent-cc |
+| `PayPay/02_PG外部インターフェース仕様説明書（別紙：PayPay）.pdf` | paygent-digital |
+| `Paidy/02_PG外部インターフェース仕様説明書（別紙：Paidy）.pdf` | paygent-digital |
+| `楽天ペイ/02_PG外部インターフェース仕様説明書（別紙：楽天ペイ）.pdf` | paygent-digital |
+| `ApplePay/02_PG外部インターフェース仕様説明書（別紙：Apple Pay）.pdf` | paygent-digital |
+| `GooglePay/02_PG外部インターフェース仕様説明書（別紙：Google Pay）.pdf` | paygent-digital |
+| `Alipay国際決済/02_PG外部インターフェース仕様説明書（別紙：Alipay国際決済）.pdf` | paygent-digital |
+| `銀聯ネット決済/02_PG外部インターフェース仕様説明書（別紙：銀聯ネット決済）.pdf` | paygent-digital |
+| `携帯キャリア決済（都度課金）/02_PG外部インターフェース仕様説明書（別紙：携帯キャリア決済）.pdf` | paygent-carrier |
+| `携帯キャリア決済（継続課金）/02_PG外部インターフェース仕様説明書（別紙：携帯キャリア決済継続課金）.pdf` | paygent-carrier |
+
 ## License
 
 [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html)
