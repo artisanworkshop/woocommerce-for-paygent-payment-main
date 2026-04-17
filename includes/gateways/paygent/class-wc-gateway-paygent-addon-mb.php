@@ -461,10 +461,12 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 				)
 			);
 			echo '<div>';
-			echo esc_html( '定期購入の支払い金額を' . number_format( $total ) . '円に変更しましたので以下の変更ボタンから支払金額変更をお願いいたします。' ) . '<br/>';
-			echo esc_html( '上記記載の次回の支払いに' . number_format( $total ) . '円が請求されます。' ) . '<br/>';
+			// translators: %s: formatted payment amount.
+			echo esc_html( sprintf( __( 'The subscription payment amount has been changed to %s JPY. Please use the button below to proceed with the payment amount change.', 'woocommerce-for-paygent-payment-main' ), number_format( $total ) ) ) . '<br/>';
+			// translators: %s: formatted payment amount.
+			echo esc_html( sprintf( __( 'You will be charged %s JPY for the next payment as described above.', 'woocommerce-for-paygent-payment-main' ), number_format( $total ) ) ) . '<br/>';
 			echo '<br />';
-			echo '<a href="' . esc_url( $payment_url ) . '">金額変更</a>';
+			echo '<a href="' . esc_url( $payment_url ) . '">' . esc_html__( 'Change Amount', 'woocommerce-for-paygent-payment-main' ) . '</a>';
 			echo '</div>';
 		} elseif ( isset( $_GET['change_result'] ) ) {// phpcs:ignore
 			$return_url   = $this->jp4wc_framework->jp4wc_make_add_get_url(
