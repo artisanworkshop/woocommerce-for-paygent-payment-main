@@ -1020,7 +1020,7 @@ jQuery(function(){
 		$send_data['payment_id']        = '';
 		$send_data['3dsecure_use_type'] = 2;
 		$send_data['security_code_use'] = 1;
-		$send_data['3ds_auth_id']       = $_GET['3ds_auth_id'];// phpcs:ignore
+		$send_data['3ds_auth_id']       = wc_clean( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
 		$payment_class                  = $order->get_meta( '_payment_class' );
 		if ( $payment_class ) {
 			$send_data['payment_class'] = $payment_class;
@@ -1089,17 +1089,19 @@ jQuery(function(){
 		++$jp4wc_cc_num;
 
 		if ( isset( $_GET['result'] ) && $order->get_payment_method() === $this->id ) {// phpcs:ignore
-			if ( $_GET['3dsecure_requestor_error_code'] ) {// phpcs:ignore
-				$message = $this->tdsecure_requestor_error_codes( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) );// phpcs:ignore
-				$order->add_order_note( __( '3D Secure 2.0 Requestor Error Code:', 'woocommerce-for-paygent-payment-main' ) . wp_unslash( $_GET['3dsecure_requestor_error_code'] ) . ', ' . $message );// phpcs:ignore
+			if ( ! empty( $_GET['3dsecure_requestor_error_code'] ) ) {// phpcs:ignore
+				$requestor_error_code = wc_clean( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) );// phpcs:ignore
+				$message              = $this->tdsecure_requestor_error_codes( $requestor_error_code );
+				$order->add_order_note( __( '3D Secure 2.0 Requestor Error Code:', 'woocommerce-for-paygent-payment-main' ) . $requestor_error_code . ', ' . $message );
 			}
-			if ( $_GET['3dsecure_server_error_code'] ) {// phpcs:ignore
-				$message = $this->tdsecure_server_error_codes( $_GET['3dsecure_server_error_code'] );// phpcs:ignore
-				$order->add_order_note( __( '3D Secure 2.0 Server Error Code:', 'woocommerce-for-paygent-payment-main' ) . $_GET['3dsecure_server_error_code'] . ', ' . $message );// phpcs:ignore
+			if ( ! empty( $_GET['3dsecure_server_error_code'] ) ) {// phpcs:ignore
+				$server_error_code = wc_clean( wp_unslash( $_GET['3dsecure_server_error_code'] ) );// phpcs:ignore
+				$message           = $this->tdsecure_server_error_codes( $server_error_code );
+				$order->add_order_note( __( '3D Secure 2.0 Server Error Code:', 'woocommerce-for-paygent-payment-main' ) . $server_error_code . ', ' . $message );
 			}
 			if ( '0' === $_GET['result'] ) {// phpcs:ignore
 				// Response Result is success at Challenge flow.
-				$attempt_kbn = $_GET['attempt_kbn'];// phpcs:ignore
+				$attempt_kbn = wc_clean( wp_unslash( $_GET['attempt_kbn'] ?? '' ) );// phpcs:ignore
 				if ( '1' === $attempt_kbn ) {// Attempt kbn is attention.
 					$order->add_order_note( __( 'Attempt kbn is attention.', 'woocommerce-for-paygent-payment-main' ) );
 					if ( ! empty( $this->attempt_notice_email ) && 'yes' === $this->attempt ) {
@@ -1151,7 +1153,9 @@ jQuery(function(){
 				}
 			} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
 				wc_increase_stock_levels( $order_id );
-				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( urldecode( $_GET['response_detail'] ) ) . ']' );// phpcs:ignore
+				$response_code   = wc_clean( wp_unslash( $_GET['response_code'] ?? '' ) );// phpcs:ignore
+				$response_detail = wc_clean( wp_unslash( urldecode( $_GET['response_detail'] ?? '' ) ) );// phpcs:ignore
+				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . $response_code . ':' . $response_detail . ']' );
 				wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 				wp_safe_redirect( wc_get_checkout_url() );
 				exit;
@@ -1329,9 +1333,10 @@ jQuery(function(){
 	public function tds2_status_change( $order_id ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_payment_method() === $this->id && isset( $_GET['3ds_auth_id'] ) ) {// phpcs:ignore
-			if ( $_GET['3ds_auth_id'] === $order->get_meta( '_3ds_auth_id' ) && ! empty( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
+			$tds_auth_id = wc_clean( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
+			if ( $tds_auth_id === $order->get_meta( '_3ds_auth_id' ) && ! empty( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
 				try {
-					$order->set_transaction_id( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
+					$order->set_transaction_id( $tds_auth_id );
 				} catch ( WC_Data_Exception $e ) {
 					$order->add_order_note( 'fail to set transaction id.' );
 				}
@@ -1339,7 +1344,7 @@ jQuery(function(){
 				$order->update_status( 'processing', 'Complete 3D Secure 2.0' );
 			} else {
 				if ( isset( $_GET['3dsecure_requestor_error_code'] ) && isset( $_GET['3dsecure_server_error_code'] ) ) {// phpcs:ignore
-					$order->add_order_note( 'requestor_error_code:' . wp_unslash( $_GET['3dsecure_requestor_error_code'] ) . '|Server_error_code:' . wp_unslash( $_GET['3dsecure_server_error_code'] ) ); // phpcs:ignore
+					$order->add_order_note( 'requestor_error_code:' . wc_clean( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) ) . '|Server_error_code:' . wc_clean( wp_unslash( $_GET['3dsecure_server_error_code'] ) ) ); // phpcs:ignore
 				}
 				wc_increase_stock_levels( $order_id );
 				$order->update_status( 'cancelled', 'Failed 3D Secure 2.0' );
@@ -1359,7 +1364,7 @@ jQuery(function(){
 		$prefix_order     = get_option( 'wc-paygent-prefix_order' );
 		$tradind_id       = '';
 		if ( isset( $_GET['trading_id'] ) ) {// phpcs:ignore
-			$tradind_id = $_GET['trading_id'];// phpcs:ignore
+			$tradind_id = wc_clean( wp_unslash( $_GET['trading_id'] ) );// phpcs:ignore
 			if ( $paygent_order_id ) {
 				$base_order_id = substr( $tradind_id, strlen( $prefix_order ) );
 			} else {
@@ -1371,7 +1376,7 @@ jQuery(function(){
 
 		if ( isset( $tradind_id  ) && $payment_method === $this->id && $order_id == $base_order_id && isset( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
 			// set transaction id for Paygent Order Number.
-			$order->set_transaction_id( wc_clean( $_GET['payment_id'] ) );// phpcs:ignore
+			$order->set_transaction_id( wc_clean( wp_unslash( $_GET['payment_id'] ) ) );// phpcs:ignore
 			// Mark as processing (payment complete).
 			$order->update_status( 'processing', __( '3D Secure payment was complete.', 'woocommerce-for-paygent-payment-main' ) );
 			// Reduce stock levels.
@@ -1393,11 +1398,13 @@ jQuery(function(){
 			} elseif ( isset( $_GET['result'] ) && '1' === $_GET['result'] && $order->get_payment_method() === $this->id ) {// phpcs:ignore
 			// set transaction id for Paygent Order Number.
 			if ( isset( $_GET['payment_id'] ) ) {// phpcs:ignore
-				$order->set_transaction_id( wp_unslash( $_GET['payment_id'] ) );// phpcs:ignore
+				$order->set_transaction_id( wc_clean( wp_unslash( $_GET['payment_id'] ) ) );// phpcs:ignore
 			}
 			// Mark as failed (payment failed).
 			if ( isset( $_GET['response_code'] ) ) {// phpcs:ignore
-				$order->update_status( 'failed', __( 'Error at 3D Secure.', 'woocommerce-for-paygent-payment-main' ) . wp_unslash( $_GET['response_code'] ) . ':' . urldecode( $_GET['response_detail'] ) );// phpcs:ignore
+				$response_code   = wc_clean( wp_unslash( $_GET['response_code'] ) );// phpcs:ignore
+				$response_detail = wc_clean( wp_unslash( urldecode( $_GET['response_detail'] ?? '' ) ) );// phpcs:ignore
+				$order->update_status( 'failed', __( 'Error at 3D Secure.', 'woocommerce-for-paygent-payment-main' ) . $response_code . ':' . $response_detail );
 			}
 		}
 	}

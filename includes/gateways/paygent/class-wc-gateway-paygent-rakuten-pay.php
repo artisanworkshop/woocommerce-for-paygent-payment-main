@@ -328,8 +328,8 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 		$payment_method = $order->get_payment_method();
 		if ( $payment_method === $this->id && isset( $_GET['payment_id'] ) && isset( $_GET['rakuten_order_id'] ) ) {// phpcs:ignore
 			try {
-				$order->set_transaction_id( wp_unslash( $_GET['payment_id'] ) );//phpcs:ignore
-				$order->add_meta_data( '_rakuten_order_id', wp_unslash( $_GET['rakuten_order_id'] ), true );//phpcs:ignore
+				$order->set_transaction_id( wc_clean( wp_unslash( $_GET['payment_id'] ) ) );//phpcs:ignore
+				$order->add_meta_data( '_rakuten_order_id', wc_clean( wp_unslash( $_GET['rakuten_order_id'] ) ), true );//phpcs:ignore
 				$order->save();
 			} catch ( WC_Data_Exception $e ) {
 				$order->add_order_note( $e->getErrorCode() . ':' . $e->getMessage() );

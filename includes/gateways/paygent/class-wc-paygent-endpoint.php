@@ -178,7 +178,9 @@ class WC_Paygent_Endpoint {
 			$is_permitted = true;
 		}
 
-		if ( ! $is_permitted && isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		// X-Forwarded-For is user-controlled and can be spoofed, so it is disabled by default.
+		// Enable only if the site runs behind a trusted reverse proxy via this filter.
+		if ( ! $is_permitted && apply_filters( 'paygent_allow_x_forwarded_for_ip_check', false ) && isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
 			foreach ( $forwarded_ips as $ip ) {
 				$ip = trim( $ip );

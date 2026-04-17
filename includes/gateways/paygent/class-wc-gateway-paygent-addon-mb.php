@@ -461,8 +461,8 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 				)
 			);
 			echo '<div>';
-			echo '定期購入の支払い金額を' . number_format( $total ) . '円に変更しましたので以下の変更ボタンから支払金額変更をお願いいたします。<br/>';
-			echo '上記記載の次回の支払いに' . number_format( $total ) . '円が請求されます。<br/>';
+			echo esc_html( '定期購入の支払い金額を' . number_format( $total ) . '円に変更しましたので以下の変更ボタンから支払金額変更をお願いいたします。' ) . '<br/>';
+			echo esc_html( '上記記載の次回の支払いに' . number_format( $total ) . '円が請求されます。' ) . '<br/>';
 			echo '<br />';
 			echo '<a href="' . esc_url( $payment_url ) . '">金額変更</a>';
 			echo '</div>';
@@ -494,7 +494,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			if ( '0' === $response_user['result'] && $response_user['result_array'] ) {
 				echo esc_html( mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 			} else {
-				echo '何か障害が発生いたしました。また、時間をおいて試してください。';
+				echo esc_html( '何か障害が発生いたしました。また、時間をおいて試してください。' );
 			}
 		} elseif ( isset( $_GET['change_proceed'] ) && isset( $_GET['open_id'] ) ) {// phpcs:ignore
 			$total = 0;
@@ -518,7 +518,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			$send_data['cancel_url'] = $cancel_url;
 			$send_data['running_id'] = $order->get_meta( 'running_id', true );
 			$send_data['amount']     = $total;
-			$send_data['open_id']    = $_GET['open_id'];// phpcs:ignore
+			$send_data['open_id']    = wc_clean( wp_unslash( $_GET['open_id'] ) );// phpcs:ignore
 			$telegram_kind           = '126';
 			$response                = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 			if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
@@ -529,9 +529,9 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 				}
 			}
 		} elseif ( isset( $_GET['change_completed'] ) ) {// phpcs:ignore
-			echo 'completed';
+			echo esc_html( 'completed' );
 		} elseif ( isset( $_GET['change_cancel'] ) ) {// phpcs:ignore
-			echo 'cancel';
+			echo esc_html( 'cancel' );
 		}
 	}
 
