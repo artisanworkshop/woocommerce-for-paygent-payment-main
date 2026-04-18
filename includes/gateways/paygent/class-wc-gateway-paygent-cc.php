@@ -489,6 +489,17 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 		}
 		$this->paygent_token_js( $merchant_id, $token_key, $tokens, $this->id );
 
+		// Show "save card" checkbox for logged-in users (not for subscriptions).
+		$is_subscription = function_exists( 'wcs_cart_contains_subscription' ) && wcs_cart_contains_subscription();
+		if ( 'yes' === $this->store_card_info && is_user_logged_in() && ! $is_subscription ) {
+			echo '<p class="form-row form-row-wide">';
+			echo '<label for="paygent_save_card_info">';
+			echo '<input type="checkbox" id="paygent_save_card_info" name="paygent_save_card_info" value="yes" style="width:auto;margin-right:6px;">';
+			echo esc_html__( 'Save payment information to my account for future purchases.', 'woocommerce-for-paygent-payment-main' );
+			echo '</label>';
+			echo '</p>';
+		}
+
 		echo '</div>';
 		if ( $this->payment_method ) {
 			$payment_method = $this->payment_method;
@@ -720,9 +731,14 @@ jQuery(function(){
 			$card_user_id = 'wc' . $order_id . '-user';
 		}
 
+		// Save user's card-save preference to meta (needed for 3DS2 callback which has no POST data).
+		$user_wants_save_card = ( true === $subscription ) || ( 'yes' === sanitize_text_field( wp_unslash( $_POST['paygent_save_card_info'] ?? '' ) ) );// phpcs:ignore
+		$order->update_meta_data( '_paygent_save_card_preference', $user_wants_save_card ? '1' : '0' );
+		$order->save_meta_data();
+
 		// Card information deposit function without EMV-3DS.
 		$set_login = false;
-		if ( is_user_logged_in() && ( 'yes' === $this->store_card_info || true === $subscription ) ) {
+		if ( is_user_logged_in() && ( $user_wants_save_card || true === $subscription ) ) {
 			$set_login = true;
 			if ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' ) {
 				$send_data['customer_card_id'] = $this->jp4wc_framework->get_post( 'stored-info' );
@@ -1134,7 +1150,8 @@ jQuery(function(){
 					exit;
 				}
 				// If necessary, register customer's card information.
-				if ( 'yes' === $this->store_card_info ) {
+				$user_wants_save_card = '1' === $order->get_meta( '_paygent_save_card_preference' );
+				if ( 'yes' === $this->store_card_info && $user_wants_save_card ) {
 					$card_token = $order->get_meta( '_paygent_card_token' );
 					$user_id    = $order->get_user_id();
 					if ( false === $order->get_meta( '_paygent_customer_card_id' ) ) {
