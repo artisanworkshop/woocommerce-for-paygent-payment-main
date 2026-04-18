@@ -271,6 +271,11 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 
 		add_action( 'woocommerce_payment_token_deleted', array( $this, 'paygent_delete_card' ), 10, 2 );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'order_paygent_cc_status_completed' ) );
+
+		// Amount increase meta box (028/029).
+		add_action( 'add_meta_boxes', array( $this, 'paygent_cc_add_increase_meta_box' ), 24, 2 );
+		add_action( 'add_meta_boxes_woocommerce_page_wc-orders', array( $this, 'paygent_cc_add_increase_meta_box' ), 24, 2 );
+		add_action( 'wp_ajax_paygent_cc_increase_amount', array( $this, 'paygent_cc_process_increase_amount' ) );
 	}
 
 	/**
@@ -1568,6 +1573,192 @@ jQuery(function(){
 		}
 
 		return true;
+	}
+
+	/**
+	 * Register the amount increase meta box for CC orders.
+	 *
+	 * @param string|WC_Order $post_type_or_order Post type string or WC_Order (HPOS).
+	 * @param WP_Post|null    $post               WP_Post object or null.
+	 */
+	public function paygent_cc_add_increase_meta_box( $post_type_or_order, $post = null ) {
+		$order = null;
+		if ( $post_type_or_order instanceof WC_Order ) {
+			$order = $post_type_or_order;
+		} elseif ( $post && isset( $post->ID ) ) {
+			$order = wc_get_order( $post->ID );
+		}
+		if ( ! $order || $order->get_payment_method() !== $this->id ) {
+			return;
+		}
+		$hpos_enabled = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+		$screen       = $hpos_enabled ? 'woocommerce_page_wc-orders' : 'shop_order';
+		add_meta_box(
+			'paygent-cc-increase-amount',
+			__( 'Paygent CC - Amount Correction (028/029)', 'woocommerce-for-paygent-payment-main' ),
+			array( $this, 'paygent_cc_increase_amount_meta_box' ),
+			$screen,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the amount increase meta box HTML.
+	 */
+	public function paygent_cc_increase_amount_meta_box() {
+		if ( isset( $_GET['post'] ) ) {// phpcs:ignore
+			$order_id = absint( $_GET['post'] );// phpcs:ignore
+		} elseif ( isset( $_GET['id'] ) ) {// phpcs:ignore
+			$order_id = absint( $_GET['id'] );// phpcs:ignore
+		} else {
+			return;
+		}
+		$order       = wc_get_order( $order_id );
+		$order_total = $order->get_total();
+		$currency    = get_woocommerce_currency_symbol( $order->get_currency() );
+		$tds2_used   = ! empty( $order->get_meta( '_3ds_auth_id' ) );
+
+		wp_nonce_field( 'paygent_cc_increase_amount_' . $order_id, 'paygent_cc_increase_nonce' );
+		echo '<input type="hidden" id="paygent_cc_increase_order_id" value="' . esc_attr( $order_id ) . '">';
+
+		echo '<p><strong>' . esc_html__( 'Current total:', 'woocommerce-for-paygent-payment-main' ) . '</strong> ' . esc_html( $currency . number_format( $order_total, 0 ) ) . '</p>';
+
+		if ( $tds2_used ) {
+			echo '<p style="color:#c00;border:1px solid #c00;padding:6px 8px;border-radius:3px;"><strong>⚠ ' . esc_html__( '3D Secure orders: amount correction (028/029) is not supported by Paygent. This form has been disabled.', 'woocommerce-for-paygent-payment-main' ) . '</strong></p>';
+		}
+
+		echo '<p class="description">';
+		echo esc_html__( 'Notes (from Paygent spec):', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( '3D Secure is not supported — prior 3DS orders will fail.', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( 'CVV check is skipped (value not retained by Paygent).', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( 'Card last-used date is not updated when using stored card.', 'woocommerce-for-paygent-payment-main' );
+		echo '</p>';
+
+		$disabled = $tds2_used ? ' disabled' : '';
+		echo '<p>';
+		echo '<label for="paygent_cc_new_amount"><strong>' . esc_html__( 'New total amount:', 'woocommerce-for-paygent-payment-main' ) . '</strong></label><br>';
+		echo '<input type="number" id="paygent_cc_new_amount" min="1" step="1" style="width:100%;" placeholder="' . esc_attr( number_format( $order_total, 0, '', '' ) ) . '"' . $disabled . '>';// phpcs:ignore
+		echo '</p>';
+
+		echo '<button type="button" id="paygent_cc_increase_submit" class="button button-primary" style="width:100%;"' . $disabled . '>' // phpcs:ignore
+			. esc_html__( 'Execute Amount Correction', 'woocommerce-for-paygent-payment-main' )
+			. '</button>';
+
+		echo '<div id="paygent_cc_increase_result" style="margin-top:8px;"></div>';
+		?>
+		<script type="text/javascript">
+		jQuery( function( $ ) {
+			$( '#paygent_cc_increase_submit' ).on( 'click', function() {
+				var newAmount = $( '#paygent_cc_new_amount' ).val();
+				if ( ! newAmount || isNaN( newAmount ) || parseFloat( newAmount ) <= 0 ) {
+					$( '#paygent_cc_increase_result' ).html( '<span style="color:red;"><?php echo esc_js( __( 'Please enter a valid amount.', 'woocommerce-for-paygent-payment-main' ) ); ?></span>' );
+					return;
+				}
+				$( '#paygent_cc_increase_submit' ).prop( 'disabled', true ).text( '<?php echo esc_js( __( 'Processing...', 'woocommerce-for-paygent-payment-main' ) ); ?>' );
+				$.post( ajaxurl, {
+					action:   'paygent_cc_increase_amount',
+					order_id: $( '#paygent_cc_increase_order_id' ).val(),
+					amount:   newAmount,
+					nonce:    $( '#paygent_cc_increase_nonce' ).val()
+				}, function( response ) {
+					$( '#paygent_cc_increase_submit' ).prop( 'disabled', false ).text( '<?php echo esc_js( __( 'Execute Amount Correction', 'woocommerce-for-paygent-payment-main' ) ); ?>' );
+					if ( response.success ) {
+						$( '#paygent_cc_increase_result' ).html( '<span style="color:green;">' + $( '<span>' ).text( response.data ).html() + '</span>' );
+					} else {
+						$( '#paygent_cc_increase_result' ).html( '<span style="color:red;">' + $( '<span>' ).text( response.data ).html() + '</span>' );
+					}
+				} );
+			} );
+		} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX handler: send 028 (auth) or 029 (sale) with reduction_flag=0 for amount increase.
+	 */
+	public function paygent_cc_process_increase_amount() {
+		check_ajax_referer( 'paygent_cc_increase_amount_' . absint( $_POST['order_id'] ?? 0 ), 'nonce' );// phpcs:ignore
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$order_id   = absint( $_POST['order_id'] ?? 0 );// phpcs:ignore
+		$new_amount = isset( $_POST['amount'] ) ? (int) round( (float) wc_clean( wp_unslash( $_POST['amount'] ) ) ) : 0;// phpcs:ignore
+
+		if ( $order_id <= 0 || $new_amount <= 0 ) {
+			wp_send_json_error( __( 'Invalid order ID or amount.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$order            = wc_get_order( $order_id );
+		$transaction_id   = $order->get_transaction_id();
+		$paygent_order_id = $order->get_meta( '_paygent_order_id' );
+		$trading_id       = $paygent_order_id ? $paygent_order_id : 'wc_' . $order_id;
+
+		// Query current payment status via 094.
+		$check_data    = array(
+			'payment_id' => $transaction_id,
+			'trading_id' => $trading_id,
+		);
+		$status_result = $this->paygent_request->send_paygent_request( $this->test_mode, $order, '094', $check_data, $this->debug );
+		if ( '0' !== $status_result['result'] || empty( $status_result['result_array'][0]['payment_status'] ) ) {
+			wp_send_json_error( __( 'Failed to retrieve current payment status.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$payment_status = $status_result['result_array'][0]['payment_status'];
+		if ( '20' === $payment_status ) {
+			$telegram_kind = '028';// Auth correction.
+		} elseif ( '40' === $payment_status ) {
+			$telegram_kind = '029';// Sale correction.
+		} else {
+			// translators: %s: payment status code.
+			$msg = sprintf(
+				__( 'Amount correction is not available for payment status %s. Only status 20 (auth) or 40 (sale) is supported.', 'woocommerce-for-paygent-payment-main' ),
+				$payment_status
+			);
+			wp_send_json_error( $msg );
+		}
+
+		$send_data = array(
+			'payment_id'     => $transaction_id,
+			'trading_id'     => $trading_id,
+			'payment_amount' => $new_amount,
+			'reduction_flag' => 0,
+		);
+		$result    = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+
+		if ( '0' !== $result['result'] ) {
+			$error_code   = isset( $result['responseCode'] ) ? $result['responseCode'] : '';
+			$error_detail = isset( $result['responseDetail'] ) ? mb_convert_encoding( $result['responseDetail'], 'UTF-8', 'SJIS' ) : '';
+			wp_send_json_error( __( 'Amount correction failed.', 'woocommerce-for-paygent-payment-main' ) . ' [' . $error_code . ': ' . $error_detail . ']' );
+		}
+
+		// Update transaction ID to new payment_id.
+		if ( ! empty( $result['result_array'][0]['payment_id'] ) ) {
+			$new_payment_id = wc_clean( $result['result_array'][0]['payment_id'] );
+			$old_payment_id = $transaction_id;
+			$order->set_transaction_id( $new_payment_id );
+			$order->save();
+			// translators: %1$s: telegram kind, %2$s: new amount, %3$s: old payment_id, %4$s: new payment_id.
+			$note = sprintf(
+				__( 'Paygent amount correction (%1$s) succeeded. New amount: %2$s. payment_id changed from %3$s to %4$s.', 'woocommerce-for-paygent-payment-main' ),
+				$telegram_kind,
+				number_format( $new_amount ),
+				$old_payment_id,
+				$new_payment_id
+			);
+			$order->add_order_note( $note );
+		}
+
+		$success_msg = sprintf(
+			// translators: %1$s: telegram kind, %2$s: new amount.
+			__( 'Amount correction (%1$s) succeeded. New amount: %2$s.', 'woocommerce-for-paygent-payment-main' ),
+			$telegram_kind,
+			number_format( $new_amount )
+		);
+		wp_send_json_success( $success_msg );
 	}
 
 	/**
