@@ -11,6 +11,7 @@
 			<directory>tests/Integration</directory>
 			<exclude>tests/Integration/bootstrap.php</exclude>
 			<exclude>tests/Integration/TestCase.php</exclude>
+			<exclude>tests/Integration/Sandbox</exclude>
 		</testsuite>
 	</testsuites>
 

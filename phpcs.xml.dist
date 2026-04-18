@@ -2,6 +2,9 @@
 <ruleset name="Paygent for WooCommerce">
 	<description>WordPress Coding Standards for the Paygent plugin.</description>
 
+	<!-- PHP files only — CSS/JS have separate tooling. -->
+	<arg name="extensions" value="php"/>
+
 	<file>includes/</file>
 	<file>class-wc-gateway-paygent.php</file>
 	<file>woocommerce-for-paygent-payment-main.php</file>
@@ -23,7 +26,10 @@
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="woocommerce-for-paygent-payment-main"/>
+			<!-- WPCS 3.x array syntax (replaces deprecated comma-separated string). -->
+			<property name="text_domain" type="array">
+				<element value="woocommerce-for-paygent-payment-main"/>
+			</property>
 		</properties>
 	</rule>
 

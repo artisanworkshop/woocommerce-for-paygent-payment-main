@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+  Sandbox API integration tests — requires real Paygent sandbox credentials.
+
+  Usage (inside wp-env tests-cli container):
+
+    PAYGENT_TEST_MID=xxx PAYGENT_TEST_CID=yyy PAYGENT_TEST_CPASS=zzz \
+      php vendor/bin/phpunit -c phpunit-sandbox.xml.dist
+
+  Hash-check mode (no client certificate needed):
+
+    PAYGENT_TEST_MID=xxx PAYGENT_TEST_CID=yyy PAYGENT_TEST_CPASS=zzz \
+    PAYGENT_TEST_HASH_CHECK=1 PAYGENT_TEST_HASH_CODE=hhh \
+      php vendor/bin/phpunit -c phpunit-sandbox.xml.dist
+
+  See tests/Integration/Sandbox/SandboxApiTestCase.php for full documentation.
+-->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+	bootstrap="tests/Integration/bootstrap.php"
+	colors="true"
+	cacheDirectory=".phpunit.cache"
+>
+	<testsuites>
+		<testsuite name="sandbox">
+			<directory>tests/Integration/Sandbox</directory>
+		</testsuite>
+	</testsuites>
+
+	<source>
+		<include>
+			<directory>includes</directory>
+			<file>class-wc-gateway-paygent.php</file>
+		</include>
+		<exclude>
+			<directory>includes/jp4wc-framework</directory>
+			<directory>vendor-wc</directory>
+		</exclude>
+	</source>
+
+	<php>
+		<env name="PAYGENT_WP_ROOT" value="/var/www/html"/>
+	</php>
+</phpunit>
