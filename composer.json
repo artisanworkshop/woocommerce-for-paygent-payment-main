@@ -12,11 +12,35 @@
 	],
 	"require": {
 		"php": ">=7.4",
-        "symfony/yaml" : ">=v2.8.2"
+		"symfony/yaml": ">=v2.8.2"
 	},
-    "autoload": {
-        "psr-4": {
-            "PaygentModule\\": "src/paygent_module"
-        }
-    }
+	"require-dev": {
+		"phpunit/phpunit": "^10.5 || ^11.5",
+		"brain/monkey": "^2.6",
+		"mockery/mockery": "^1.6",
+		"yoast/phpunit-polyfills": "^3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"PaygentModule\\": "src/paygent_module"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Paygent\\Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"test": "phpunit",
+		"test:unit": "phpunit --testsuite unit",
+		"test:integration": "phpunit --testsuite integration",
+		"phpcs": "phpcs --standard=WordPress includes/ class-wc-gateway-paygent.php woocommerce-for-paygent-payment-main.php",
+		"phpcbf": "phpcbf --standard=WordPress includes/ class-wc-gateway-paygent.php woocommerce-for-paygent-payment-main.php",
+		"phpstan": "phpstan analyse"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
 }
