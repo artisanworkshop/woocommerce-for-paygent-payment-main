@@ -21,6 +21,10 @@ abstract class TestCase extends PHPUnitTestCase {
 		// Stub common WordPress functions used throughout the plugin.
 		Monkey\Functions\stubTranslationFunctions();
 		Monkey\Functions\stubEscapeFunctions();
+
+		// apply_filters must be stubbed via Brain\Monkey (not bootstrap) so that
+		// Patchwork can redefine it per-test when needed.
+		Monkey\Functions\when( 'apply_filters' )->returnArg( 2 );
 	}
 
 	protected function tearDown(): void {

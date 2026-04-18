@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ruleset name="Paygent for WooCommerce">
+	<description>WordPress Coding Standards for the Paygent plugin.</description>
+
+	<file>includes/</file>
+	<file>class-wc-gateway-paygent.php</file>
+	<file>woocommerce-for-paygent-payment-main.php</file>
+	<file>uninstall.php</file>
+
+	<!-- Exclude vendor and framework directories. -->
+	<exclude-pattern>vendor/*</exclude-pattern>
+	<exclude-pattern>vendor-wc/*</exclude-pattern>
+	<exclude-pattern>node_modules/*</exclude-pattern>
+	<exclude-pattern>includes/jp4wc-framework/*</exclude-pattern>
+
+	<!-- Test files use PSR-4 / PHPUnit naming conventions, not WordPress file naming. -->
+	<exclude-pattern>tests/*</exclude-pattern>
+
+	<rule ref="WordPress">
+		<!-- Allow short array syntax. -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="woocommerce-for-paygent-payment-main"/>
+		</properties>
+	</rule>
+
+	<config name="minimum_supported_wp_version" value="5.0"/>
+</ruleset>

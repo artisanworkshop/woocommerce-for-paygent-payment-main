@@ -50,11 +50,6 @@ if ( ! function_exists( 'wp_kses' ) ) {
 		return $data;
 	}
 }
-if ( ! function_exists( 'apply_filters' ) ) {
-	function apply_filters( $tag, $value ) { // phpcs:ignore
-		return $value;
-	}
-}
 if ( ! function_exists( 'wc_get_order_statuses' ) ) {
 	function wc_get_order_statuses() { // phpcs:ignore
 		return array(
@@ -65,6 +60,8 @@ if ( ! function_exists( 'wc_get_order_statuses' ) ) {
 			'wc-cancelled'      => 'Cancelled',
 			'wc-refunded'       => 'Refunded',
 			'wc-failed'         => 'Failed',
+			'wc-checkout-draft' => 'Draft',
+			'wc-all_refunded'   => 'All Refunded',
 			// WooCommerce Subscriptions statuses.
 			'wc-active'         => 'Active',
 			'wc-expired'        => 'Expired',

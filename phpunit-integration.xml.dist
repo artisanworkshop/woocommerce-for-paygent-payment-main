@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+	bootstrap="tests/Integration/bootstrap.php"
+	colors="true"
+	cacheDirectory=".phpunit.cache"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory>tests/Integration</directory>
+			<exclude>tests/Integration/bootstrap.php</exclude>
+			<exclude>tests/Integration/TestCase.php</exclude>
+		</testsuite>
+	</testsuites>
+
+	<source>
+		<include>
+			<directory>includes</directory>
+			<file>class-wc-gateway-paygent.php</file>
+		</include>
+		<exclude>
+			<directory>includes/jp4wc-framework</directory>
+			<directory>vendor-wc</directory>
+		</exclude>
+	</source>
+
+	<php>
+		<!-- WordPress root path inside the wp-env tests-cli container. -->
+		<env name="PAYGENT_WP_ROOT" value="/var/www/html"/>
+	</php>
+</phpunit>
