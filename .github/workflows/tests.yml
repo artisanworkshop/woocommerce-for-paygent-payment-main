@@ -134,3 +134,68 @@ jobs:
       - name: Run PHPCS
         run: vendor/bin/phpcs --report=checkstyle | cs2pr
         continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Job 4: E2E functional tests — Playwright, wp-env, no sandbox credentials
+  # Runs: smoke, checkout (mock), admin-order, webhook
+  # Skipped: checkout-sandbox.* (requires Paygent IP registration → e2e-sandbox.yml)
+  # ---------------------------------------------------------------------------
+  e2e-functional:
+    name: E2E Functional Tests (Playwright)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache wp-env Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.wp-env-cache
+          key: wp-env-${{ hashFiles('.wp-env.json') }}
+          restore-keys: wp-env-
+
+      - name: Start wp-env
+        run: npx wp-env start
+        timeout-minutes: 10
+
+      - name: Run E2E functional tests
+        run: |
+          npx playwright test \
+            tests/E2E/smoke.spec.js \
+            tests/E2E/checkout.spec.js \
+            tests/E2E/admin-order.spec.js \
+            tests/E2E/webhook.spec.js \
+            --project=e2e
+        timeout-minutes: 10
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-functional
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Stop wp-env
+        if: always()
+        run: npx wp-env stop

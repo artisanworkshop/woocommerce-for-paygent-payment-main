@@ -1,0 +1,120 @@
+name: E2E Sandbox Tests
+
+# Manual trigger only.
+#
+# Paygent sandbox requires IP whitelisting. GitHub-hosted runners use dynamic
+# IPs, so this workflow is designed for a self-hosted runner registered with
+# a static IP in the Paygent sandbox admin console.
+#
+# Required GitHub Secrets:
+#   PAYGENT_TEST_MID       — Sandbox merchant ID
+#   PAYGENT_TEST_CID       — Sandbox connect ID
+#   PAYGENT_TEST_CPASS     — Sandbox connect password
+#   PAYGENT_TEST_TOKENKEY  — Token generation key
+#
+# Required GitHub Variables (or runner label):
+#   Use runs-on: [self-hosted, paygent-sandbox] for a runner whose IP is
+#   registered with Paygent, or update runs-on below to match your setup.
+on:
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - guest
+          - member
+
+concurrency:
+  group: e2e-sandbox
+  cancel-in-progress: false  # Never cancel sandbox runs — partial runs leave orders open.
+
+jobs:
+  e2e-sandbox:
+    name: E2E Sandbox (${{ github.event.inputs.test_suite }})
+    # Change to [self-hosted, paygent-sandbox] if using a dedicated runner
+    # whose IP is registered with the Paygent sandbox.
+    runs-on: ubuntu-latest
+
+    env:
+      PAYGENT_TEST_MID:      ${{ secrets.PAYGENT_TEST_MID }}
+      PAYGENT_TEST_CID:      ${{ secrets.PAYGENT_TEST_CID }}
+      PAYGENT_TEST_CPASS:    ${{ secrets.PAYGENT_TEST_CPASS }}
+      PAYGENT_TEST_TOKENKEY: ${{ secrets.PAYGENT_TEST_TOKENKEY }}
+
+    steps:
+      - name: Check required secrets
+        run: |
+          if [ -z "$PAYGENT_TEST_MID" ]; then
+            echo "::error::PAYGENT_TEST_MID secret is not set. Register the runner IP with Paygent sandbox and add the secrets."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache wp-env Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.wp-env-cache
+          key: wp-env-${{ hashFiles('.wp-env.json') }}
+          restore-keys: wp-env-
+
+      - name: Start wp-env
+        run: npx wp-env start
+        timeout-minutes: 10
+
+      # -----------------------------------------------------------------------
+      # Guest sandbox tests (Groups A–E: standard checkout, 3DS2, refund, installment)
+      # -----------------------------------------------------------------------
+      - name: Run guest sandbox E2E tests
+        if: ${{ github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'guest' }}
+        run: |
+          npx playwright test tests/E2E/checkout-sandbox.guest.spec.js \
+            --project=e2e-guest
+        timeout-minutes: 30
+
+      # -----------------------------------------------------------------------
+      # Member sandbox tests (Groups E–F: stored card, amount increase)
+      # -----------------------------------------------------------------------
+      - name: Run member sandbox E2E tests
+        if: ${{ github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'member' }}
+        run: |
+          npx playwright test tests/E2E/checkout-sandbox.member.spec.js \
+            --project=e2e-member
+        timeout-minutes: 30
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-sandbox-${{ github.event.inputs.test_suite }}-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (videos/traces on failure)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-test-results-${{ github.run_id }}
+          path: test-results/
+          retention-days: 7
+
+      - name: Stop wp-env
+        if: always()
+        run: npx wp-env stop

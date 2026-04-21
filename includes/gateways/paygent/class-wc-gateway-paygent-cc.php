@@ -177,7 +177,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                = 'paygent_cc';
-		$this->has_fields        = false;
+		$this->has_fields        = true;
 		$this->order_button_text = sprintf(
 		// translators: %s is the payment method name.
 			__( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ),
@@ -737,10 +737,11 @@ jQuery(function(){
 		$order->save_meta_data();
 
 		// Card information deposit function without EMV-3DS.
-		$set_login = false;
-		if ( is_user_logged_in() && ( $user_wants_save_card || true === $subscription ) ) {
+		$using_stored_card = ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' );
+		$set_login         = false;
+		if ( is_user_logged_in() && ( $user_wants_save_card || $using_stored_card || true === $subscription ) ) {
 			$set_login = true;
-			if ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' ) {
+			if ( $using_stored_card ) {
 				$send_data['customer_card_id'] = $this->jp4wc_framework->get_post( 'stored-info' );
 			} else {
 				$stored_user_card_data         = $this->add_stored_user_data( $card_user_id, $card_token, $this->test_mode, $this->debug, $order );
@@ -1742,7 +1743,7 @@ jQuery(function(){
 			'payment_id'     => $transaction_id,
 			'trading_id'     => $trading_id,
 			'payment_amount' => $new_amount,
-			'reduction_flag' => 0,
+			'reduction_flag' => '0', // Must be string: reqPut() uses loose == null check, integer 0 would be treated as null.
 		);
 		$result    = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 
@@ -1752,27 +1753,47 @@ jQuery(function(){
 			wp_send_json_error( __( 'Amount correction failed.', 'woocommerce-for-paygent-payment-main' ) . ' [' . $error_code . ': ' . $error_detail . ']' );
 		}
 
-		// Update transaction ID to new payment_id.
+		// Update WC order total to reflect the corrected amount.
+		$old_total = $order->get_total();
+		$order->set_total( $new_amount );
+
+		// Update transaction ID if a new payment_id was returned.
+		$old_payment_id = $transaction_id;
+		$new_payment_id = $transaction_id;
 		if ( ! empty( $result['result_array'][0]['payment_id'] ) ) {
 			$new_payment_id = wc_clean( $result['result_array'][0]['payment_id'] );
-			$old_payment_id = $transaction_id;
 			$order->set_transaction_id( $new_payment_id );
-			$order->save();
-			// translators: %1$s: telegram kind, %2$s: new amount, %3$s: old payment_id, %4$s: new payment_id.
+		}
+
+		$order->save();
+
+		// Always record an order note so the correction is visible in the order history.
+		if ( $new_payment_id !== $old_payment_id ) {
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount, %4$s: old payment_id, %5$s: new payment_id.
 			$note = sprintf(
-				__( 'Paygent amount correction (%1$s) succeeded. New amount: %2$s. payment_id changed from %3$s to %4$s.', 'woocommerce-for-paygent-payment-main' ),
+				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s. payment_id changed from %4$s to %5$s.', 'woocommerce-for-paygent-payment-main' ),
 				$telegram_kind,
+				number_format( (int) $old_total ),
 				number_format( $new_amount ),
 				$old_payment_id,
 				$new_payment_id
 			);
-			$order->add_order_note( $note );
+		} else {
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
+			$note = sprintf(
+				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s.', 'woocommerce-for-paygent-payment-main' ),
+				$telegram_kind,
+				number_format( (int) $old_total ),
+				number_format( $new_amount )
+			);
 		}
+		$order->add_order_note( $note );
 
 		$success_msg = sprintf(
-			// translators: %1$s: telegram kind, %2$s: new amount.
-			__( 'Amount correction (%1$s) succeeded. New amount: %2$s.', 'woocommerce-for-paygent-payment-main' ),
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
+			__( 'Amount correction (%1$s) succeeded. Amount: %2$s → %3$s.', 'woocommerce-for-paygent-payment-main' ),
 			$telegram_kind,
+			number_format( (int) $old_total ),
 			number_format( $new_amount )
 		);
 		wp_send_json_success( $success_msg );
