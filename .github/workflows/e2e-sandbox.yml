@@ -39,6 +39,7 @@ jobs:
     # whose IP is registered with the Paygent sandbox.
     runs-on: ubuntu-latest
 
+    # secrets context is valid in job-level env blocks (GitHub Actions docs §contexts).
     env:
       PAYGENT_TEST_MID:      ${{ secrets.PAYGENT_TEST_MID }}
       PAYGENT_TEST_CID:      ${{ secrets.PAYGENT_TEST_CID }}
