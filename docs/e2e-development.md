@@ -7,6 +7,35 @@
 
 ---
 
+## テスト追加計画
+
+優先度順に追加すべきテストを管理します。追加が完了したものは「✅ 完了」に更新します。
+
+### 高優先
+
+| # | テスト | ファイル | 状態 |
+|---|--------|---------|------|
+| 1 | 返金・取消のE2Eテスト（管理画面 UI） | `tests/E2E/admin-refund.spec.js` | ✅ 完了 |
+| 2 | エラーハンドリング・make_error_message のIntegrationテスト | `tests/Integration/RefundLogicTest.php` | ✅ 完了 |
+| 3 | セキュリティ監査（PHPCS + wp-security-check スキル） | — | 📋 追加予定 |
+
+### 中優先
+
+| # | テスト | ファイル | 状態 |
+|---|--------|---------|------|
+| 4 | 管理画面設定のIntegrationテスト（ゲートウェイ有効/無効・フォームフィールド） | `tests/Integration/GatewaySettingsTest.php` | ✅ 完了 |
+| 5 | サブスクリプション更新課金のIntegrationテスト | `tests/Integration/SubscriptionRenewalTest.php` | 📋 追加予定 |
+| 6 | 3DS2フローのE2Eテスト | `tests/E2E/checkout-sandbox.guest.spec.js` (Group B/C) | ✅ 既存カバー済み |
+
+### 低優先
+
+| # | テスト | 状態 |
+|---|--------|------|
+| 7 | PHPCSセキュリティ警告ゼロの確認（リリース前チェック） | 📋 追加予定 |
+| 8 | PHP マトリクス（7.4 / 8.1 / 8.2 / 8.3）での Unit テスト | ✅ CI対応済み (`tests.yml`) |
+
+---
+
 ## テストピラミッド
 
 ```
@@ -51,6 +80,8 @@ tests/
 │   ├── WebhookEndpointTest.php     REST ルート登録・IP 拒否の確認
 │   ├── HposOrderMetaTest.php       HPOS 注文メタ CRUD
 │   ├── SubscriptionHookTest.php    サブスクリプションフック
+│   ├── RefundLogicTest.php         返金ロジック・make_error_message・null ガード
+│   ├── GatewaySettingsTest.php     ゲートウェイ有効/無効・フォームフィールド・process_payment ガード
 │   └── Sandbox/
 │       ├── SandboxApiTestCase.php  Paygent API 共通基底クラス
 │       ├── CcSandboxApiTest.php    クレジットカード実 API テスト
@@ -71,6 +102,7 @@ tests/
     ├── smoke.spec.js               環境稼働確認
     ├── checkout.spec.js            チェックアウト UI（モック決済）
     ├── admin-order.spec.js         管理画面・注文管理
+    ├── admin-refund.spec.js        管理画面・返金 UI
     ├── webhook.spec.js             Webhook エンドポイント
     ├── checkout-sandbox.guest.spec.js  実 API サンドボックス（ゲスト）
     └── checkout-sandbox.member.spec.js 実 API サンドボックス（会員）

@@ -184,6 +184,7 @@ jobs:
             tests/E2E/smoke.spec.js \
             tests/E2E/checkout.spec.js \
             tests/E2E/admin-order.spec.js \
+            tests/E2E/admin-refund.spec.js \
             tests/E2E/webhook.spec.js \
             --project=e2e
         timeout-minutes: 10

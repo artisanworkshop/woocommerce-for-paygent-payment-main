@@ -62,11 +62,12 @@ composer test:integration
 wp-env が起動していることが前提。実際の Paygent API 通信は行わない。
 
 ```bash
-# 全 Functional テスト（smoke + checkout + admin-order + webhook）
+# 全 Functional テスト（smoke + checkout + admin-order + admin-refund + webhook）
 npx playwright test \
   tests/E2E/smoke.spec.js \
   tests/E2E/checkout.spec.js \
   tests/E2E/admin-order.spec.js \
+  tests/E2E/admin-refund.spec.js \
   tests/E2E/webhook.spec.js \
   --project=e2e
 
