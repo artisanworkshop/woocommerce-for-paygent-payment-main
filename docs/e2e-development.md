@@ -17,7 +17,7 @@
 |---|--------|---------|------|
 | 1 | 返金・取消のE2Eテスト（管理画面 UI） | `tests/E2E/admin-refund.spec.js` | ✅ 完了 |
 | 2 | エラーハンドリング・make_error_message のIntegrationテスト | `tests/Integration/RefundLogicTest.php` | ✅ 完了 |
-| 3 | セキュリティ監査（PHPCS + wp-security-check スキル） | — | 📋 追加予定 |
+| 3 | セキュリティ監査（PHPCS + wp-security-check スキル） | — | ✅ 完了 |
 
 ### 中優先
 
@@ -31,7 +31,7 @@
 
 | # | テスト | 状態 |
 |---|--------|------|
-| 7 | PHPCSセキュリティ警告ゼロの確認（リリース前チェック） | 📋 追加予定 |
+| 7 | PHPCSセキュリティ警告ゼロの確認（リリース前チェック） | ✅ 完了（エラー 0、警告は DB キャッシュ・capability 等の許容済み項目のみ） |
 | 8 | PHP マトリクス（7.4 / 8.1 / 8.2 / 8.3）での Unit テスト | ✅ CI対応済み (`tests.yml`) |
 
 ---

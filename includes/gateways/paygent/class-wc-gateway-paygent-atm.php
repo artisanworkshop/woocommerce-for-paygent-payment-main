@@ -273,12 +273,15 @@ class WC_Gateway_Paygent_ATM extends WC_Payment_Gateway {
 	 * @param int $order_id Order ID.
 	 */
 	public function payment_atm_detail( $order_id ) {
-		$status = get_post_status( $order_id );
-		if ( 'wc-on-hold' === $status ) {
-			$pay_center_number  = get_post_meta( $order_id, '_pay_center_number', true );
-			$customer_number    = get_post_meta( $order_id, '_customer_number', true );
-			$conf_number        = get_post_meta( $order_id, '_conf_number', true );
-			$payment_limit_date = get_post_meta( $order_id, '_payment_limit_date', true );
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+		if ( 'on-hold' === $order->get_status() ) {
+			$pay_center_number  = $order->get_meta( '_pay_center_number', true );
+			$customer_number    = $order->get_meta( '_customer_number', true );
+			$conf_number        = $order->get_meta( '_conf_number', true );
+			$payment_limit_date = $order->get_meta( '_payment_limit_date', true );
 			echo '<ul class="woocommerce-thankyou-order-details order_details">' . PHP_EOL;
 			echo '<li class="pay_center_number">' . PHP_EOL;
 			echo esc_html__( 'Pay Center Number :', 'woocommerce-for-paygent-payment-main' ) . '<strong>' . esc_html( $pay_center_number ) . '</strong>' . PHP_EOL;
