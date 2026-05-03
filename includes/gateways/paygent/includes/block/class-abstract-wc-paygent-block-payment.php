@@ -29,7 +29,7 @@ abstract class Abstract_WC_Paygent_Block_Payment extends AbstractPaymentMethodTy
 	 * @return void
 	 */
 	public function initialize(): void {
-		$this->settings = get_option( 'woocommerce_' . $this->name . '_settings', [] );
+		$this->settings = get_option( 'woocommerce_' . $this->name . '_settings', array() );
 	}
 
 	/**
@@ -47,11 +47,11 @@ abstract class Abstract_WC_Paygent_Block_Payment extends AbstractPaymentMethodTy
 	 * @return array<string,mixed>
 	 */
 	public function get_payment_method_data(): array {
-		return [
+		return array(
 			'title'       => $this->settings['title'] ?? '',
 			'description' => $this->settings['description'] ?? '',
 			'supports'    => $this->get_supported_features(),
-		];
+		);
 	}
 
 	/**
@@ -60,6 +60,6 @@ abstract class Abstract_WC_Paygent_Block_Payment extends AbstractPaymentMethodTy
 	 * @return string[]
 	 */
 	public function get_supported_features(): array {
-		return [ 'products' ];
+		return array( 'products' );
 	}
 }
