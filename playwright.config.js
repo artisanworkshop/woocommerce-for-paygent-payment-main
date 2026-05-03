@@ -87,5 +87,14 @@ module.exports = defineConfig({
 				storageState: 'tests/E2E/.auth/member.json',
 			},
 		},
+
+		/* PayPay sandbox tests: guest (no auth), external redirect flow. */
+		{
+			name: 'e2e-paypay',
+			testMatch: /\.paypay\.spec\.js$/,
+			use: {
+				...devices['Desktop Chrome'],
+			},
+		},
 	],
 });

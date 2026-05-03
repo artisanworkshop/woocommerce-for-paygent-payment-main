@@ -29,6 +29,7 @@
 		"e2e:headed": "playwright test --headed",
 		"e2e:debug": "playwright test --debug",
 		"e2e:smoke": "playwright test --project=e2e tests/E2E/smoke.spec.js",
+		"e2e:paypay": "playwright test --project=e2e-paypay",
 		"e2e:report": "playwright show-report"
 	}
 }
