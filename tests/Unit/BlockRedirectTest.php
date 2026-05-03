@@ -9,7 +9,22 @@ use Brain\Monkey\Functions;
  */
 class BlockRedirectTest extends TestCase {
 
-	private const BLOCK_DIR = __DIR__ . '/../../includes/gateways/paygent/includes/block/';
+	private const BLOCK_DIR    = __DIR__ . '/../../includes/gateways/paygent/includes/block/';
+	private const PLUGIN_URL   = 'http://localhost/wp-content/plugins/paygent/';
+	private const ICON_BASE    = self::PLUGIN_URL . 'assets/images/';
+
+	public static function setUpBeforeClass(): void {
+		parent::setUpBeforeClass();
+		if ( ! defined( 'WC_PAYGENT_ABSPATH' ) ) {
+			define( 'WC_PAYGENT_ABSPATH', dirname( __DIR__, 2 ) . '/' );
+		}
+		if ( ! defined( 'WC_PAYGENT_PLUGIN_URL' ) ) {
+			define( 'WC_PAYGENT_PLUGIN_URL', self::PLUGIN_URL );
+		}
+		if ( ! defined( 'WC_PAYGENT_VERSION' ) ) {
+			define( 'WC_PAYGENT_VERSION', '2.4.8' );
+		}
+	}
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -75,10 +90,10 @@ class BlockRedirectTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
-	// Abstract_WC_Paygent_Block_Payment — get_payment_method_data
+	// WC_Paygent_Block_Redirect — get_payment_method_data with icon
 	// -----------------------------------------------------------------------
 
-	public function test_get_payment_method_data_returns_title_description_supports(): void {
+	public function test_get_payment_method_data_includes_icon_url(): void {
 		Functions\when( 'get_option' )
 			->justReturn( array( 'enabled' => 'yes', 'title' => 'ATM払い', 'description' => '振込後に確定' ) );
 
@@ -89,10 +104,41 @@ class BlockRedirectTest extends TestCase {
 		$this->assertSame( 'ATM払い', $data['title'] );
 		$this->assertSame( '振込後に確定', $data['description'] );
 		$this->assertSame( array( 'products', 'refunds' ), $data['supports'] );
+		$this->assertSame( self::ICON_BASE . 'atm_logo.svg', $data['icon_url'] );
+	}
+
+	/**
+	 * @dataProvider icon_map_provider
+	 */
+	public function test_each_gateway_gets_correct_icon( string $gateway_id, string $expected_icon ): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$gateway = new \WC_Paygent_Block_Redirect( $gateway_id );
+		$data    = $gateway->get_payment_method_data();
+
+		$this->assertSame( self::ICON_BASE . $expected_icon, $data['icon_url'] );
+	}
+
+	public function icon_map_provider(): array {
+		return array(
+			'ATM'         => array( 'paygent_atm', 'atm_logo.svg' ),
+			'Bank Net'    => array( 'paygent_bn', 'bank_net_logo.svg' ),
+			'PayPay'      => array( 'paygent_paypay', 'paypay_logo.svg' ),
+			'Rakuten Pay' => array( 'paygent_rakutenpay', 'rakuten_pay_logo.svg' ),
+		);
+	}
+
+	public function test_unknown_gateway_has_no_icon_url(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$gateway = new \WC_Paygent_Block_Redirect( 'paygent_unknown' );
+		$data    = $gateway->get_payment_method_data();
+
+		$this->assertArrayNotHasKey( 'icon_url', $data );
 	}
 
 	// -----------------------------------------------------------------------
-	// WC_Paygent_Block_Redirect — constructor / features
+	// WC_Paygent_Block_Redirect — supported features
 	// -----------------------------------------------------------------------
 
 	public function test_default_supported_features_is_products(): void {

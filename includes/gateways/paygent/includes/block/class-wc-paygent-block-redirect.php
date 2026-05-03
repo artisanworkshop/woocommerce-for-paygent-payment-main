@@ -25,6 +25,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 
 	/**
+	 * Maps gateway ID to the icon filename in assets/images/.
+	 *
+	 * @var array<string,string>
+	 */
+	private static array $icon_map = array(
+		'paygent_atm'        => 'atm_logo.svg',
+		'paygent_bn'         => 'bank_net_logo.svg',
+		'paygent_paypay'     => 'paypay_logo.svg',
+		'paygent_rakutenpay' => 'rakuten_pay_logo.svg',
+	);
+
+	/**
 	 * Features supported by this gateway in Block checkout.
 	 *
 	 * @var string[]
@@ -34,8 +46,8 @@ class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 	/**
 	 * Constructor.
 	 *
-	 * @param string   $name              Gateway ID (e.g. 'paygent_atm').
-	 * @param string[] $supported_features Feature list for Block checkout supports config.
+	 * @param string   $name               Gateway ID (e.g. 'paygent_atm').
+	 * @param string[] $supported_features  Feature list for Block checkout supports config.
 	 */
 	public function __construct( string $name, array $supported_features = array( 'products' ) ) {
 		$this->name               = $name;
@@ -70,6 +82,22 @@ class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 		}
 
 		return array( 'wc-paygent-block-redirect' );
+	}
+
+	/**
+	 * Returns data passed to the JS component, including the payment icon URL.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function get_payment_method_data(): array {
+		$data      = parent::get_payment_method_data();
+		$icon_file = self::$icon_map[ $this->name ] ?? null;
+
+		if ( $icon_file ) {
+			$data['icon_url'] = WC_PAYGENT_PLUGIN_URL . 'assets/images/' . $icon_file;
+		}
+
+		return $data;
 	}
 
 	/**
