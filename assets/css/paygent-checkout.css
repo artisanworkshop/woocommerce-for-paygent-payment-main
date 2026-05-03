@@ -1,0 +1,13 @@
+/**
+ * Paygent for WooCommerce — Shortcode Checkout Styles
+ *
+ * Constrains payment method icons to a reasonable size on the
+ * classic (shortcode) checkout page.
+ */
+
+label[for^="payment_method_paygent_"] img {
+	max-height: 24px;
+	width: auto;
+	vertical-align: middle;
+	margin-left: 0.4em;
+}

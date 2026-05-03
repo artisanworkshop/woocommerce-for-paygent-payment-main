@@ -54,6 +54,8 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_wc_paygent_gateways' ) );
 			// Register Block checkout payment method integrations.
 			add_action( 'woocommerce_blocks_payment_method_type_registration', array( $this, 'register_block_payment_methods' ) );
+			// Enqueue icon styles on the classic (shortcode) checkout page.
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_checkout_styles' ) );
 		}
 
 		/**
@@ -285,6 +287,23 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				}
 			}
 			return $methods;
+		}
+
+		/**
+		 * Enqueue payment icon stylesheet on the classic shortcode checkout page.
+		 *
+		 * @return void
+		 */
+		public function enqueue_checkout_styles(): void {
+			if ( ! is_checkout() ) {
+				return;
+			}
+			wp_enqueue_style(
+				'paygent-checkout',
+				WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-checkout.css',
+				array( 'woocommerce-general' ),
+				WC_PAYGENT_VERSION
+			);
 		}
 
 		/**
