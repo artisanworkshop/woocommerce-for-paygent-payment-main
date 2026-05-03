@@ -17,8 +17,10 @@
 	},
 	"scripts": {
 		"start": "wp-scripts start && wp-env logs",
-		"build": "wp-scripts build && npm run i18n:build",
+		"build": "wp-scripts build",
+		"build:i18n": "wp-scripts build && npm run i18n:build",
 		"i18n": "npm run i18n:build",
+		"i18n:build": "npm run make-pot && npm run make-json",
 		"packages-update": "wp-scripts packages-update",
 		"check-engines": "wp-scripts check-engines",
 		"make-pot": "wp-env run cli --env-cwd=wp-content/plugins/woocommerce-for-paygent-payment-main/ wp i18n make-pot ./ i18n/woocommerce-for-paygent-payment-main.pot --ignore-domain",
