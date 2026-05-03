@@ -82,6 +82,7 @@ class WC_Gateway_Paygent_ATM extends WC_Payment_Gateway {
 	public function __construct() {
 		$this->id         = 'paygent_atm';
 		$this->has_fields = false;
+		$this->icon       = apply_filters( 'woocommerce_paygent_atm_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/atm_logo.svg' );
 		// translators: %s is the name of the payment method.
 		$this->order_button_text = sprintf( __( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ), __( 'ATM Payment', 'woocommerce-for-paygent-payment-main' ) );
 

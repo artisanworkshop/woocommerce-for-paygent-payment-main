@@ -76,6 +76,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 
 		$this->id         = 'paygent_rakutenpay';
 		$this->has_fields = false;
+		$this->icon       = apply_filters( 'woocommerce_paygent_rakutenpay_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/rakuten_pay_logo.svg' );
 		// translators: Rakuten Pay.
 		$this->order_button_text = sprintf( __( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ), __( 'Rakuten Pay', 'woocommerce-for-paygent-payment-main' ) );
 

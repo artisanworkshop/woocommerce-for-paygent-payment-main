@@ -91,6 +91,7 @@ class WC_Gateway_Paygent_BN extends WC_Payment_Gateway {
 
 		$this->id         = 'paygent_bn';
 		$this->has_fields = false;
+		$this->icon       = apply_filters( 'woocommerce_paygent_bn_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/bank_net_logo.svg' );
 		// translators: Bank Net.
 		$this->order_button_text = sprintf( __( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ), __( 'Bank Net', 'woocommerce-for-paygent-payment-main' ) );
 
