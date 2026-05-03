@@ -65,6 +65,12 @@ async function globalSetup() {
 	// Enable the Paygent CC gateway in WooCommerce settings.
 	wpEnv(`wp option update woocommerce_paygent_cc_settings --format=json '{"enabled":"yes","title":"クレジットカード (Paygent)","paymentaction":"sale","testmode":"yes"}'`);
 
+	// Prevent Japanized for WooCommerce (JP4WC) from redirecting to the Paidy
+	// onboarding wizard. JP4WC sets paidy_do_activation_redirect=true on first
+	// install and redirects when there are recent orders. Delete it unconditionally
+	// so the redirect never fires during tests (even after wp-env clean/restart).
+	wpEnv(`wp option delete paidy_do_activation_redirect`);
+
 	// -------------------------------------------------------------------------
 	// Step 1b: Create CA bundle for Paygent B2B module (sandbox SSL verification)
 	//
