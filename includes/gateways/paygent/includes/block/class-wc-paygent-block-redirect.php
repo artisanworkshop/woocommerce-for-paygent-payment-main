@@ -17,10 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * class handles all four by accepting the gateway name as a constructor argument.
  *
  * Usage:
- *   new WC_Paygent_Block_Redirect( 'paygent_atm',        [ 'products', 'refunds' ] );
- *   new WC_Paygent_Block_Redirect( 'paygent_bn',         [ 'products', 'refunds' ] );
- *   new WC_Paygent_Block_Redirect( 'paygent_paypay',     [ 'products', 'refunds' ] );
- *   new WC_Paygent_Block_Redirect( 'paygent_rakutenpay', [ 'products', 'refunds' ] );
+ *   new WC_Paygent_Block_Redirect( 'paygent_atm',        array( 'products', 'refunds' ) );
+ *   new WC_Paygent_Block_Redirect( 'paygent_bn',         array( 'products', 'refunds' ) );
+ *   new WC_Paygent_Block_Redirect( 'paygent_paypay',     array( 'products', 'refunds' ) );
+ *   new WC_Paygent_Block_Redirect( 'paygent_rakutenpay', array( 'products', 'refunds' ) );
  */
 class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 
@@ -32,10 +32,12 @@ class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 	private array $supported_features;
 
 	/**
-	 * @param string   $name               Gateway ID (e.g. 'paygent_atm').
-	 * @param string[] $supported_features  Feature list for Block checkout supports config.
+	 * Constructor.
+	 *
+	 * @param string   $name              Gateway ID (e.g. 'paygent_atm').
+	 * @param string[] $supported_features Feature list for Block checkout supports config.
 	 */
-	public function __construct( string $name, array $supported_features = [ 'products' ] ) {
+	public function __construct( string $name, array $supported_features = array( 'products' ) ) {
 		$this->name               = $name;
 		$this->supported_features = $supported_features;
 	}
@@ -53,7 +55,10 @@ class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 			$asset_file = WC_PAYGENT_ABSPATH . 'build/paygent-redirect.asset.php';
 			$asset      = file_exists( $asset_file )
 				? require $asset_file
-				: [ 'dependencies' => [], 'version' => WC_PAYGENT_VERSION ];
+				: array(
+					'dependencies' => array(),
+					'version'      => WC_PAYGENT_VERSION,
+				);
 
 			wp_register_script(
 				'wc-paygent-block-redirect',
@@ -64,10 +69,12 @@ class WC_Paygent_Block_Redirect extends Abstract_WC_Paygent_Block_Payment {
 			);
 		}
 
-		return [ 'wc-paygent-block-redirect' ];
+		return array( 'wc-paygent-block-redirect' );
 	}
 
 	/**
+	 * Returns the features supported by this gateway.
+	 *
 	 * @return string[]
 	 */
 	public function get_supported_features(): array {

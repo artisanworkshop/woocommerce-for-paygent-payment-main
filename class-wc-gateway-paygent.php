@@ -181,7 +181,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 
 			// Block checkout integrations (loaded only when WooCommerce Blocks is active).
 			if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/abstract-wc-paygent-block-payment.php';
+				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-abstract-wc-paygent-block-payment.php';
 				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-wc-paygent-block-redirect.php';
 			}
 		}
@@ -298,7 +298,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				return;
 			}
 
-			$redirect_features = [ 'products', 'refunds' ];
+			$redirect_features = array( 'products', 'refunds' );
 
 			if ( get_option( 'wc-paygent-atm' ) ) {
 				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_atm', $redirect_features ) );
