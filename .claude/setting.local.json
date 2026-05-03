@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run start)",
+      "Bash(npm run lint:js)",
+      "Bash(npm run lint:css)",
+      "Bash(composer phpcs)",
+      "Bash(composer phpcbf)",
+      "Bash(composer phpstan)",
+      "Bash(composer test)",
+      "Bash(wp --version)",
+      "Bash(wp-env run:*)",
+      "Bash(wp-env run cli wp eval \":*)"
+    ]
+  }
+}

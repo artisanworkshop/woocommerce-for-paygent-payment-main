@@ -10,6 +10,7 @@ webpack.config.js export-ignore
 docs export-ignore
 wordpress-org export-ignore
 assets/css/*.scss export-ignore
+.claude export-ignore
 
 *.png binary
 *.jpg binary

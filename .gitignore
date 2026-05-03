@@ -6,8 +6,9 @@
 # Local History for Visual Studio Code
 .history/
 
-# Grunt
+# Node modules and vendor directories
 node_modules/
+vendor/
 deploy/
 package-lock.json
 
@@ -26,3 +27,15 @@ Thumbs.db
 
 # wp-env config
 .wp-env.override.json
+
+# Claude's local config
+.claude/settings.local.json
+
+# PHPUnit cache
+.phpunit.cache/
+
+# Playwright E2E
+playwright-report/
+test-results/
+tests/E2E/.auth/
+.playwright-mcp/

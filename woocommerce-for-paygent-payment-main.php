@@ -49,7 +49,7 @@ function wc_gateway_paygent_fallback_notice() {
 	?>
 	<div class="error">
 		<ul>
-			<li><?php esc_html_e( 'Paygent Payment Gateways for WooCommerce is enabled but not effective. It requires WooCommerce in order to work.', 'woocommerce-for-japan' ); ?></li>
+			<li><?php esc_html_e( 'Paygent Payment Gateways for WooCommerce is enabled but not effective. It requires WooCommerce in order to work.', 'woocommerce-for-paygent-payment-main' ); ?></li>
 		</ul>
 	</div>
 	<?php

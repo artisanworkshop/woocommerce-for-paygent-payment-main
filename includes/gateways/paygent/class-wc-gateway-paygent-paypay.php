@@ -113,7 +113,7 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 	 */
 	protected function setup_properties() {
 		$this->id                 = 'paygent_paypay';
-		$this->icon               = apply_filters( 'woocommerce_paypay_icon', '' );
+		$this->icon               = apply_filters( 'woocommerce_paypay_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/paypay_logo.svg' );
 		$this->method_title       = __( 'Paygent PayPay Payment Gateway', 'woocommerce-for-paygent-payment-main' );
 		$this->method_description = __( 'Allows payments by Paygent PayPay in Japan.', 'woocommerce-for-paygent-payment-main' );
 		$this->has_fields         = false;

@@ -52,6 +52,10 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			add_filter( 'woocommerce_available_payment_gateways', array( $this, 'paygent_edit_available_gateways' ) );
 			// Add the gateway to WooCommerce.
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_wc_paygent_gateways' ) );
+			// Register Block checkout payment method integrations.
+			add_action( 'woocommerce_blocks_payment_method_type_registration', array( $this, 'register_block_payment_methods' ) );
+			// Enqueue icon styles on the classic (shortcode) checkout page.
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_checkout_styles' ) );
 		}
 
 		/**
@@ -176,6 +180,12 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			// Webhook Endpoint.
 			require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/class-wc-paygent-endpoint.php';
 			new WC_Paygent_Endpoint();
+
+			// Block checkout integrations (loaded only when WooCommerce Blocks is active).
+			if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-abstract-wc-paygent-block-payment.php';
+				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-wc-paygent-block-redirect.php';
+			}
 		}
 
 		/**
@@ -277,6 +287,50 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 				}
 			}
 			return $methods;
+		}
+
+		/**
+		 * Enqueue payment icon stylesheet on the classic shortcode checkout page.
+		 *
+		 * @return void
+		 */
+		public function enqueue_checkout_styles(): void {
+			if ( ! is_checkout() ) {
+				return;
+			}
+			wp_enqueue_style(
+				'paygent-checkout',
+				WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-checkout.css',
+				array( 'woocommerce-general' ),
+				WC_PAYGENT_VERSION
+			);
+		}
+
+		/**
+		 * Register Paygent payment methods with WooCommerce Block checkout.
+		 *
+		 * @param \Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $registry Block payment method registry.
+		 * @return void
+		 */
+		public function register_block_payment_methods( $registry ): void {
+			if ( ! class_exists( 'Abstract_WC_Paygent_Block_Payment' ) ) {
+				return;
+			}
+
+			$redirect_features = array( 'products', 'refunds' );
+
+			if ( get_option( 'wc-paygent-atm' ) ) {
+				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_atm', $redirect_features ) );
+			}
+			if ( get_option( 'wc-paygent-bn' ) ) {
+				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_bn', $redirect_features ) );
+			}
+			if ( get_option( 'wc-paygent-paypay' ) ) {
+				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_paypay', $redirect_features ) );
+			}
+			if ( get_option( 'wc-paygent-rakutenpay' ) ) {
+				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_rakutenpay', $redirect_features ) );
+			}
 		}
 
 		/**

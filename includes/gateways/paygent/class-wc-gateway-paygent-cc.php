@@ -177,7 +177,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                = 'paygent_cc';
-		$this->has_fields        = false;
+		$this->has_fields        = true;
 		$this->order_button_text = sprintf(
 		// translators: %s is the payment method name.
 			__( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ),
@@ -271,6 +271,11 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 
 		add_action( 'woocommerce_payment_token_deleted', array( $this, 'paygent_delete_card' ), 10, 2 );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'order_paygent_cc_status_completed' ) );
+
+		// Amount increase meta box (028/029).
+		add_action( 'add_meta_boxes', array( $this, 'paygent_cc_add_increase_meta_box' ), 24, 2 );
+		add_action( 'add_meta_boxes_woocommerce_page_wc-orders', array( $this, 'paygent_cc_add_increase_meta_box' ), 24, 2 );
+		add_action( 'wp_ajax_paygent_cc_increase_amount', array( $this, 'paygent_cc_process_increase_amount' ) );
 	}
 
 	/**
@@ -483,6 +488,17 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 			self::input_cardholder_name();
 		}
 		$this->paygent_token_js( $merchant_id, $token_key, $tokens, $this->id );
+
+		// Show "save card" checkbox for logged-in users (not for subscriptions).
+		$is_subscription = function_exists( 'wcs_cart_contains_subscription' ) && wcs_cart_contains_subscription();
+		if ( 'yes' === $this->store_card_info && is_user_logged_in() && ! $is_subscription ) {
+			echo '<p class="form-row form-row-wide">';
+			echo '<label for="paygent_save_card_info">';
+			echo '<input type="checkbox" id="paygent_save_card_info" name="paygent_save_card_info" value="yes" style="width:auto;margin-right:6px;">';
+			echo esc_html__( 'Save payment information to my account for future purchases.', 'woocommerce-for-paygent-payment-main' );
+			echo '</label>';
+			echo '</p>';
+		}
 
 		echo '</div>';
 		if ( $this->payment_method ) {
@@ -715,11 +731,17 @@ jQuery(function(){
 			$card_user_id = 'wc' . $order_id . '-user';
 		}
 
+		// Save user's card-save preference to meta (needed for 3DS2 callback which has no POST data).
+		$user_wants_save_card = ( true === $subscription ) || ( 'yes' === sanitize_text_field( wp_unslash( $_POST['paygent_save_card_info'] ?? '' ) ) );// phpcs:ignore
+		$order->update_meta_data( '_paygent_save_card_preference', $user_wants_save_card ? '1' : '0' );
+		$order->save_meta_data();
+
 		// Card information deposit function without EMV-3DS.
-		$set_login = false;
-		if ( is_user_logged_in() && ( 'yes' === $this->store_card_info || true === $subscription ) ) {
+		$using_stored_card = ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' );
+		$set_login         = false;
+		if ( is_user_logged_in() && ( $user_wants_save_card || $using_stored_card || true === $subscription ) ) {
 			$set_login = true;
-			if ( $this->jp4wc_framework->get_post( 'paygent-use-stored-payment-info' ) === 'yes' ) {
+			if ( $using_stored_card ) {
 				$send_data['customer_card_id'] = $this->jp4wc_framework->get_post( 'stored-info' );
 			} else {
 				$stored_user_card_data         = $this->add_stored_user_data( $card_user_id, $card_token, $this->test_mode, $this->debug, $order );
@@ -1020,7 +1042,7 @@ jQuery(function(){
 		$send_data['payment_id']        = '';
 		$send_data['3dsecure_use_type'] = 2;
 		$send_data['security_code_use'] = 1;
-		$send_data['3ds_auth_id']       = $_GET['3ds_auth_id'];// phpcs:ignore
+		$send_data['3ds_auth_id']       = wc_clean( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
 		$payment_class                  = $order->get_meta( '_payment_class' );
 		if ( $payment_class ) {
 			$send_data['payment_class'] = $payment_class;
@@ -1089,17 +1111,19 @@ jQuery(function(){
 		++$jp4wc_cc_num;
 
 		if ( isset( $_GET['result'] ) && $order->get_payment_method() === $this->id ) {// phpcs:ignore
-			if ( $_GET['3dsecure_requestor_error_code'] ) {// phpcs:ignore
-				$message = $this->tdsecure_requestor_error_codes( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) );// phpcs:ignore
-				$order->add_order_note( __( '3D Secure 2.0 Requestor Error Code:', 'woocommerce-for-paygent-payment-main' ) . wp_unslash( $_GET['3dsecure_requestor_error_code'] ) . ', ' . $message );// phpcs:ignore
+			if ( ! empty( $_GET['3dsecure_requestor_error_code'] ) ) {// phpcs:ignore
+				$requestor_error_code = wc_clean( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) );// phpcs:ignore
+				$message              = $this->tdsecure_requestor_error_codes( $requestor_error_code );
+				$order->add_order_note( __( '3D Secure 2.0 Requestor Error Code:', 'woocommerce-for-paygent-payment-main' ) . $requestor_error_code . ', ' . $message );
 			}
-			if ( $_GET['3dsecure_server_error_code'] ) {// phpcs:ignore
-				$message = $this->tdsecure_server_error_codes( $_GET['3dsecure_server_error_code'] );// phpcs:ignore
-				$order->add_order_note( __( '3D Secure 2.0 Server Error Code:', 'woocommerce-for-paygent-payment-main' ) . $_GET['3dsecure_server_error_code'] . ', ' . $message );// phpcs:ignore
+			if ( ! empty( $_GET['3dsecure_server_error_code'] ) ) {// phpcs:ignore
+				$server_error_code = wc_clean( wp_unslash( $_GET['3dsecure_server_error_code'] ) );// phpcs:ignore
+				$message           = $this->tdsecure_server_error_codes( $server_error_code );
+				$order->add_order_note( __( '3D Secure 2.0 Server Error Code:', 'woocommerce-for-paygent-payment-main' ) . $server_error_code . ', ' . $message );
 			}
 			if ( '0' === $_GET['result'] ) {// phpcs:ignore
 				// Response Result is success at Challenge flow.
-				$attempt_kbn = $_GET['attempt_kbn'];// phpcs:ignore
+				$attempt_kbn = wc_clean( wp_unslash( $_GET['attempt_kbn'] ?? '' ) );// phpcs:ignore
 				if ( '1' === $attempt_kbn ) {// Attempt kbn is attention.
 					$order->add_order_note( __( 'Attempt kbn is attention.', 'woocommerce-for-paygent-payment-main' ) );
 					if ( ! empty( $this->attempt_notice_email ) && 'yes' === $this->attempt ) {
@@ -1127,7 +1151,8 @@ jQuery(function(){
 					exit;
 				}
 				// If necessary, register customer's card information.
-				if ( 'yes' === $this->store_card_info ) {
+				$user_wants_save_card = '1' === $order->get_meta( '_paygent_save_card_preference' );
+				if ( 'yes' === $this->store_card_info && $user_wants_save_card ) {
 					$card_token = $order->get_meta( '_paygent_card_token' );
 					$user_id    = $order->get_user_id();
 					if ( false === $order->get_meta( '_paygent_customer_card_id' ) ) {
@@ -1151,7 +1176,9 @@ jQuery(function(){
 				}
 			} elseif ( '1' === $_GET['result'] ) {// phpcs:ignore
 				wc_increase_stock_levels( $order_id );
-				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . wp_unslash( $_GET['response_code'] ) . ':' . wp_unslash( urldecode( $_GET['response_detail'] ) ) . ']' );// phpcs:ignore
+				$response_code   = wc_clean( wp_unslash( $_GET['response_code'] ?? '' ) );// phpcs:ignore
+				$response_detail = wc_clean( wp_unslash( urldecode( $_GET['response_detail'] ?? '' ) ) );// phpcs:ignore
+				$order->update_status( 'cancelled', __( 'Failed 3D Secure 2.0.', 'woocommerce-for-paygent-payment-main' ) . '[' . $response_code . ':' . $response_detail . ']' );
 				wc_add_notice( __( 'Authentication was not obtained for credit card payment.', 'woocommerce-for-paygent-payment-main' ), 'error' );
 				wp_safe_redirect( wc_get_checkout_url() );
 				exit;
@@ -1329,9 +1356,10 @@ jQuery(function(){
 	public function tds2_status_change( $order_id ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_payment_method() === $this->id && isset( $_GET['3ds_auth_id'] ) ) {// phpcs:ignore
-			if ( $_GET['3ds_auth_id'] === $order->get_meta( '_3ds_auth_id' ) && ! empty( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
+			$tds_auth_id = wc_clean( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
+			if ( $tds_auth_id === $order->get_meta( '_3ds_auth_id' ) && ! empty( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
 				try {
-					$order->set_transaction_id( wp_unslash( $_GET['3ds_auth_id'] ) );// phpcs:ignore
+					$order->set_transaction_id( $tds_auth_id );
 				} catch ( WC_Data_Exception $e ) {
 					$order->add_order_note( 'fail to set transaction id.' );
 				}
@@ -1339,7 +1367,7 @@ jQuery(function(){
 				$order->update_status( 'processing', 'Complete 3D Secure 2.0' );
 			} else {
 				if ( isset( $_GET['3dsecure_requestor_error_code'] ) && isset( $_GET['3dsecure_server_error_code'] ) ) {// phpcs:ignore
-					$order->add_order_note( 'requestor_error_code:' . wp_unslash( $_GET['3dsecure_requestor_error_code'] ) . '|Server_error_code:' . wp_unslash( $_GET['3dsecure_server_error_code'] ) ); // phpcs:ignore
+					$order->add_order_note( 'requestor_error_code:' . wc_clean( wp_unslash( $_GET['3dsecure_requestor_error_code'] ) ) . '|Server_error_code:' . wc_clean( wp_unslash( $_GET['3dsecure_server_error_code'] ) ) ); // phpcs:ignore
 				}
 				wc_increase_stock_levels( $order_id );
 				$order->update_status( 'cancelled', 'Failed 3D Secure 2.0' );
@@ -1359,7 +1387,7 @@ jQuery(function(){
 		$prefix_order     = get_option( 'wc-paygent-prefix_order' );
 		$tradind_id       = '';
 		if ( isset( $_GET['trading_id'] ) ) {// phpcs:ignore
-			$tradind_id = $_GET['trading_id'];// phpcs:ignore
+			$tradind_id = wc_clean( wp_unslash( $_GET['trading_id'] ) );// phpcs:ignore
 			if ( $paygent_order_id ) {
 				$base_order_id = substr( $tradind_id, strlen( $prefix_order ) );
 			} else {
@@ -1371,7 +1399,7 @@ jQuery(function(){
 
 		if ( isset( $tradind_id  ) && $payment_method === $this->id && $order_id == $base_order_id && isset( $_GET['result'] ) && '0' === $_GET['result'] ) {// phpcs:ignore
 			// set transaction id for Paygent Order Number.
-			$order->set_transaction_id( wc_clean( $_GET['payment_id'] ) );// phpcs:ignore
+			$order->set_transaction_id( wc_clean( wp_unslash( $_GET['payment_id'] ) ) );// phpcs:ignore
 			// Mark as processing (payment complete).
 			$order->update_status( 'processing', __( '3D Secure payment was complete.', 'woocommerce-for-paygent-payment-main' ) );
 			// Reduce stock levels.
@@ -1393,11 +1421,13 @@ jQuery(function(){
 			} elseif ( isset( $_GET['result'] ) && '1' === $_GET['result'] && $order->get_payment_method() === $this->id ) {// phpcs:ignore
 			// set transaction id for Paygent Order Number.
 			if ( isset( $_GET['payment_id'] ) ) {// phpcs:ignore
-				$order->set_transaction_id( wp_unslash( $_GET['payment_id'] ) );// phpcs:ignore
+				$order->set_transaction_id( wc_clean( wp_unslash( $_GET['payment_id'] ) ) );// phpcs:ignore
 			}
 			// Mark as failed (payment failed).
 			if ( isset( $_GET['response_code'] ) ) {// phpcs:ignore
-				$order->update_status( 'failed', __( 'Error at 3D Secure.', 'woocommerce-for-paygent-payment-main' ) . wp_unslash( $_GET['response_code'] ) . ':' . urldecode( $_GET['response_detail'] ) );// phpcs:ignore
+				$response_code   = wc_clean( wp_unslash( $_GET['response_code'] ) );// phpcs:ignore
+				$response_detail = wc_clean( wp_unslash( urldecode( $_GET['response_detail'] ?? '' ) ) );// phpcs:ignore
+				$order->update_status( 'failed', __( 'Error at 3D Secure.', 'woocommerce-for-paygent-payment-main' ) . $response_code . ':' . $response_detail );
 			}
 		}
 	}
@@ -1561,6 +1591,212 @@ jQuery(function(){
 		}
 
 		return true;
+	}
+
+	/**
+	 * Register the amount increase meta box for CC orders.
+	 *
+	 * @param string|WC_Order $post_type_or_order Post type string or WC_Order (HPOS).
+	 * @param WP_Post|null    $post               WP_Post object or null.
+	 */
+	public function paygent_cc_add_increase_meta_box( $post_type_or_order, $post = null ) {
+		$order = null;
+		if ( $post_type_or_order instanceof WC_Order ) {
+			$order = $post_type_or_order;
+		} elseif ( $post && isset( $post->ID ) ) {
+			$order = wc_get_order( $post->ID );
+		}
+		if ( ! $order || $order->get_payment_method() !== $this->id ) {
+			return;
+		}
+		$hpos_enabled = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+		$screen       = $hpos_enabled ? 'woocommerce_page_wc-orders' : 'shop_order';
+		add_meta_box(
+			'paygent-cc-increase-amount',
+			__( 'Paygent CC - Amount Correction (028/029)', 'woocommerce-for-paygent-payment-main' ),
+			array( $this, 'paygent_cc_increase_amount_meta_box' ),
+			$screen,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the amount increase meta box HTML.
+	 */
+	public function paygent_cc_increase_amount_meta_box() {
+		if ( isset( $_GET['post'] ) ) {// phpcs:ignore
+			$order_id = absint( $_GET['post'] );// phpcs:ignore
+		} elseif ( isset( $_GET['id'] ) ) {// phpcs:ignore
+			$order_id = absint( $_GET['id'] );// phpcs:ignore
+		} else {
+			return;
+		}
+		$order       = wc_get_order( $order_id );
+		$order_total = $order->get_total();
+		$currency    = get_woocommerce_currency_symbol( $order->get_currency() );
+		$tds2_used   = ! empty( $order->get_meta( '_3ds_auth_id' ) );
+
+		wp_nonce_field( 'paygent_cc_increase_amount_' . $order_id, 'paygent_cc_increase_nonce' );
+		echo '<input type="hidden" id="paygent_cc_increase_order_id" value="' . esc_attr( $order_id ) . '">';
+
+		echo '<p><strong>' . esc_html__( 'Current total:', 'woocommerce-for-paygent-payment-main' ) . '</strong> ' . esc_html( $currency . number_format( $order_total, 0 ) ) . '</p>';
+
+		if ( $tds2_used ) {
+			echo '<p style="color:#c00;border:1px solid #c00;padding:6px 8px;border-radius:3px;"><strong>⚠ ' . esc_html__( '3D Secure orders: amount correction (028/029) is not supported by Paygent. This form has been disabled.', 'woocommerce-for-paygent-payment-main' ) . '</strong></p>';
+		}
+
+		echo '<p class="description">';
+		echo esc_html__( 'Notes (from Paygent spec):', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( '3D Secure is not supported — prior 3DS orders will fail.', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( 'CVV check is skipped (value not retained by Paygent).', 'woocommerce-for-paygent-payment-main' ) . '<br>';
+		echo '• ' . esc_html__( 'Card last-used date is not updated when using stored card.', 'woocommerce-for-paygent-payment-main' );
+		echo '</p>';
+
+		$disabled = $tds2_used ? ' disabled' : '';
+		echo '<p>';
+		echo '<label for="paygent_cc_new_amount"><strong>' . esc_html__( 'New total amount:', 'woocommerce-for-paygent-payment-main' ) . '</strong></label><br>';
+		echo '<input type="number" id="paygent_cc_new_amount" min="1" step="1" style="width:100%;" placeholder="' . esc_attr( number_format( $order_total, 0, '', '' ) ) . '"' . $disabled . '>';// phpcs:ignore
+		echo '</p>';
+
+		echo '<button type="button" id="paygent_cc_increase_submit" class="button button-primary" style="width:100%;"' . $disabled . '>' // phpcs:ignore
+			. esc_html__( 'Execute Amount Correction', 'woocommerce-for-paygent-payment-main' )
+			. '</button>';
+
+		echo '<div id="paygent_cc_increase_result" style="margin-top:8px;"></div>';
+		?>
+		<script type="text/javascript">
+		jQuery( function( $ ) {
+			$( '#paygent_cc_increase_submit' ).on( 'click', function() {
+				var newAmount = $( '#paygent_cc_new_amount' ).val();
+				if ( ! newAmount || isNaN( newAmount ) || parseFloat( newAmount ) <= 0 ) {
+					$( '#paygent_cc_increase_result' ).html( '<span style="color:red;"><?php echo esc_js( __( 'Please enter a valid amount.', 'woocommerce-for-paygent-payment-main' ) ); ?></span>' );
+					return;
+				}
+				$( '#paygent_cc_increase_submit' ).prop( 'disabled', true ).text( '<?php echo esc_js( __( 'Processing...', 'woocommerce-for-paygent-payment-main' ) ); ?>' );
+				$.post( ajaxurl, {
+					action:   'paygent_cc_increase_amount',
+					order_id: $( '#paygent_cc_increase_order_id' ).val(),
+					amount:   newAmount,
+					nonce:    $( '#paygent_cc_increase_nonce' ).val()
+				}, function( response ) {
+					$( '#paygent_cc_increase_submit' ).prop( 'disabled', false ).text( '<?php echo esc_js( __( 'Execute Amount Correction', 'woocommerce-for-paygent-payment-main' ) ); ?>' );
+					if ( response.success ) {
+						$( '#paygent_cc_increase_result' ).html( '<span style="color:green;">' + $( '<span>' ).text( response.data ).html() + '</span>' );
+					} else {
+						$( '#paygent_cc_increase_result' ).html( '<span style="color:red;">' + $( '<span>' ).text( response.data ).html() + '</span>' );
+					}
+				} );
+			} );
+		} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX handler: send 028 (auth) or 029 (sale) with reduction_flag=0 for amount increase.
+	 */
+	public function paygent_cc_process_increase_amount() {
+		check_ajax_referer( 'paygent_cc_increase_amount_' . absint( $_POST['order_id'] ?? 0 ), 'nonce' );// phpcs:ignore
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$order_id   = absint( $_POST['order_id'] ?? 0 );// phpcs:ignore
+		$new_amount = isset( $_POST['amount'] ) ? (int) round( (float) wc_clean( wp_unslash( $_POST['amount'] ) ) ) : 0;// phpcs:ignore
+
+		if ( $order_id <= 0 || $new_amount <= 0 ) {
+			wp_send_json_error( __( 'Invalid order ID or amount.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$order            = wc_get_order( $order_id );
+		$transaction_id   = $order->get_transaction_id();
+		$paygent_order_id = $order->get_meta( '_paygent_order_id' );
+		$trading_id       = $paygent_order_id ? $paygent_order_id : 'wc_' . $order_id;
+
+		// Query current payment status via 094.
+		$check_data    = array(
+			'payment_id' => $transaction_id,
+			'trading_id' => $trading_id,
+		);
+		$status_result = $this->paygent_request->send_paygent_request( $this->test_mode, $order, '094', $check_data, $this->debug );
+		if ( '0' !== $status_result['result'] || empty( $status_result['result_array'][0]['payment_status'] ) ) {
+			wp_send_json_error( __( 'Failed to retrieve current payment status.', 'woocommerce-for-paygent-payment-main' ) );
+		}
+
+		$payment_status = $status_result['result_array'][0]['payment_status'];
+		if ( '20' === $payment_status ) {
+			$telegram_kind = '028';// Auth correction.
+		} elseif ( '40' === $payment_status ) {
+			$telegram_kind = '029';// Sale correction.
+		} else {
+			// translators: %s: payment status code.
+			$msg = sprintf(
+				__( 'Amount correction is not available for payment status %s. Only status 20 (auth) or 40 (sale) is supported.', 'woocommerce-for-paygent-payment-main' ),
+				$payment_status
+			);
+			wp_send_json_error( $msg );
+		}
+
+		$send_data = array(
+			'payment_id'     => $transaction_id,
+			'trading_id'     => $trading_id,
+			'payment_amount' => $new_amount,
+			'reduction_flag' => '0', // Must be string: reqPut() uses loose == null check, integer 0 would be treated as null.
+		);
+		$result    = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
+
+		if ( '0' !== $result['result'] ) {
+			$error_code   = isset( $result['responseCode'] ) ? $result['responseCode'] : '';
+			$error_detail = isset( $result['responseDetail'] ) ? mb_convert_encoding( $result['responseDetail'], 'UTF-8', 'SJIS' ) : '';
+			wp_send_json_error( __( 'Amount correction failed.', 'woocommerce-for-paygent-payment-main' ) . ' [' . $error_code . ': ' . $error_detail . ']' );
+		}
+
+		// Update WC order total to reflect the corrected amount.
+		$old_total = $order->get_total();
+		$order->set_total( $new_amount );
+
+		// Update transaction ID if a new payment_id was returned.
+		$old_payment_id = $transaction_id;
+		$new_payment_id = $transaction_id;
+		if ( ! empty( $result['result_array'][0]['payment_id'] ) ) {
+			$new_payment_id = wc_clean( $result['result_array'][0]['payment_id'] );
+			$order->set_transaction_id( $new_payment_id );
+		}
+
+		$order->save();
+
+		// Always record an order note so the correction is visible in the order history.
+		if ( $new_payment_id !== $old_payment_id ) {
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount, %4$s: old payment_id, %5$s: new payment_id.
+			$note = sprintf(
+				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s. payment_id changed from %4$s to %5$s.', 'woocommerce-for-paygent-payment-main' ),
+				$telegram_kind,
+				number_format( (int) $old_total ),
+				number_format( $new_amount ),
+				$old_payment_id,
+				$new_payment_id
+			);
+		} else {
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
+			$note = sprintf(
+				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s.', 'woocommerce-for-paygent-payment-main' ),
+				$telegram_kind,
+				number_format( (int) $old_total ),
+				number_format( $new_amount )
+			);
+		}
+		$order->add_order_note( $note );
+
+		$success_msg = sprintf(
+			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
+			__( 'Amount correction (%1$s) succeeded. Amount: %2$s → %3$s.', 'woocommerce-for-paygent-payment-main' ),
+			$telegram_kind,
+			number_format( (int) $old_total ),
+			number_format( $new_amount )
+		);
+		wp_send_json_success( $success_msg );
 	}
 
 	/**

@@ -334,7 +334,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			</form>
 			
 				<?php
-				if ( isset( $_POST['jp4wcoal_cleanup_now'] ) && wp_verify_nonce( $_POST['jp4wcoal_cleanup_nonce'], 'jp4wcoal_cleanup_action' ) ) {
+				if ( isset( $_POST['jp4wcoal_cleanup_now'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['jp4wcoal_cleanup_nonce'] ?? '' ) ), 'jp4wcoal_cleanup_action' ) ) {
 					$this->cleanup_old_attempts();
 					echo '<div class="notice notice-success"><p>' . esc_html__( 'Old records cleaned up successfully.', 'woocommerce-for-paygent-payment-main' ) . '</p></div>';
 				}
@@ -343,6 +343,9 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			<?php
 		}
 
+		/**
+		 * Display order attempt statistics table in admin.
+		 */
 		private function display_statistics() {
 			global $wpdb;
 
@@ -372,23 +375,33 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			<?php
 		}
 
+		/**
+		 * Get the count of currently locked users.
+		 *
+		 * @return int Number of users whose recent attempts exceed the lockout threshold.
+		 */
 		private function get_currently_locked_users_count() {
 			global $wpdb;
 
 			$max_attempts     = get_option( 'jp4wcoal_max_attempts', 3 );
 			$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared
+			// Reason: $this->table_name is constructed from $wpdb->prefix internally — not user input.
 			$sql = "SELECT COUNT(DISTINCT fingerprint) FROM (
-            SELECT fingerprint, COUNT(*) as attempt_count 
-            FROM {$this->table_name} 
+            SELECT fingerprint, COUNT(*) as attempt_count
+            FROM {$this->table_name}
             WHERE attempt_time > DATE_SUB(NOW(), INTERVAL %d MINUTE)
             GROUP BY fingerprint
             HAVING attempt_count >= %d
         ) as locked_users";
-
 			return $wpdb->get_var( $wpdb->prepare( $sql, $lockout_duration, $max_attempts ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared
 		}
 
+		/**
+		 * AJAX handler: receive browser fingerprint and store in session.
+		 */
 		public function ajax_get_fingerprint() {
 			check_ajax_referer( 'jp4wcoal_fingerprint_nonce', 'nonce' );
 
@@ -407,13 +420,18 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			wp_send_json_success();
 		}
 
+		/**
+		 * Check order attempts and add error notice if user is locked out.
+		 *
+		 * Hooked into woocommerce_checkout_process.
+		 */
 		public function check_order_attempts() {
 			// Get fingerprint from session.
 			if ( ! session_id() ) {
 				session_start();
 			}
 
-			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? $_SESSION['jp4wcoal_fingerprint'] : '';
+			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? sanitize_text_field( $_SESSION['jp4wcoal_fingerprint'] ) : '';
 
 			if ( empty( $fingerprint ) ) {
 				// Fallback to IP-based fingerprint if JavaScript fingerprint not available.
@@ -423,6 +441,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			if ( $this->is_user_locked( $fingerprint ) ) {
 				$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 				$error_message    = sprintf(
+					/* translators: %d is the lockout duration in minutes. */
 					__( 'You have exceeded the maximum number of order attempts. Please try again after %d minutes.', 'woocommerce-for-paygent-payment-main' ),
 					$lockout_duration
 				);
@@ -430,6 +449,11 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			}
 		}
 
+		/**
+		 * Record a checkout order attempt in the database.
+		 *
+		 * @param int $order_id The WooCommerce order ID just created.
+		 */
 		public function record_order_attempt( $order_id ) {
 			global $wpdb;
 
@@ -438,7 +462,7 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 				session_start();
 			}
 
-			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? $_SESSION['jp4wcoal_fingerprint'] : '';
+			$fingerprint = isset( $_SESSION['jp4wcoal_fingerprint'] ) ? sanitize_text_field( $_SESSION['jp4wcoal_fingerprint'] ) : '';
 
 			if ( empty( $fingerprint ) ) {
 				$fingerprint = $this->get_ip_fingerprint();
@@ -465,21 +489,30 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			}
 		}
 
+		/**
+		 * Determine whether the given fingerprint is currently locked out.
+		 *
+		 * @param string $fingerprint Browser or IP fingerprint to check.
+		 * @return bool True if locked, false otherwise.
+		 */
 		private function is_user_locked( $fingerprint ) {
 			global $wpdb;
 
 			$max_attempts     = get_option( 'jp4wcoal_max_attempts', 3 );
 			$lockout_duration = get_option( 'jp4wcoal_lockout_duration', 60 );
 
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// Reason: $this->table_name is constructed from $wpdb->prefix internally — not user input.
 			$attempts = $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$this->table_name} 
-            WHERE fingerprint = %s 
+					"SELECT COUNT(*) FROM {$this->table_name}
+            WHERE fingerprint = %s
             AND attempt_time > DATE_SUB(NOW(), INTERVAL %d MINUTE)",
 					$fingerprint,
 					$lockout_duration
 				)
 			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 			return $attempts >= $max_attempts;
 		}
@@ -520,18 +553,26 @@ if ( ! class_exists( 'JP4WC_Order_Attempt_Limiter' ) ) {
 			return '';
 		}
 
+		/**
+		 * Delete attempt records older than the configured cleanup interval.
+		 *
+		 * Hooked to the jp4wcoal_cleanup_cron scheduled event.
+		 */
 		public function cleanup_old_attempts() {
 			global $wpdb;
 
 			$cleanup_interval = get_option( 'jp4wcoal_cleanup_interval', 24 );
 
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// Reason: $this->table_name is constructed from $wpdb->prefix internally — not user input.
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$this->table_name} 
+					"DELETE FROM {$this->table_name}
             WHERE attempt_time < DATE_SUB(NOW(), INTERVAL %d HOUR)",
 					$cleanup_interval
 				)
 			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}
 }

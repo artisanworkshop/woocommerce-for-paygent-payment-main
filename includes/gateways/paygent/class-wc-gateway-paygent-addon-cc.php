@@ -196,7 +196,7 @@ class WC_Gateway_Paygent_Addon_CC extends WC_Gateway_Paygent_CC {
 		$result = $this->process_subscription_payment( $renewal_order, $amount_to_charge );
 		if ( is_wp_error( $result ) ) {
 			// translators: %s: Error message.
-			$renewal_order->update_status( 'failed', sprintf( __( 'Paygent Transaction Failed (%s)', 'woocommerce' ), $result->get_error_message() ) );
+			$renewal_order->update_status( 'failed', sprintf( __( 'Paygent Transaction Failed (%s)', 'woocommerce-for-paygent-payment-main' ), $result->get_error_message() ) );
 		}
 	}
 }

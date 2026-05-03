@@ -810,5 +810,17 @@ if ( ! class_exists( '\\ArtisanWorkshop\\PluginFramework\\v2_0_13\\JP4WC_Framewo
 			$checkout = WC()->checkout();
 			return $checkout->get_value( $name );
 		}
+
+		/**
+		 * Send notice email.
+		 *
+		 * @param string $to recipient email address.
+		 * @param string $subject email subject.
+		 * @param string $message email message.
+		 */
+		public function send_notice_email( $to, $subject, $message ) {
+			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+			wp_mail( $to, $subject, $message, $headers );
+		}
 	}
 endif;

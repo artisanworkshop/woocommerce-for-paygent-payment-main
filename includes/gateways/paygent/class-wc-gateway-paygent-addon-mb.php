@@ -136,6 +136,12 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 		} else {
 			$this->paygent_request->error_response( $response, $subscription );
 			$subscription->add_order_note( __( 'Fail cancel subscription.', 'woocommerce-for-paygent-payment-main' ) . $add_message );
+			$this->jp4wc_framework->jp4wc_debug_log( 'Cancel subscription failed. Subscription ID: ' . $subscription_id, true, 'wc-paygent' );
+			$this->jp4wc_framework->send_notice_email(
+				get_option( 'admin_email' ),
+				__( 'Cancel subscription failed', 'woocommerce-for-paygent-payment-main' ),
+				__( 'Cancel subscription failed. Subscription ID: ', 'woocommerce-for-paygent-payment-main' ) . $subscription_id
+			);
 		}
 	}
 
@@ -455,10 +461,12 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 				)
 			);
 			echo '<div>';
-			echo '定期購入の支払い金額を' . number_format( $total ) . '円に変更しましたので以下の変更ボタンから支払金額変更をお願いいたします。<br/>';
-			echo '上記記載の次回の支払いに' . number_format( $total ) . '円が請求されます。<br/>';
+			// translators: %s: formatted payment amount.
+			echo esc_html( sprintf( __( 'The subscription payment amount has been changed to %s JPY. Please use the button below to proceed with the payment amount change.', 'woocommerce-for-paygent-payment-main' ), number_format( $total ) ) ) . '<br/>';
+			// translators: %s: formatted payment amount.
+			echo esc_html( sprintf( __( 'You will be charged %s JPY for the next payment as described above.', 'woocommerce-for-paygent-payment-main' ), number_format( $total ) ) ) . '<br/>';
 			echo '<br />';
-			echo '<a href="' . esc_url( $payment_url ) . '">金額変更</a>';
+			echo '<a href="' . esc_url( $payment_url ) . '">' . esc_html__( 'Change Amount', 'woocommerce-for-paygent-payment-main' ) . '</a>';
 			echo '</div>';
 		} elseif ( isset( $_GET['change_result'] ) ) {// phpcs:ignore
 			$return_url   = $this->jp4wc_framework->jp4wc_make_add_get_url(
@@ -488,7 +496,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			if ( '0' === $response_user['result'] && $response_user['result_array'] ) {
 				echo esc_html( mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 			} else {
-				echo '何か障害が発生いたしました。また、時間をおいて試してください。';
+				echo esc_html( '何か障害が発生いたしました。また、時間をおいて試してください。' );
 			}
 		} elseif ( isset( $_GET['change_proceed'] ) && isset( $_GET['open_id'] ) ) {// phpcs:ignore
 			$total = 0;
@@ -512,7 +520,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			$send_data['cancel_url'] = $cancel_url;
 			$send_data['running_id'] = $order->get_meta( 'running_id', true );
 			$send_data['amount']     = $total;
-			$send_data['open_id']    = $_GET['open_id'];// phpcs:ignore
+			$send_data['open_id']    = wc_clean( wp_unslash( $_GET['open_id'] ) );// phpcs:ignore
 			$telegram_kind           = '126';
 			$response                = $this->paygent_request->send_paygent_request( $this->test_mode, $order, $telegram_kind, $send_data, $this->debug );
 			if ( '0' === $response['result'] && isset( $response['result_array'] ) ) {
@@ -523,9 +531,9 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 				}
 			}
 		} elseif ( isset( $_GET['change_completed'] ) ) {// phpcs:ignore
-			echo 'completed';
+			echo esc_html( 'completed' );
 		} elseif ( isset( $_GET['change_cancel'] ) ) {// phpcs:ignore
-			echo 'cancel';
+			echo esc_html( 'cancel' );
 		}
 	}
 
