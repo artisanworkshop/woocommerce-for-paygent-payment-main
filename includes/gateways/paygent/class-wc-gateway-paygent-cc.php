@@ -373,7 +373,7 @@ class WC_Gateway_Paygent_CC extends WC_Payment_Gateway {
 				'title'       => __( 'Payment Action', 'woocommerce-for-paygent-payment-main' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
-				'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only.', 'woocommerce' ),
+				'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only.', 'woocommerce-for-paygent-payment-main' ),
 				'default'     => 'sale',
 				'desc_tip'    => true,
 				'options'     => array(
@@ -1463,7 +1463,7 @@ jQuery(function(){
 			<?php } ?>
 		</select>
 		<p class="form-row form-row-first woocommerce-validated">
-			<label for="<?php echo esc_attr( $id ); ?>-stored-card-cvc"><?php echo esc_html__( 'Card code', 'woocommerce' ); ?><span class="required">*</span></label>
+			<label for="<?php echo esc_attr( $id ); ?>-stored-card-cvc"><?php echo esc_html__( 'Card code', 'woocommerce-for-paygent-payment-main' ); ?><span class="required">*</span></label>
 			<input id="<?php echo esc_attr( $id ); ?>-stored-card-cvc" class="input-text wc-credit-card-form-card-cvc" inputmode="numeric" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel" maxlength="4" placeholder="CVC" name="<?php echo esc_attr( $id ); ?>-stored-card-cvc" style="width:100px">
 		</p>
 		</fieldset>

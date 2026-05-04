@@ -142,7 +142,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 		$this->icon       = apply_filters( 'woocommerce_paidy_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/paidy_logo_100_2023.png' );
 		$this->has_fields = false;
 		// translators: %s: Payment method name.
-		$this->order_button_text = sprintf( __( 'Proceed to %s', 'paidy-wc' ), __( 'Paidy', 'paidy-wc' ) );
+		$this->order_button_text = sprintf( __( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ), __( 'Paidy', 'woocommerce-for-paygent-payment-main' ) );
 
 		// Create plugin fields and settings.
 		$this->init_form_fields();

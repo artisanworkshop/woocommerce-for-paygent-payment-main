@@ -152,7 +152,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 				'title'       => __( 'Button type', 'woocommerce-for-paygent-payment-main' ),
 				'type'        => 'select',
 				'class'       => 'wc-button-select',
-				'description' => __( 'Select the button you want to display when making a payment decision.', 'woocommerce' ),
+				'description' => __( 'Select the button you want to display when making a payment decision.', 'woocommerce-for-paygent-payment-main' ),
 				'default'     => 'sale',
 				'desc_tip'    => true,
 				'options'     => array(

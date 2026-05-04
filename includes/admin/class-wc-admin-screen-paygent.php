@@ -805,7 +805,7 @@ class WC_Admin_Screen_Paygent {
 
 		foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
 			echo '<div id="" class="stuffbox postbox ' . esc_attr( $section['id'] ) . '">';
-			echo '<button type="button" class="handlediv button-link" aria-expanded="true"><span class="screen-reader-text">' . esc_html__( 'Toggle panel', 'woocommerce-for-japan' ) . '</span><span class="toggle-indicator" aria-hidden="true"></span></button>';
+			echo '<button type="button" class="handlediv button-link" aria-expanded="true"><span class="screen-reader-text">' . esc_html__( 'Toggle panel', 'woocommerce-for-paygent-payment-main' ) . '</span><span class="toggle-indicator" aria-hidden="true"></span></button>';
 			if ( $section['title'] ) {
 				echo '<h3 class="hndle"><span>' . esc_html( $section['title'] ) . '</span></h3>' . "\n";
 			}
