@@ -46,10 +46,13 @@ test.describe('Smoke: Environment', () => {
 		// The gateway settings form renders a title input field when registered.
 		// Accept any save button too — it means the settings form loaded even if
 		// the title field ID changed across WC versions.
+		// Use .first() to avoid strict mode violation when multiple .or() branches
+		// match simultaneously on a fully-loaded settings page.
 		await expect(
 			page.locator('input#woocommerce_paygent_cc_title')
 				.or( page.locator('button[name="save"], .woocommerce-save-button') )
 				.or( page.locator('h2, h3').filter({ hasText: /paygent|クレジットカード/i }) )
+				.first()
 		).toBeVisible({ timeout: 10_000 });
 	});
 
