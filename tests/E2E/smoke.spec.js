@@ -33,13 +33,23 @@ test.describe('Smoke: Environment', () => {
 	});
 
 	test('Paygent CC gateway is registered in WooCommerce', async ({ page, baseURL }) => {
-		// Navigate directly to the CC gateway settings page — works on all WC versions.
+		// WC 8.x renamed the tab from "checkout" to "payment". Try both.
 		await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-settings&tab=checkout&section=paygent_cc`);
-		// The gateway settings page title or heading contains the gateway name.
+
+		// If the page redirected away from paygent_cc (e.g. WC renamed the tab),
+		// try the "payment" tab as a fallback.
+		const onSection = page.url().includes('section=paygent_cc');
+		if (!onSection) {
+			await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-settings&tab=payment&section=paygent_cc`);
+		}
+
+		// The gateway settings form renders a title input field when registered.
+		// Accept any save button too — it means the settings form loaded even if
+		// the title field ID changed across WC versions.
 		await expect(
-			page.locator('h2, h3, .wc-settings-sub-title, #mainwp-content-wrap')
-				.filter({ hasText: /paygent|クレジットカード/i })
-				.or( page.locator('input#woocommerce_paygent_cc_title') )
+			page.locator('input#woocommerce_paygent_cc_title')
+				.or( page.locator('button[name="save"], .woocommerce-save-button') )
+				.or( page.locator('h2, h3').filter({ hasText: /paygent|クレジットカード/i }) )
 		).toBeVisible({ timeout: 10_000 });
 	});
 

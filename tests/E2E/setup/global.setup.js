@@ -32,6 +32,11 @@ async function globalSetup() {
 		}
 	};
 
+	// Enable pretty permalinks so /shop/, /checkout/, /wp-json/ all resolve.
+	console.log('  → Setting permalink structure...');
+	wpEnv(`wp rewrite structure '/%postname%/' --hard`);
+	wpEnv(`wp rewrite flush --hard`);
+
 	// WooCommerce settings.
 	console.log('  → Setting WooCommerce options...');
 	wpEnv(`wp option update woocommerce_currency JPY`);
@@ -68,6 +73,9 @@ async function globalSetup() {
 	// Enable HPOS (High Performance Order Storage). admin-order E2E tests
 	// navigate to /wp-admin/admin.php?page=wc-orders which only works with
 	// HPOS enabled. Without it, WooCommerce redirects to edit.php?post_type=shop_order.
+	// WC 8.x uses feature key "custom_order_tables"; set all known option names
+	// so the correct one is picked up regardless of WC version.
+	wpEnv(`wp option update woocommerce_feature_custom_order_tables_enabled yes`);
 	wpEnv(`wp option update woocommerce_feature_hpos_enabled yes`);
 	wpEnv(`wp option update woocommerce_custom_orders_table_enabled yes`);
 
@@ -75,14 +83,15 @@ async function globalSetup() {
 	// In WooCommerce 8.3+, the default checkout page uses Block checkout;
 	// the functional E2E tests (checkout.spec.js) expect shortcode elements
 	// (#customer_details, .payment_method_paygent_cc etc.).
+	// Use wp eval to avoid shell glob-expansion of brackets in post_content.
 	const checkoutPageId = wpEnv(`wp option get woocommerce_checkout_page_id`).trim();
 	if (checkoutPageId.match(/^\d+$/)) {
-		const checkoutContent = wpEnv(`wp post get ${checkoutPageId} --field=post_content`).trim();
-		if (checkoutContent.includes('wp:woocommerce/checkout') && !checkoutContent.includes('[woocommerce_checkout]')) {
-			wpEnv(`wp post update ${checkoutPageId} --post_content="[woocommerce_checkout]"`);
-			console.log('  → Checkout page updated to shortcode form for E2E tests.');
-		}
+		wpEnv(`wp eval "wp_update_post(array('ID'=>${checkoutPageId},'post_content'=>'[woocommerce_checkout]'));"`);
+		console.log('  → Checkout page set to shortcode form for E2E tests.');
 	}
+
+	// Flush object cache so option changes take effect immediately.
+	wpEnv(`wp cache flush`);
 
 	// Prevent Japanized for WooCommerce (JP4WC) from redirecting to the Paidy
 	// onboarding wizard. JP4WC sets paidy_do_activation_redirect=true on first
@@ -113,7 +122,7 @@ async function globalSetup() {
 		);
 		console.log('  → CA bundle ready.');
 	} catch (err) {
-		console.warn('  ⚠ Could not copy CA bundle:', err.message);
+		console.warn('  ⚠ Could not copy CA bundle:', err instanceof Error ? err.message : String(err));
 	}
 
 	// -------------------------------------------------------------------------
