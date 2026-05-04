@@ -33,11 +33,13 @@ test.describe('Smoke: Environment', () => {
 	});
 
 	test('Paygent CC gateway is registered in WooCommerce', async ({ page, baseURL }) => {
-		await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-settings&tab=checkout`);
-		// WooCommerce 9.x Payments tab shows a list of payment providers.
-		// Paygent appears as "Paygent Credit Card Payment Gateway".
+		// Navigate directly to the CC gateway settings page — works on all WC versions.
+		await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-settings&tab=checkout&section=paygent_cc`);
+		// The gateway settings page title or heading contains the gateway name.
 		await expect(
-			page.locator('.woocommerce-list__item-title').filter({ hasText: 'Paygent Credit Card' })
+			page.locator('h2, h3, .wc-settings-sub-title, #mainwp-content-wrap')
+				.filter({ hasText: /paygent|クレジットカード/i })
+				.or( page.locator('input#woocommerce_paygent_cc_title') )
 		).toBeVisible({ timeout: 10_000 });
 	});
 

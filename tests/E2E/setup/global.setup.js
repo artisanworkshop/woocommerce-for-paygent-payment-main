@@ -65,6 +65,25 @@ async function globalSetup() {
 	// Enable the Paygent CC gateway in WooCommerce settings.
 	wpEnv(`wp option update woocommerce_paygent_cc_settings --format=json '{"enabled":"yes","title":"クレジットカード (Paygent)","paymentaction":"sale","testmode":"yes"}'`);
 
+	// Enable HPOS (High Performance Order Storage). admin-order E2E tests
+	// navigate to /wp-admin/admin.php?page=wc-orders which only works with
+	// HPOS enabled. Without it, WooCommerce redirects to edit.php?post_type=shop_order.
+	wpEnv(`wp option update woocommerce_feature_hpos_enabled yes`);
+	wpEnv(`wp option update woocommerce_custom_orders_table_enabled yes`);
+
+	// Ensure the WooCommerce checkout page uses the classic shortcode form.
+	// In WooCommerce 8.3+, the default checkout page uses Block checkout;
+	// the functional E2E tests (checkout.spec.js) expect shortcode elements
+	// (#customer_details, .payment_method_paygent_cc etc.).
+	const checkoutPageId = wpEnv(`wp option get woocommerce_checkout_page_id`).trim();
+	if (checkoutPageId.match(/^\d+$/)) {
+		const checkoutContent = wpEnv(`wp post get ${checkoutPageId} --field=post_content`).trim();
+		if (checkoutContent.includes('wp:woocommerce/checkout') && !checkoutContent.includes('[woocommerce_checkout]')) {
+			wpEnv(`wp post update ${checkoutPageId} --post_content="[woocommerce_checkout]"`);
+			console.log('  → Checkout page updated to shortcode form for E2E tests.');
+		}
+	}
+
 	// Prevent Japanized for WooCommerce (JP4WC) from redirecting to the Paidy
 	// onboarding wizard. JP4WC sets paidy_do_activation_redirect=true on first
 	// install and redirects when there are recent orders. Delete it unconditionally
