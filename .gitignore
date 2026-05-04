@@ -10,7 +10,7 @@
 node_modules/
 vendor/
 deploy/
-package-lock.json
+
 
 # Composer
 # vendor/

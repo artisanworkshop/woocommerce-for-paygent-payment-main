@@ -50,6 +50,9 @@ if ( ! function_exists( 'wp_kses' ) ) {
 		return $data;
 	}
 }
+if ( ! function_exists( 'wp_enqueue_block_style' ) ) {
+	function wp_enqueue_block_style( $block_name, $args = array() ) {} // phpcs:ignore
+}
 if ( ! function_exists( 'wc_get_order_statuses' ) ) {
 	function wc_get_order_statuses() { // phpcs:ignore
 		return array(
