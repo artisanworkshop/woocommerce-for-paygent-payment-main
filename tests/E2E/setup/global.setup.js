@@ -32,6 +32,17 @@ async function globalSetup() {
 		}
 	};
 
+	// Ensure WooCommerce and the Paygent plugin are active.
+	// wp-env activates plugins at container start, but in CI the activation can
+	// silently fail (e.g., if the plugin slug is resolved differently). Force it
+	// here so every step below can rely on the plugin being active.
+	console.log('  → Activating required plugins...');
+	wpEnv(`wp plugin activate woocommerce`);
+	wpEnv(`wp plugin activate woocommerce-for-paygent-payment-main`);
+	// Diagnostic: log all plugin statuses so CI output shows what is active.
+	const allPlugins = wpEnv(`wp plugin list --fields=name,status --format=csv`);
+	console.log('  → Plugin statuses:\n' + allPlugins);
+
 	// Enable pretty permalinks so /shop/, /checkout/, /wp-json/ all resolve.
 	console.log('  → Setting permalink structure...');
 	wpEnv(`wp rewrite structure '/%postname%/' --hard`);
