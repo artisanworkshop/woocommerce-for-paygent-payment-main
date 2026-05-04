@@ -429,7 +429,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 	 */
 	public function paygent_mb_change_amout_payment( $actions, $subscription ) {
 		if ( $subscription->get_payment_method() === $this->id ) {
-			$action_name              = _x( 'Change the amount', 'woocommerce-for-paygent-payment-main' );
+			$action_name              = _x( 'Change the amount', 'subscription action', 'woocommerce-for-paygent-payment-main' );
 			$actions['change_amount'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_amount' => $subscription->get_id() ), $subscription->get_checkout_payment_url() ) ),
 				'name' => $action_name,
