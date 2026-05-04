@@ -382,7 +382,7 @@ class WC_Admin_Screen_Paygent {
 			'wc_paygent_payment_method'
 		);
 
-		if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'paygent-setting' ) && isset( $_GET['page'] ) && 'jp4wc-paygent-output' === $_GET['page'] ) {
+		if ( current_user_can( 'manage_woocommerce' ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'paygent-setting' ) && isset( $_GET['page'] ) && 'jp4wc-paygent-output' === $_GET['page'] ) {
 			$paygent_auths = array( 'mid', 'cid', 'cpass', 'tokenkey', 'hash_code' );
 			foreach ( $paygent_auths as $paygent_auth ) {
 				$post_auth   = $paygent_auth;
@@ -454,7 +454,7 @@ class WC_Admin_Screen_Paygent {
 			// Client Cert File upload.
 			if ( isset( $_FILES['clientc_file'] ) ) {
 				if ( isset( $_FILES['clientc_file']['name'] ) && substr( sanitize_file_name( $_FILES['clientc_file']['name'] ), strrpos( sanitize_file_name( $_FILES['clientc_file']['name'] ), '.' ) + 1 ) === 'pem' ) {
-					if ( isset( $_FILES['clientc_file']['tmp_name'] ) && move_uploaded_file( sanitize_text_field( $_FILES['clientc_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem' ) ) {
+					if ( isset( $_FILES['clientc_file']['tmp_name'] ) && move_uploaded_file( $_FILES['clientc_file']['tmp_name'], WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem' ) ) {// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is a PHP-generated path, not user input
 						$wp_filesystem->chmod( WP_CONTENT_DIR . '/uploads/wc-paygent/client_cert.pem', 0644 );
 					} else {
 						$this->jp4wc_plugin->add_error( __( 'Client Cert File have not been uploaded.', 'woocommerce-for-paygent-payment-main' ), $this );
@@ -467,7 +467,7 @@ class WC_Admin_Screen_Paygent {
 			// CA Cert File upload.
 			if ( isset( $_FILES['cac_file'] ) ) {
 				if ( isset( $_FILES['cac_file']['name'] ) && substr( sanitize_file_name( $_FILES['cac_file']['name'] ), strrpos( sanitize_file_name( $_FILES['cac_file']['name'] ), '.' ) + 1 ) === 'crt' ) {
-					if ( isset( $_FILES['cac_file']['tmp_name'] ) && move_uploaded_file( sanitize_text_field( $_FILES['cac_file']['tmp_name'] ), WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt' ) ) {
+					if ( isset( $_FILES['cac_file']['tmp_name'] ) && move_uploaded_file( $_FILES['cac_file']['tmp_name'], WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt' ) ) {// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is a PHP-generated path, not user input
 						$wp_filesystem->chmod( WP_CONTENT_DIR . '/uploads/wc-paygent/curl-ca-bundle.crt', 0644 );
 					} else {
 						$this->jp4wc_plugin->add_error( __( 'CA Cert File have not been uploaded.', 'woocommerce-for-paygent-payment-main' ), $this );

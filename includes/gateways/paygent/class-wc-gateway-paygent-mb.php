@@ -328,48 +328,48 @@ class WC_Gateway_Paygent_MB extends WC_Payment_Gateway {
 			'SoftBank',
 		);
 
-		// デバイス変数が空だったら判定する.
+		// Check for tablet user agents if device type is not yet determined.
 		if ( empty( $device_info ) ) {
-			// タブレット判定.
+			// Tablet detection.
 			foreach ( $tabs as $tab ) {
 				$str = '/' . $tab . '/i';
-				// ユーザーエージェントにstrが含まれていたら実行する.
+				// If the user agent contains the pattern, run the check.
 				if ( preg_match( $str, $ua ) ) {
-					// strがAndroidだったらのモバイル判定を行う。.
+					// For Android, distinguish between mobile and tablet.
 					if ( '/Android/i' === $str ) {
-						// ユーザーエージェントにMobileが含まれていなかったらタブレット.
+						// No "Mobile" in user agent means tablet.
 						if ( ! preg_match( '/Mobile/i', $ua ) ) {
 							$device_info = 'tab';
 						} else {
-							// ユーザーエージェントにMobileが含まれていたらスマートフォン.
+							// "Mobile" present means smartphone.
 							$device_info = 'sp';
 						}
 					} else {
-						// Android以外はそのまま結果を返す.
+						// Non-Android tablet patterns are treated as tablet directly.
 						$device_info = 'tab';
 					}
 				}
 			}
 		}
 
-		// デバイス変数が空だったら判定する.
+		// Check for smartphone user agents if device type is not yet determined.
 		if ( empty( $device_info ) ) {
-			// スマートフォン判定.
+			// Smartphone detection.
 			foreach ( $spes as $sp ) {
 				$str = '/' . $sp . '/i';
-				// ユーザーエージェントにstrが含まれていたらスマートフォン.
+				// If the user agent contains the pattern, classify as smartphone.
 				if ( preg_match( $str, $ua ) ) {
 					$device_info = 'sp';
 				}
 			}
 		}
 
-		// デバイス変数が空だったら判定する.
+		// Check for feature phone user agents if device type is not yet determined.
 		if ( empty( $device_info ) ) {
-			// ガラケー判定.
+			// Feature phone detection.
 			foreach ( $mbes as $mb ) {
 				$str = '/' . $mb . '/i';
-				// ユーザーエージェントにstrが含まれていたらガラケー.
+				// If the user agent contains the pattern, classify as feature phone.
 				if ( preg_match( $str, $ua ) ) {
 					if ( 'DoCoMo' === $mb ) {
 						$device_info = 'mb-docomo';
@@ -677,9 +677,9 @@ window.onload = send_form_submit;
 					echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 				}
 			} elseif ( 4 === $send_data['career_type'] ) { // au payment.
-				if ( isset( $_GET['open_id'] ) ) {// phpcs:ignore
-					$open_id = $_GET['open_id']; // phpcs:ignore
-					$order->add_meta_data( 'au_open_id', wp_unslash( $open_id ), true );
+				if ( isset( $_GET['open_id'] ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$open_id = sanitize_text_field( wp_unslash( $_GET['open_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$order->add_meta_data( 'au_open_id', $open_id, true );
 					// Common header.
 					if ( '100' !== $telegram_kind ) {
 						$send_data['first_sales_date'] = date_i18n( 'Ymd', strtotime( date_i18n( 'Ymd' ) . ' +1 day' ) );
@@ -731,7 +731,7 @@ window.onload = send_form_submit;
 		$send_data['cancel_url']     = wc_get_cart_url() . '?mb_cancel=yes';
 		$send_data['other_url']      = wc_get_cart_url();
 		$send_data['pc_mobile_type'] = $order->get_meta( '_pc_mobile_type', true );
-		$send_data['open_id']        = $_GET['open_id'];// phpcs:ignore
+		$send_data['open_id']        = isset( $_GET['open_id'] ) ? sanitize_text_field( wp_unslash( $_GET['open_id'] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $send_data;
 	}
 

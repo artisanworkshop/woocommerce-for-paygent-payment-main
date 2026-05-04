@@ -1,6 +1,7 @@
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { getSetting } from '@woocommerce/settings';
 import { decodeEntities } from '@wordpress/html-entities';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { PaymentLabel, PaymentDescription } from '../shared/components';
 import { createCardToken, createCvcToken, detectCardType } from '../shared/utils/tokenize';
@@ -64,7 +65,8 @@ function buildPaymentOptions( paymentMethods, numberOfPayments ) {
 	for ( const method of paymentMethods ) {
 		if ( method.code === '61' ) {
 			for ( const count of numberOfPayments ) {
-				options.push( { value: String( count ), label: `${ count }回払い` } );
+				/* translators: %d: number of installments */
+				options.push( { value: String( count ), label: sprintf( __( '%d installments', 'woocommerce-for-paygent-payment-main' ), count ) } );
 			}
 		} else {
 			options.push( { value: method.code + '9', label: method.label } );
@@ -171,7 +173,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 			} catch ( err ) {
 				const msg = err?.responseDetail
 					? decodeEntities( err.responseDetail )
-					: 'カードの認証に失敗しました。入力内容をご確認ください。';
+					: __( 'Card authentication failed. Please check your input.', 'woocommerce-for-paygent-payment-main' );
 				return { type: emitResponse.responseTypes.ERROR, message: msg };
 			}
 		} );
@@ -192,7 +194,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 			{ /* ── Saved cards toggle ── */ }
 			{ hasSavedCards && (
 				<fieldset className="wc-paygent-stored-card-toggle">
-					<legend className="screen-reader-text">カードの選択</legend>
+					<legend className="screen-reader-text">{ __( 'Card selection', 'woocommerce-for-paygent-payment-main' ) }</legend>
 					<label>
 						<input
 							type="radio"
@@ -200,7 +202,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 							checked={ useStored }
 							onChange={ () => setUseStored( true ) }
 						/>
-						保存済みクレジットカードを使用する
+						{ __( 'Use saved credit card', 'woocommerce-for-paygent-payment-main' ) }
 					</label>
 					<label>
 						<input
@@ -209,7 +211,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 							checked={ ! useStored }
 							onChange={ () => setUseStored( false ) }
 						/>
-						新しいカードを入力する
+						{ __( 'Enter a new card', 'woocommerce-for-paygent-payment-main' ) }
 					</label>
 				</fieldset>
 			) }
@@ -219,7 +221,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 				<div className="wc-paygent-stored-card-section">
 					<div className="wc-paygent-cc-field">
 						<label className="wc-paygent-cc-label" htmlFor="paygent-cc-stored-select">
-							カードを選択
+							{ __( 'Select card', 'woocommerce-for-paygent-payment-main' ) }
 						</label>
 						<select
 							id="paygent-cc-stored-select"
@@ -237,7 +239,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 					</div>
 					<div className="wc-paygent-cc-field">
 						<label className="wc-paygent-cc-label" htmlFor="paygent-cc-stored-cvc">
-							セキュリティコード
+							{ __( 'Security code', 'woocommerce-for-paygent-payment-main' ) }
 							<span className="wc-paygent-cc-label__required" aria-hidden="true">*</span>
 						</label>
 						<input
@@ -251,7 +253,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 							onChange={ ( e ) => setStoredCvc( e.target.value.replace( /\D/g, '' ).slice( 0, 4 ) ) }
 							autoComplete="cc-csc"
 							aria-required="true"
-							aria-label="セキュリティコード（カード裏面3〜4桁）"
+							aria-label={ __( 'Security code (3–4 digits on card back)', 'woocommerce-for-paygent-payment-main' ) }
 						/>
 					</div>
 				</div>
@@ -264,7 +266,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 					{ /* Row 1: Card number */ }
 					<div className="wc-paygent-cc-field">
 						<label className="wc-paygent-cc-label" htmlFor="paygent-cc-number">
-							カード番号
+							{ __( 'Card number', 'woocommerce-for-paygent-payment-main' ) }
 							<span className="wc-paygent-cc-label__required" aria-hidden="true">*</span>
 						</label>
 						<input
@@ -277,7 +279,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 							onChange={ ( e ) => setCardNumber( formatCardNumber( e.target.value ) ) }
 							autoComplete="cc-number"
 							aria-required="true"
-							aria-label="クレジットカード番号（16桁）"
+							aria-label={ __( 'Credit card number (16 digits)', 'woocommerce-for-paygent-payment-main' ) }
 						/>
 					</div>
 
@@ -285,7 +287,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 					<div className="wc-paygent-cc-row wc-paygent-cc-row--exp-cvc">
 						<div className="wc-paygent-cc-field">
 							<label className="wc-paygent-cc-label" htmlFor="paygent-cc-expiry">
-								有効期限
+								{ __( 'Expiry date', 'woocommerce-for-paygent-payment-main' ) }
 								<span className="wc-paygent-cc-label__required" aria-hidden="true">*</span>
 							</label>
 							<input
@@ -298,19 +300,19 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 								onChange={ ( e ) => setExpiry( formatExpiry( e.target.value, expiry ) ) }
 								autoComplete="cc-exp"
 								aria-required="true"
-								aria-label="有効期限（月 / 年2桁）"
+								aria-label={ __( 'Expiry date (MM / YY)', 'woocommerce-for-paygent-payment-main' ) }
 							/>
 						</div>
 						<div className="wc-paygent-cc-field">
 							<label className="wc-paygent-cc-label" htmlFor="paygent-cc-cvc">
-								セキュリティコード
+								{ __( 'Security code', 'woocommerce-for-paygent-payment-main' ) }
 								<span className="wc-paygent-cc-label__required" aria-hidden="true">*</span>
 								{ /* Tooltip-style hint button */ }
 								<span
 									className="wc-paygent-cc-cvc-hint"
-									title="カード裏面に記載の3〜4桁の数字です"
+									title={ __( '3–4 digit number on the back of your card', 'woocommerce-for-paygent-payment-main' ) }
 									role="img"
-									aria-label="セキュリティコードとは：カード裏面に記載の3〜4桁の数字"
+									aria-label={ __( 'About security codes: 3–4 digit number on the back of your card', 'woocommerce-for-paygent-payment-main' ) }
 								>
 									?
 								</span>
@@ -326,7 +328,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 								onChange={ ( e ) => setCvc( e.target.value.replace( /\D/g, '' ).slice( 0, 4 ) ) }
 								autoComplete="cc-csc"
 								aria-required="true"
-								aria-label="セキュリティコード（カード裏面3〜4桁）"
+								aria-label={ __( 'Security code (3–4 digits on card back)', 'woocommerce-for-paygent-payment-main' ) }
 							/>
 						</div>
 					</div>
@@ -335,8 +337,8 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 					{ isTds2 && (
 						<div className="wc-paygent-cc-field">
 							<label className="wc-paygent-cc-label" htmlFor="paygent-cc-cardholder">
-								カード名義人
-								<span className="wc-paygent-cc-label__hint">（半角ローマ字）</span>
+								{ __( 'Cardholder name', 'woocommerce-for-paygent-payment-main' ) }
+								<span className="wc-paygent-cc-label__hint">{ __( '(Latin alphabet only)', 'woocommerce-for-paygent-payment-main' ) }</span>
 								<span className="wc-paygent-cc-label__required" aria-hidden="true">*</span>
 							</label>
 							<input
@@ -349,7 +351,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 								onChange={ ( e ) => setCardholderName( e.target.value.toUpperCase() ) }
 								autoComplete="cc-name"
 								aria-required="true"
-								aria-label="カード名義人（半角英字・カード表面と同じ）"
+								aria-label={ __( 'Cardholder name (Latin alphabet, as printed on card)', 'woocommerce-for-paygent-payment-main' ) }
 							/>
 						</div>
 					) }
@@ -362,9 +364,9 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 									type="checkbox"
 									checked={ saveCard }
 									onChange={ ( e ) => setSaveCard( e.target.checked ) }
-									aria-label="次回以降このカードを使用する"
+									aria-label={ __( 'Save this card for future payments', 'woocommerce-for-paygent-payment-main' ) }
 								/>
-								次回以降のお支払いにこのカードを使用する
+								{ __( 'Save this card for future payments', 'woocommerce-for-paygent-payment-main' ) }
 							</label>
 						</div>
 					) }
@@ -375,7 +377,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 			{ showPaymentSelector && (
 				<div className="wc-paygent-cc-field wc-paygent-cc-field--payment-method">
 					<label className="wc-paygent-cc-label" htmlFor="paygent-cc-payment-method">
-						支払い方法
+						{ __( 'Payment method', 'woocommerce-for-paygent-payment-main' ) }
 					</label>
 					<select
 						id="paygent-cc-payment-method"
@@ -403,7 +405,7 @@ registerPaymentMethod( {
 	content: <CardForm />,
 	edit:    <PaymentDescription settings={ settings } />,
 	canMakePayment: () => true,
-	ariaLabel: settings.title || 'クレジットカード',
+	ariaLabel: settings.title || __( 'Credit card', 'woocommerce-for-paygent-payment-main' ),
 	supports: {
 		features:       settings.supports || [ 'products' ],
 		showSavedCards: settings.enableSaveCard && ( settings.savedCards?.length > 0 ),

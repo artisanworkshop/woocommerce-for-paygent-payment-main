@@ -136,10 +136,10 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 
 		// Payment method options (multiselect in admin).
 		$label_map       = array(
-			'10' => __( '1回払い', 'woocommerce-for-paygent-payment-main' ),
-			'61' => __( '分割払い', 'woocommerce-for-paygent-payment-main' ),
-			'23' => __( 'ボーナス一括', 'woocommerce-for-paygent-payment-main' ),
-			'80' => __( 'リボ払い', 'woocommerce-for-paygent-payment-main' ),
+			'10' => __( 'One-time payment', 'woocommerce-for-paygent-payment-main' ),
+			'61' => __( 'Installment payment', 'woocommerce-for-paygent-payment-main' ),
+			'23' => __( 'Bonus lump-sum payment', 'woocommerce-for-paygent-payment-main' ),
+			'80' => __( 'Revolving payment', 'woocommerce-for-paygent-payment-main' ),
 		);
 		$raw_methods     = $settings['payment_method'] ?? array( '10' );
 		$raw_methods     = is_array( $raw_methods ) ? $raw_methods : array( $raw_methods );

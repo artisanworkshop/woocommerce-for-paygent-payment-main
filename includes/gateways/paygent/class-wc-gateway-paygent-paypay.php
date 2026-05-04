@@ -240,7 +240,7 @@ class WC_Gateway_Paygent_PayPay extends WC_Payment_Gateway {
 			foreach ( $htmls as $html ) {
 				echo wp_kses( $html, $allow_redirect_html );
 			}
-			echo '<input type="submit" value="PayPay認証"></form>';
+			echo '<input type="submit" value="' . esc_attr__( 'PayPay Authorization', 'woocommerce-for-paygent-payment-main' ) . '"></form>';
 			echo wp_kses( $javascript_auto_send_code, array( 'script' => array( 'type' => array() ) ) );
 			wc_reduce_stock_levels( $order_id );
 			$order->update_status( 'on-hold' );
