@@ -36,10 +36,15 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 	public function get_payment_method_script_handles(): array {
 		// PaygentToken.js — must load in <head> (no defer/async) so that
 		// window.PaygentToken is available when the React form mounts.
+		// Mirror the classic gateway: sandbox URL in test mode, production URL in live mode.
 		if ( ! wp_script_is( 'paygent-token-js', 'registered' ) ) {
+			$token_js_url = '1' === get_option( 'wc-paygent-testmode' )
+				? '//sandbox.paygent.co.jp/js/PaygentToken.js'
+				: '//token.paygent.co.jp/js/PaygentToken.js';
+
 			wp_register_script(
 				'paygent-token-js',
-				'//token.paygent.co.jp/js/PaygentToken.js',
+				$token_js_url,
 				array(),
 				null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 				false // Load in <head>.

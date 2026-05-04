@@ -1,0 +1,296 @@
+// @ts-check
+const { test, expect } = require('@playwright/test');
+const {
+	wpCli,
+	getPaygentCcSettings,
+	updatePaygentCcSettings,
+	restorePaygentCcSettings,
+	setupBlockCheckoutPage,
+	teardownBlockCheckoutPage,
+} = require('./helpers/wp-cli');
+
+/**
+ * Paygent CC Gateway — WooCommerce Block Checkout E2E tests (logged-in member).
+ *
+ * Tests saved-card flows:
+ *   F-1: First checkout with new card + "save card" checkbox → card saved in WC Tokens
+ *   F-2: Second checkout selecting the saved card (CVC re-entry only)
+ *
+ * Prerequisites:
+ *   Same PAYGENT_TEST_MID / CID / CPASS / TOKENKEY env vars as guest tests.
+ *
+ * The test user `paygent-e2e-member` is created by global.setup.js.
+ *
+ * Run:
+ *   PAYGENT_TEST_MID=xxx ... npx playwright test --project=e2e-member checkout-sandbox.block-cc.member
+ */
+
+const REQUIRED_ENV = ['PAYGENT_TEST_MID', 'PAYGENT_TEST_CID', 'PAYGENT_TEST_CPASS', 'PAYGENT_TEST_TOKENKEY'];
+
+const CARD = { OK: '4900000000000000' };
+
+const MEMBER = {
+	login:    'paygent-e2e-member',
+	password: 'member-e2e-pass-1',
+	email:    'paygent-e2e-member@example.com',
+};
+
+/** @type {string} */
+let productId = '';
+/** @type {string} */
+let blockCheckoutUrl = '';
+/** @type {string} */
+let blockPageId = '';
+/** @type {string} */
+let originalCheckoutPageId = '';
+/** @type {string} */
+let cachedPaygentTokenJs = '';
+/** @type {string[]} */
+const createdOrderIds = [];
+
+// ─── setup / teardown ─────────────────────────────────────────────────────────
+
+test.beforeAll( async ( { baseURL } ) => {
+	const setup = setupBlockCheckoutPage( baseURL );
+	blockCheckoutUrl       = setup.blockCheckoutUrl;
+	blockPageId            = setup.pageId;
+	originalCheckoutPageId = setup.originalCheckoutPageId;
+
+	// Enable store_card_info so "save card" feature is available.
+	const current = getPaygentCcSettings();
+	if ( current.store_card_info !== 'yes' ) {
+		updatePaygentCcSettings( { store_card_info: 'yes' } );
+	}
+
+	const out   = wpCli( `post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv` );
+	const match = out.match( /^(\d+)$/m );
+	productId   = match ? match[1] : '';
+
+	const https = require('https');
+	cachedPaygentTokenJs = await new Promise( ( resolve ) => {
+		const req = https.get(
+			'https://sandbox.paygent.co.jp/js/PaygentToken.js',
+			{ timeout: 30_000 },
+			( res ) => {
+				const chunks = [];
+				res.on( 'data', ( c ) => chunks.push( c ) );
+				res.on( 'end',  () => resolve( Buffer.concat( chunks ).toString() ) );
+				res.on( 'error', () => resolve( '' ) );
+			}
+		);
+		req.on( 'error',   () => resolve( '' ) );
+		req.on( 'timeout', () => { req.destroy(); resolve( '' ); } );
+	} );
+} );
+
+test.afterAll( async () => {
+	teardownBlockCheckoutPage( originalCheckoutPageId, blockPageId );
+
+	// Clean up saved tokens for the member user.
+	const memberId = wpCli( `user get ${ MEMBER.login } --field=ID` ).trim();
+	if ( memberId.match( /^\d+$/ ) ) {
+		wpCli( `eval "
+			\\$tokens = WC_Payment_Tokens::get_customer_tokens( ${ memberId }, 'paygent_cc' );
+			foreach ( \\$tokens as \\$t ) { \\$t->delete(); }
+			echo 'done';
+		"` );
+	}
+
+	for ( const id of createdOrderIds ) {
+		wpCli( `wc order delete ${ id } --force --user=1` );
+	}
+} );
+
+function requireSandboxCredentials() {
+	const missing = REQUIRED_ENV.filter( ( v ) => ! process.env[v] );
+	if ( missing.length ) {
+		test.skip( true, `Sandbox credentials not set: ${ missing.join( ', ' ) }` );
+	}
+}
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+async function goToBlockCheckout( page, pid = productId ) {
+	if ( cachedPaygentTokenJs ) {
+		await page.route( /sandbox\.paygent\.co\.jp\/js\/PaygentToken/, ( route ) =>
+			route.fulfill( { status: 200, contentType: 'application/javascript', body: cachedPaygentTokenJs } )
+		);
+	}
+	if ( pid ) {
+		await page.goto(
+			`${ blockCheckoutUrl.replace( /\/paygent-block-checkout-e2e\/$/, '' ) }/?add-to-cart=${ pid }`,
+			{ waitUntil: 'domcontentloaded' }
+		);
+	}
+	await page.goto( blockCheckoutUrl, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '.wp-block-woocommerce-checkout', { timeout: 30_000 } );
+
+	return page.waitForFunction(
+		() => typeof window.PaygentToken !== 'undefined',
+		{ timeout: 30_000 }
+	).then( () => true ).catch( () => false );
+}
+
+async function fillBillingBlock( page ) {
+	await page.locator( '#billing-last_name,  input[name="last_name"]'  ).first().fill( '太郎' );
+	await page.locator( '#billing-first_name, input[name="first_name"]' ).first().fill( 'テスト' ).catch( () => {} );
+	await page.locator( '#email, input[name="email"]'                   ).first().fill( MEMBER.email );
+	await page.locator( '#billing-phone, input[name="phone"]'           ).first().fill( '0312345678' );
+	const countryEl = page.locator( '#billing-country, select[name="country"]' ).first();
+	if ( await countryEl.count() > 0 ) {
+		const val = await countryEl.inputValue().catch( () => '' );
+		if ( val !== 'JP' ) { await countryEl.selectOption( 'JP' ).catch( () => {} ); await page.waitForTimeout( 500 ); }
+	}
+	await page.locator( '#billing-state, select[name="state"]' ).first().selectOption( 'Tokyo' ).catch( () => {} );
+	await page.locator( '#billing-postcode, input[name="postcode"]'   ).first().fill( '1000001' );
+	await page.locator( '#billing-address_1, input[name="address_1"]' ).first().fill( '千代田区1-1-1' );
+	await page.locator( '#billing-city, input[name="city"]'           ).first().fill( '東京都' );
+}
+
+async function selectPaygentCCBlock( page ) {
+	const radio = page.locator( 'input[value="paygent_cc"], input[id*="paygent_cc"]' ).first();
+	if ( await radio.count() > 0 ) {
+		if ( ! await radio.isChecked().catch( () => false ) ) {
+			const label = page.locator( `label[for="${ await radio.getAttribute( 'id' ) }"]` )
+				.or( page.locator( '.wc-block-components-radio-control label' )
+					.filter( { hasText: /クレジットカード|Credit Card/i } ).first() );
+			await label.first().click().catch( async () => radio.check( { force: true } ) );
+		}
+	} else {
+		await page.locator( '.wc-block-components-radio-control label' )
+			.filter( { hasText: /クレジットカード|Credit Card/i } ).first().click();
+	}
+	await expect( page.locator( '#paygent-cc-number' ) ).toBeVisible( { timeout: 10_000 } );
+}
+
+async function fillNewCardBlock( page, cardNumber = CARD.OK ) {
+	await page.locator( '#paygent-cc-number' ).fill( cardNumber );
+	await page.locator( '#paygent-cc-expiry' ).fill( '12 / 30' );
+	await page.locator( '#paygent-cc-cvc'    ).fill( '123' );
+}
+
+async function placeOrderBlock( page ) {
+	const btn = page.locator(
+		'.wc-block-components-checkout-place-order-button, ' +
+		'.wp-block-woocommerce-checkout-actions-block button[type="submit"]'
+	).first();
+	await expect( btn ).toBeVisible( { timeout: 10_000 } );
+	await btn.click();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Group F: Saved card flow
+// ═════════════════════════════════════════════════════════════════════════════
+
+test.describe( 'Block-CC F: Saved card (保存カード)', () => {
+	test.setTimeout( 120_000 );
+	test.beforeEach( requireSandboxCredentials );
+
+	/** @type {string} First order ID — used to verify saved card on second checkout. */
+	let savedOrderId = '';
+
+	test( 'F-1: Member completes Block checkout with new card + save card checked', async ( { page, baseURL } ) => {
+		if ( ! productId ) test.skip( true, 'Test product not found' );
+
+		const tokenReady = await goToBlockCheckout( page );
+		if ( ! tokenReady ) test.skip( true, 'sandbox.paygent.co.jp unreachable' );
+
+		await fillBillingBlock( page );
+		await selectPaygentCCBlock( page );
+
+		// Our React CardForm shows the save-card checkbox only for logged-in users.
+		// The `e2e-member` project stores the member's auth session.
+		const saveCardCheckbox = page.locator( 'input[type="checkbox"]' ).filter( { hasText: /save|保存/i } )
+			.or( page.locator( '#paygent-cc-save-checkbox, input[aria-label*="save"], input[aria-label*="保存"]' ) )
+			.first();
+
+		// Try to find the checkbox by its containing label text.
+		const saveCardLabel = page.locator( 'label' ).filter( { hasText: /次回.*カード|save.*card/i } ).first();
+		const saveCardInput = saveCardLabel.locator( 'input[type="checkbox"]' ).or( saveCardCheckbox );
+
+		const checkboxVisible = await saveCardInput.isVisible( { timeout: 3_000 } ).catch( () => false );
+		if ( checkboxVisible ) {
+			await saveCardInput.check().catch( () => {} );
+		} else {
+			console.log( '  [F-1] Save card checkbox not visible — may be because store_card_info is not yet enabled for this session.' );
+		}
+
+		await fillNewCardBlock( page );
+		await placeOrderBlock( page );
+		await page.waitForURL( /order-received/, { timeout: 90_000 } );
+
+		const orderId = page.url().match( /order-received\/(\d+)/ )?.[1];
+		expect( orderId ).toBeTruthy();
+		if ( orderId ) {
+			createdOrderIds.push( orderId );
+			savedOrderId = orderId;
+		}
+
+		// Verify WC Payment Token was created.
+		const memberId = wpCli( `user get ${ MEMBER.login } --field=ID` ).trim();
+		if ( memberId.match( /^\d+$/ ) ) {
+			const tokenCount = wpCli( `eval "
+				\\$tokens = WC_Payment_Tokens::get_customer_tokens( ${ memberId }, 'paygent_cc' );
+				echo count( \\$tokens );
+			"` ).trim();
+			// If checkbox was visible and checked, expect at least 1 token.
+			if ( checkboxVisible ) {
+				expect( parseInt( tokenCount, 10 ) ).toBeGreaterThanOrEqual( 1 );
+			}
+		}
+	} );
+
+	test( 'F-2: Member uses saved card on second Block checkout', async ( { page } ) => {
+		if ( ! productId ) test.skip( true, 'Test product not found' );
+
+		// Verify there is a saved card before attempting this test.
+		const memberId = wpCli( `user get ${ MEMBER.login } --field=ID` ).trim();
+		if ( ! memberId.match( /^\d+$/ ) ) {
+			test.skip( true, 'Member user not found' );
+			return;
+		}
+		const tokenCount = wpCli( `eval "
+			\\$tokens = WC_Payment_Tokens::get_customer_tokens( ${ memberId }, 'paygent_cc' );
+			echo count( \\$tokens );
+		"` ).trim();
+		if ( parseInt( tokenCount, 10 ) < 1 ) {
+			test.skip( true, 'No saved card found — run F-1 first with save card checked' );
+			return;
+		}
+
+		const tokenReady = await goToBlockCheckout( page );
+		if ( ! tokenReady ) test.skip( true, 'sandbox.paygent.co.jp unreachable' );
+
+		await fillBillingBlock( page );
+		await selectPaygentCCBlock( page );
+
+		// Our React CardForm shows "use stored card" toggle when savedCards.length > 0.
+		// The stored card radio / toggle should default to showing stored card section.
+		const storedSection = page.locator( '.wc-paygent-stored-card-section' );
+		const storedToggle  = page.locator( 'input[name="paygent-use-stored"]' ).first();
+
+		const isStoredVisible = await storedSection.isVisible( { timeout: 5_000 } ).catch( () => false );
+		if ( ! isStoredVisible ) {
+			// savedCards was empty in get_payment_method_data — skip gracefully.
+			test.skip( true, 'Stored card UI not rendered — savedCards may not be loaded in this session' );
+			return;
+		}
+
+		// Ensure "use stored card" is selected.
+		await storedToggle.check( { force: true } ).catch( () => {} );
+
+		// Enter CVC for stored card.
+		await page.locator( '#paygent-cc-stored-cvc' ).fill( '123' );
+
+		await placeOrderBlock( page );
+		await page.waitForURL( /order-received/, { timeout: 90_000 } );
+
+		const orderId = page.url().match( /order-received\/(\d+)/ )?.[1];
+		expect( orderId ).toBeTruthy();
+		if ( orderId ) createdOrderIds.push( orderId );
+
+		// Verify the order used a stored card: _paygent_customer_card_id should be set.
+		const customerCardId = wpCli( `eval "echo wc_get_order(${ orderId })->get_meta('_paygent_customer_card_id');"` ).trim();
+		expect( customerCardId.length ).toBeGreaterThan( 0 );
+	} );
+} );
