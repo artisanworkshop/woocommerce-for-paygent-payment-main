@@ -35,11 +35,26 @@ function ensureTestProduct() {
 		`post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
 	const match = existing.match(/^(\d+)$/m);
-	if (match) return match[1];
+	if (match) {
+		// Ensure the WooCommerce product lookup table is populated. It can be empty
+		// when the product was created via `wp post create` (which bypasses WC hooks)
+		// — an empty lookup table causes WooCommerce to treat the product price as 0.
+		wpCli(`wc tool run regenerate_product_lookup_tables --user=1`);
+		return match[1];
+	}
 
+	// Use `wc product create` so WooCommerce internal hooks fire and the price
+	// is written to both post meta and the wc_product_meta_lookup table.
+	const newId = wpCli(
+		`wc product create --name="Paygent E2E Test Product" --slug=paygent-e2e-test-product --status=publish --regular_price=1000 --virtual=false --user=1 --porcelain`
+	);
+	if (newId.match(/^\d+$/)) return newId;
+
+	// Fallback: raw post create (older wp-env without wc-cli support).
 	wpCli(
 		`post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}' --porcelain`
 	);
+	wpCli(`wc tool run regenerate_product_lookup_tables --user=1`);
 	const id = wpCli(
 		`post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);

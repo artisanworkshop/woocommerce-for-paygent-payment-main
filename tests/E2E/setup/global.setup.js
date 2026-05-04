@@ -105,11 +105,22 @@ async function globalSetup() {
 		`wp post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
 	if (!existing || existing.includes('ID') && !existing.match(/^\d+$/m)) {
-		wpEnv(
-			`wp post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}'`
+		// Use `wc product create` so WooCommerce hooks fire and wc_product_meta_lookup
+		// is populated. A missing lookup entry causes WooCommerce to treat price as ¥0.
+		const newId = wpEnv(
+			`wp wc product create --name="Paygent E2E Test Product" --slug=paygent-e2e-test-product --status=publish --regular_price=1000 --virtual=false --user=1 --porcelain`
 		);
+		if (!newId || !newId.match(/^\d+$/)) {
+			// Fallback for environments without wc-cli support.
+			wpEnv(
+				`wp post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}'`
+			);
+			wpEnv(`wp wc tool run regenerate_product_lookup_tables --user=1`);
+		}
 		console.log('  → Test product created.');
 	} else {
+		// Rebuild lookup table in case the existing product was created via raw post create.
+		wpEnv(`wp wc tool run regenerate_product_lookup_tables --user=1`);
 		console.log('  → Test product already exists.');
 	}
 
