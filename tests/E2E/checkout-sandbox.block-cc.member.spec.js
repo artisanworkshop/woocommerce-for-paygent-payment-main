@@ -125,6 +125,12 @@ async function goToBlockCheckout( page, pid = productId ) {
 	await page.goto( blockCheckoutUrl, { waitUntil: 'domcontentloaded' } );
 	await page.waitForSelector( '.wp-block-woocommerce-checkout', { timeout: 30_000 } );
 
+	// Wait for React hydration to complete.
+	await page.waitForFunction(
+		() => ! document.querySelector( '.wp-block-woocommerce-checkout.is-loading' ),
+		{ timeout: 30_000 }
+	).catch( () => {} );
+
 	return page.waitForFunction(
 		() => typeof window.PaygentToken !== 'undefined',
 		{ timeout: 30_000 }
@@ -132,19 +138,59 @@ async function goToBlockCheckout( page, pid = productId ) {
 }
 
 async function fillBillingBlock( page ) {
-	await page.locator( '#billing-last_name,  input[name="last_name"]'  ).first().fill( '太郎' );
-	await page.locator( '#billing-first_name, input[name="first_name"]' ).first().fill( 'テスト' ).catch( () => {} );
-	await page.locator( '#email, input[name="email"]'                   ).first().fill( MEMBER.email );
-	await page.locator( '#billing-phone, input[name="phone"]'           ).first().fill( '0312345678' );
-	const countryEl = page.locator( '#billing-country, select[name="country"]' ).first();
+	// For logged-in members, WC Block checkout shows a collapsed billing address
+	// summary with an "Edit" button when a saved address exists. If the fields
+	// are not visible, click Edit to expand the form.
+	const lastNameField = page.locator( '#billing-last_name' );
+	const isVisible     = await lastNameField.isVisible( { timeout: 3_000 } ).catch( () => false );
+
+	if ( ! isVisible ) {
+		// Address is shown in summary mode — click Edit to expand the form.
+		const editBtn = page.locator( '.wc-block-components-address-card__edit, button' )
+			.filter( { hasText: /^Edit$/i } ).first();
+		const hasEdit = await editBtn.isVisible( { timeout: 3_000 } ).catch( () => false );
+		if ( hasEdit ) {
+			await editBtn.click();
+			await page.waitForSelector( '#billing-last_name:visible', { timeout: 10_000 } ).catch( () => {} );
+		} else {
+			// No edit button found and fields are hidden — address may already be
+			// correct from a previous run; skip filling.
+			return;
+		}
+	}
+
+	const countryEl = page.locator( '#billing-country' );
 	if ( await countryEl.count() > 0 ) {
 		const val = await countryEl.inputValue().catch( () => '' );
-		if ( val !== 'JP' ) { await countryEl.selectOption( 'JP' ).catch( () => {} ); await page.waitForTimeout( 500 ); }
+		if ( val !== 'JP' ) { await countryEl.selectOption( 'JP' ).catch( () => {} ); await page.waitForTimeout( 800 ); }
 	}
-	await page.locator( '#billing-state, select[name="state"]' ).first().selectOption( 'Tokyo' ).catch( () => {} );
-	await page.locator( '#billing-postcode, input[name="postcode"]'   ).first().fill( '1000001' );
-	await page.locator( '#billing-address_1, input[name="address_1"]' ).first().fill( '千代田区1-1-1' );
-	await page.locator( '#billing-city, input[name="city"]'           ).first().fill( '東京都' );
+
+	// Fill text fields BEFORE selecting state to avoid the WC API response
+	// (triggered by state change) resetting them.
+	await page.locator( '#billing-last_name'  ).fill( '太郎' );
+	await page.locator( '#billing-first_name' ).fill( 'テスト' ).catch( () => {} );
+	await page.locator( '#email'              ).fill( MEMBER.email );
+	await page.locator( '#billing-phone'      ).fill( '0312345678' ).catch( () => {} );
+	await page.locator( '#billing-postcode'  ).fill( '1000001' );
+	await page.locator( '#billing-address_1' ).fill( '千代田区1-1-1' );
+	await page.locator( '#billing-city'      ).fill( '東京都' );
+
+	// Select prefecture LAST. WC JP state code for Tokyo is 'JP13'.
+	await page.locator( '#billing-state' ).selectOption( 'JP13' )
+		.catch( () => page.locator( '#billing-state' ).selectOption( { label: 'Tokyo' } ).catch( () => {} ) );
+
+	// Brief pause for the state-change API response, then re-fill if reset.
+	await page.waitForTimeout( 1_500 );
+	const lastNameCurrent = await page.locator( '#billing-last_name' ).inputValue().catch( () => '' );
+	if ( ! lastNameCurrent ) {
+		await page.locator( '#billing-last_name'  ).fill( '太郎' );
+		await page.locator( '#billing-first_name' ).fill( 'テスト' ).catch( () => {} );
+		await page.locator( '#email'              ).fill( MEMBER.email );
+		await page.locator( '#billing-phone'      ).fill( '0312345678' ).catch( () => {} );
+		await page.locator( '#billing-postcode'  ).fill( '1000001' );
+		await page.locator( '#billing-address_1' ).fill( '千代田区1-1-1' );
+		await page.locator( '#billing-city'      ).fill( '東京都' );
+	}
 }
 
 async function selectPaygentCCBlock( page ) {
@@ -160,7 +206,10 @@ async function selectPaygentCCBlock( page ) {
 		await page.locator( '.wc-block-components-radio-control label' )
 			.filter( { hasText: /クレジットカード|Credit Card/i } ).first().click();
 	}
-	await expect( page.locator( '#paygent-cc-number' ) ).toBeVisible( { timeout: 10_000 } );
+	// When saved cards exist the stored-card CVC field appears instead of #paygent-cc-number.
+	await expect(
+		page.locator( '#paygent-cc-number, #paygent-cc-stored-cvc' ).first()
+	).toBeVisible( { timeout: 10_000 } );
 }
 
 async function fillNewCardBlock( page, cardNumber = CARD.OK ) {

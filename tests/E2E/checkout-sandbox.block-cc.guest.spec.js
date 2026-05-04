@@ -144,8 +144,15 @@ async function goToBlockCheckout( page, pid = productId ) {
 	}
 	await page.goto( blockCheckoutUrl, { waitUntil: 'domcontentloaded' } );
 
-	// Wait for the Block checkout to initialise.
+	// Wait for the Block checkout container.
 	await page.waitForSelector( '.wp-block-woocommerce-checkout', { timeout: 30_000 } );
+
+	// Wait for React hydration to complete: WooCommerce removes .is-loading when ready.
+	// Without this, form fills happen before React initialises state and the values are wiped.
+	await page.waitForFunction(
+		() => ! document.querySelector( '.wp-block-woocommerce-checkout.is-loading' ),
+		{ timeout: 30_000 }
+	).catch( () => {} );
 
 	// Verify window.PaygentToken loaded.
 	const tokenReady = await page.waitForFunction(
@@ -167,25 +174,44 @@ async function fillBillingBlock( page, lastNameOverride = '' ) {
 	const lastName  = lastNameOverride || '太郎';
 	const firstName = lastNameOverride ? '' : 'テスト';
 
-	// Block checkout billing fields.
-	await page.locator( '#billing-last_name,  input[name="last_name"]'  ).first().fill( lastName );
-	await page.locator( '#billing-first_name, input[name="first_name"]' ).first().fill( firstName ).catch( () => {} );
-	await page.locator( '#email, input[name="email"]'                   ).first().fill( 'block-cc-e2e@example.com' );
-	await page.locator( '#billing-phone, input[name="phone"]'           ).first().fill( '0312345678' );
-
-	// Country / State (Block checkout uses combobox or select).
-	const countryEl = page.locator( '#billing-country, select[name="country"]' ).first();
+	const countryEl = page.locator( '#billing-country' );
 	if ( await countryEl.count() > 0 ) {
 		const val = await countryEl.inputValue().catch( () => '' );
 		if ( val !== 'JP' ) {
 			await countryEl.selectOption( 'JP' ).catch( () => {} );
-			await page.waitForTimeout( 500 );
+			await page.waitForTimeout( 800 );
 		}
 	}
-	await page.locator( '#billing-state, select[name="state"]' ).first().selectOption( 'Tokyo' ).catch( () => {} );
-	await page.locator( '#billing-postcode, input[name="postcode"]' ).first().fill( '1000001' );
-	await page.locator( '#billing-address_1, input[name="address_1"]' ).first().fill( '千代田区1-1-1' );
-	await page.locator( '#billing-city, input[name="city"]' ).first().fill( '東京都' );
+
+	// Fill text fields BEFORE selecting state. The state-change triggers a WC
+	// REST API call that causes React to re-render and clear fields filled
+	// afterward. networkidle is unreliable on the checkout page (WC polls
+	// continuously), so we use a fixed pause instead.
+	await page.locator( '#billing-last_name'  ).fill( lastName );
+	await page.locator( '#billing-first_name' ).fill( firstName ).catch( () => {} );
+	await page.locator( '#email'              ).fill( 'block-cc-e2e@example.com' );
+	await page.locator( '#billing-phone'      ).fill( '0312345678' ).catch( () => {} );
+	await page.locator( '#billing-postcode'   ).fill( '1000001' );
+	await page.locator( '#billing-address_1'  ).fill( '千代田区1-1-1' );
+	await page.locator( '#billing-city'       ).fill( '東京都' );
+
+	// Select prefecture LAST. WC JP state code for Tokyo is 'JP13'.
+	await page.locator( '#billing-state' ).selectOption( 'JP13' )
+		.catch( () => page.locator( '#billing-state' ).selectOption( { label: 'Tokyo' } ).catch( () => {} ) );
+
+	// Brief pause for the state-change API response, then re-fill any text
+	// fields that the API response may have reset back to empty.
+	await page.waitForTimeout( 1_500 );
+	const lastNameCurrent = await page.locator( '#billing-last_name' ).inputValue().catch( () => '' );
+	if ( ! lastNameCurrent ) {
+		await page.locator( '#billing-last_name'  ).fill( lastName );
+		await page.locator( '#billing-first_name' ).fill( firstName ).catch( () => {} );
+		await page.locator( '#email'              ).fill( 'block-cc-e2e@example.com' );
+		await page.locator( '#billing-phone'      ).fill( '0312345678' ).catch( () => {} );
+		await page.locator( '#billing-postcode'   ).fill( '1000001' );
+		await page.locator( '#billing-address_1'  ).fill( '千代田区1-1-1' );
+		await page.locator( '#billing-city'       ).fill( '東京都' );
+	}
 }
 
 /**
