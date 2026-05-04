@@ -139,24 +139,34 @@ async function globalSetup() {
 		`wp post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
 	if (!existing || existing.includes('ID') && !existing.match(/^\d+$/m)) {
-		// Use `wc product create` so WooCommerce hooks fire and wc_product_meta_lookup
-		// is populated. A missing lookup entry causes WooCommerce to treat price as ¥0.
-		const newId = wpEnv(
-			`wp wc product create --name="Paygent E2E Test Product" --slug=paygent-e2e-test-product --status=publish --regular_price=1000 --virtual=false --user=1 --porcelain`
-		);
-		if (!newId || !newId.match(/^\d+$/)) {
-			// Fallback for environments without wc-cli support.
-			wpEnv(
-				`wp post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}'`
-			);
-			wpEnv(`wp wc tool run regenerate_product_lookup_tables --user=1`);
-		}
+		// Use wp eval (direct PHP) to create the product so WooCommerce hooks fire
+		// and the price meta + wc_product_meta_lookup are always populated correctly.
+		// Single-quoted shell string protects PHP $ variables from shell expansion.
+		wpEnv(`wp eval 'if(!get_page_by_path("paygent-e2e-test-product","OBJECT","product")){$p=new WC_Product_Simple();$p->set_name("Paygent E2E Test Product");$p->set_slug("paygent-e2e-test-product");$p->set_status("publish");$p->set_regular_price("1000");$p->set_price("1000");$id=$p->save();echo $id;}'`);
 		console.log('  → Test product created.');
 	} else {
-		// Rebuild lookup table in case the existing product was created via raw post create.
-		wpEnv(`wp wc tool run regenerate_product_lookup_tables --user=1`);
 		console.log('  → Test product already exists.');
 	}
+
+	// Always verify the product price.  A price of 0 causes WC()->cart->needs_payment()
+	// to return false, hiding ALL payment method radio buttons on the checkout page.
+	const diagProductId = wpEnv(`wp post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`).match(/^(\d+)$/m)?.[1] || '';
+	if (diagProductId) {
+		const diagPrice = wpEnv(`wp eval "echo get_post_meta(${diagProductId},'_price',true);"`);
+		if (!diagPrice || diagPrice === '0') {
+			console.warn('  ⚠ Product price is 0 or missing — forcing price via wp eval...');
+			// Single-quoted shell string: $p is PHP variable, not shell variable.
+			wpEnv(`wp eval '$p=wc_get_product(${diagProductId});if($p){$p->set_regular_price("1000");$p->set_price("1000");$p->save();}'`);
+		} else {
+			console.log('  → Product ID:', diagProductId, '| price:', diagPrice);
+		}
+	}
+
+	// Diagnostic: verify gateway registration and enabled state.
+	const diagGateways = wpEnv(`wp eval 'WC()->payment_gateways()->init(); foreach(WC()->payment_gateways()->payment_gateways() as $id=>$gw){echo $id.":".$gw->enabled." ";}'`);
+	console.log('  → Registered gateways:', diagGateways || '(none — plugin may not be active)');
+	const diagCurrency = wpEnv(`wp option get woocommerce_currency`);
+	console.log('  → Store currency:', diagCurrency || '(not set)');
 
 	// -------------------------------------------------------------------------
 	// Step 3: Authenticate admin and save session state
