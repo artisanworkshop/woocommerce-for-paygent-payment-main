@@ -68,14 +68,13 @@ async function globalSetup() {
 	if (testTokenKey) wpEnv(`wp option update wc-paygent-test-tokenkey "${testTokenKey}"`);
 
 	// Enable the Paygent CC gateway in WooCommerce settings.
-	// IMPORTANT: Multi-key JSON with commas causes bash brace-expansion inside
-	// the wp-env Docker container ({a,b} → split into separate arguments).
-	// Overwrite the option with a single-key JSON (no commas), then use
-	// wp option patch insert to add further keys individually.
-	// Overwriting first ensures the subsequent inserts always see a fresh array.
-	wpEnv(`wp option update woocommerce_paygent_cc_settings --format=json '{"enabled":"yes"}'`);
-	wpEnv(`wp option patch insert woocommerce_paygent_cc_settings paymentaction sale`);
-	wpEnv(`wp option patch insert woocommerce_paygent_cc_settings testmode yes`);
+	// Use wp eval (direct PHP update_option) to bypass WP-CLI JSON argument
+	// parsing issues.  No special characters or quotes cross shell boundaries.
+	console.log('  → Enabling Paygent CC gateway settings...');
+	wpEnv(`wp eval "update_option('woocommerce_paygent_cc_settings',array('enabled'=>'yes','paymentaction'=>'sale','testmode'=>'yes'));"`);
+	// Diagnostic: verify the stored value so CI logs show the actual state.
+	const ccSettingsCheck = wpEnv(`wp option get woocommerce_paygent_cc_settings --format=json`);
+	console.log('  → CC settings stored:', ccSettingsCheck || '(empty — option not found)');
 
 	// Enable HPOS (High Performance Order Storage). admin-order E2E tests
 	// navigate to /wp-admin/admin.php?page=wc-orders which only works with
