@@ -84,16 +84,25 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Cache wp-env Docker layers
+      - name: Cache wp-env downloads
         uses: actions/cache@v4
         with:
-          path: /tmp/.wp-env-cache
+          # wp-env stores downloaded plugin ZIPs in ~/.wp-env/<hash>/sources/
+          # Caching this directory prevents repeated downloads from WordPress.org
+          # (which causes 429 Too Many Requests on shared GHA runners).
+          path: ~/.wp-env
           key: wp-env-${{ hashFiles('.wp-env.json') }}
           restore-keys: wp-env-
 
       - name: Start wp-env
-        run: npx wp-env start
-        timeout-minutes: 10
+        # Retry up to 3 times with 30 s delay to handle transient 429 rate limits.
+        run: |
+          for i in 1 2 3; do
+            npx wp-env start && break
+            echo "wp-env start attempt $i failed, retrying in 30 s..."
+            sleep 30
+          done
+        timeout-minutes: 15
 
       - name: Run integration tests
         run: |
@@ -170,16 +179,21 @@ jobs:
       - name: Install Playwright browsers (Chromium only)
         run: npx playwright install --with-deps chromium
 
-      - name: Cache wp-env Docker layers
+      - name: Cache wp-env downloads
         uses: actions/cache@v4
         with:
-          path: /tmp/.wp-env-cache
+          path: ~/.wp-env
           key: wp-env-${{ hashFiles('.wp-env.json') }}
           restore-keys: wp-env-
 
       - name: Start wp-env
-        run: npx wp-env start
-        timeout-minutes: 10
+        run: |
+          for i in 1 2 3; do
+            npx wp-env start && break
+            echo "wp-env start attempt $i failed, retrying in 30 s..."
+            sleep 30
+          done
+        timeout-minutes: 15
 
       - name: Run E2E functional tests
         run: |
