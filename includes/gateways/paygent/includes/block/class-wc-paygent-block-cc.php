@@ -31,12 +31,16 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 	/**
 	 * Register the PaygentToken.js external script and the compiled block bundle.
 	 *
+	 * Only the handle array is returned; WooCommerce Blocks loads these scripts
+	 * solely on pages that contain the checkout block.  Do NOT call wp_enqueue_script()
+	 * here — doing so would inject external scripts on every page (including login).
+	 *
 	 * @return string[]
 	 */
 	public function get_payment_method_script_handles(): array {
-		// PaygentToken.js — must load in <head> (no defer/async) so that
-		// window.PaygentToken is available when the React form mounts.
-		// Mirror the classic gateway: sandbox URL in test mode, production URL in live mode.
+		// PaygentToken.js — registered as <head> script (in_footer=false) so that
+		// window.PaygentToken exists when the React form mounts.
+		// WooCommerce Blocks enqueues it via the dependency chain, not globally.
 		if ( ! wp_script_is( 'paygent-token-js', 'registered' ) ) {
 			$token_js_url = '1' === get_option( 'wc-paygent-testmode' )
 				? '//sandbox.paygent.co.jp/js/PaygentToken.js'
@@ -50,7 +54,6 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 				false // Load in <head>.
 			);
 		}
-		wp_enqueue_script( 'paygent-token-js' );
 
 		if ( ! wp_script_is( 'wc-paygent-block-cc', 'registered' ) ) {
 			$asset_file = WC_PAYGENT_ABSPATH . 'build/paygent-cc.asset.php';
@@ -70,16 +73,17 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 			);
 		}
 
-		// Block CC card form stylesheet.
-		if ( ! wp_style_is( 'wc-paygent-block-cc', 'registered' ) ) {
-			wp_register_style(
-				'wc-paygent-block-cc',
-				WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
-				array(),
-				WC_PAYGENT_VERSION
-			);
-		}
-		wp_enqueue_style( 'wc-paygent-block-cc' );
+		// CSS: associate with the checkout block so it loads only when that block
+		// is present on the page (wp_enqueue_block_style, available since WP 5.9).
+		wp_enqueue_block_style(
+			'woocommerce/checkout',
+			array(
+				'handle' => 'wc-paygent-block-cc',
+				'src'    => WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
+				'ver'    => WC_PAYGENT_VERSION,
+				'path'   => WC_PAYGENT_ABSPATH . 'assets/css/paygent-block-cc.css',
+			)
+		);
 
 		return array( 'wc-paygent-block-cc' );
 	}
