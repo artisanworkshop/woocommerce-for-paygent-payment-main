@@ -93,7 +93,21 @@ class BlockCCTest extends TestCase {
 
 	public function test_get_payment_method_data_contains_required_keys(): void {
 		Functions\when( 'get_current_user_id' )->justReturn( 0 );
-		Functions\when( 'get_option' )->justReturn( '' );
+		Functions\when( 'get_option' )->alias(
+			function ( $option, $default = false ) {
+				if ( 'woocommerce_paygent_cc_settings' === $option ) {
+					return array(
+						'enabled'         => 'yes',
+						'title'           => 'クレジットカード',
+						'description'     => '',
+						'store_card_info' => 'no',
+						'tds2_check'      => 'no',
+					);
+				}
+
+				return $default;
+			}
+		);
 
 		$block = new \WC_Paygent_Block_CC();
 		$block->initialize();
