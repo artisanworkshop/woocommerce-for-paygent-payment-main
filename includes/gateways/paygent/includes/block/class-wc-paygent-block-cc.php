@@ -75,15 +75,24 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 
 		// CSS: associate with the checkout block so it loads only when that block
 		// is present on the page (wp_enqueue_block_style, available since WP 5.9).
-		wp_enqueue_block_style(
-			'woocommerce/checkout',
-			array(
-				'handle' => 'wc-paygent-block-cc',
-				'src'    => WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
-				'ver'    => WC_PAYGENT_VERSION,
-				'path'   => WC_PAYGENT_ABSPATH . 'assets/css/paygent-block-cc.css',
-			)
-		);
+		if ( function_exists( 'wp_enqueue_block_style' ) ) {
+			wp_enqueue_block_style(
+				'woocommerce/checkout',
+				array(
+					'handle' => 'wc-paygent-block-cc',
+					'src'    => WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
+					'ver'    => WC_PAYGENT_VERSION,
+					'path'   => WC_PAYGENT_ABSPATH . 'assets/css/paygent-block-cc.css',
+				)
+			);
+		} else {
+			wp_enqueue_style(
+				'wc-paygent-block-cc',
+				WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
+				array(),
+				WC_PAYGENT_VERSION
+			);
+		}
 
 		return array( 'wc-paygent-block-cc' );
 	}
