@@ -8,7 +8,7 @@ module.exports = {
 		// Branch 1: Redirect gateways (ATM, BN, PayPay, Rakuten Pay)
 		'paygent-redirect': path.resolve( __dirname, 'src/blocks/paygent-redirect/index.js' ),
 		// Branch 2: Credit card (CC + Addon_CC)
-		// 'paygent-cc': path.resolve( __dirname, 'src/blocks/paygent-cc/index.js' ),
+		'paygent-cc': path.resolve( __dirname, 'src/blocks/paygent-cc/index.js' ),
 		// Branch 3: Select gateways (CS, MB, Paidy, MCCC)
 		// 'paygent-cs':    path.resolve( __dirname, 'src/blocks/paygent-cs/index.js' ),
 		// 'paygent-mb':    path.resolve( __dirname, 'src/blocks/paygent-mb/index.js' ),
