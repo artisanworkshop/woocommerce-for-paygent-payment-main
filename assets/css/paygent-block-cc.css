@@ -1,0 +1,230 @@
+/**
+ * Paygent for WooCommerce — Block Checkout CC Card Form Styles
+ *
+ * Layout:
+ *   Row 1: Card number  (full width)
+ *   Row 2: Expiry  |  CVC  (3fr : 2fr grid; stacked on narrow viewports)
+ *   Row 3: Cardholder name (full width, 3DS2 only)
+ *
+ * Accessibility targets:
+ *   - min-height 48px  (touch target ≥ 44 × 44 px, WCAG 2.1 SC 2.5.5)
+ *   - font-size 1rem   (≥ 16 px prevents iOS viewport zoom on focus)
+ *   - 2 px focus ring  (WCAG 2.1 SC 1.4.11, 3:1 contrast minimum)
+ *   - aria-required / aria-describedby on every input
+ */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+.wc-paygent-cc-form {
+	margin-top: 1.25rem;
+	padding: 1.25rem;
+	border: 1px solid var(--wc-color-border, #e0e0e0);
+	border-radius: 8px;
+	background: var(--wc-color-bg, #ffffff);
+}
+
+/* ── Field container ─────────────────────────────────────────────────────── */
+.wc-paygent-cc-field {
+	margin-bottom: 1rem;
+}
+
+.wc-paygent-cc-field:last-child {
+	margin-bottom: 0;
+}
+
+/* ── Labels ──────────────────────────────────────────────────────────────── */
+.wc-paygent-cc-label {
+	display: flex;
+	align-items: baseline;
+	gap: 0.25em;
+	font-size: 0.8125rem;   /* 13 px */
+	font-weight: 600;
+	line-height: 1.4;
+	margin-bottom: 0.4rem;
+	color: inherit;
+}
+
+.wc-paygent-cc-label__required {
+	font-size: 0.75em;
+	color: #cc1818;
+	line-height: 1;
+}
+
+.wc-paygent-cc-label__hint {
+	font-size: 0.875em;
+	font-weight: 400;
+	color: var(--wc-color-text-muted, #767676);
+}
+
+/* ── Base input styles ───────────────────────────────────────────────────── */
+.wc-paygent-cc-input {
+	display: block;
+	width: 100%;
+	min-height: 48px;
+	padding: 0.625rem 0.875rem;
+	font-size: 1rem;          /* ≥ 16 px: prevents iOS auto-zoom */
+	line-height: 1.5;
+	font-family: inherit;
+	color: inherit;
+	background-color: #fff;
+	border: 1.5px solid var(--wc-color-border, #767676);
+	border-radius: 6px;
+	box-sizing: border-box;
+	appearance: none;
+	-webkit-appearance: none;
+	transition: border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out;
+}
+
+.wc-paygent-cc-input::placeholder {
+	color: var(--wc-color-text-muted, #aaa);
+	opacity: 1;
+}
+
+.wc-paygent-cc-input:hover {
+	border-color: var(--wc-color-border-hover, #4a4a4a);
+}
+
+.wc-paygent-cc-input:focus {
+	outline: none;
+	border-color: var(--wp--custom--button--background, #1e1e1e);
+	box-shadow: 0 0 0 2px var(--wp--custom--button--background, #1e1e1e);
+}
+
+/* High-contrast / forced-colors mode: rely on outline instead of box-shadow. */
+@media (forced-colors: active) {
+	.wc-paygent-cc-input:focus {
+		outline: 3px solid ButtonText;
+		box-shadow: none;
+	}
+}
+
+/* ── Card number: monospace for digit-group readability ──────────────────── */
+.wc-paygent-cc-input--card-number {
+	font-family: ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+	letter-spacing: 0.12em;
+}
+
+/* ── Expiry + CVC two-column row ─────────────────────────────────────────── */
+.wc-paygent-cc-row--exp-cvc {
+	display: grid;
+	gap: 0.75rem;
+	/* Mobile: stack */
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+	.wc-paygent-cc-row--exp-cvc {
+		/* Expiry is wider (month/year needs ~7 visible chars),
+		   CVC is narrower (3–4 digits). 3:2 ratio keeps both accessible. */
+		grid-template-columns: 3fr 2fr;
+	}
+}
+
+/* ── CVC tooltip / hint ──────────────────────────────────────────────────── */
+.wc-paygent-cc-cvc-hint {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.25em;
+	height: 1.25em;
+	margin-left: 0.35em;
+	border-radius: 50%;
+	border: 1.5px solid var(--wc-color-border, #767676);
+	font-size: 0.7em;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--wc-color-text-muted, #767676);
+	cursor: help;
+	vertical-align: middle;
+	text-decoration: none;
+}
+
+.wc-paygent-cc-cvc-hint:focus {
+	outline: 2px solid var(--wp--custom--button--background, #1e1e1e);
+	outline-offset: 2px;
+}
+
+/* ── Saved card toggle ───────────────────────────────────────────────────── */
+.wc-paygent-stored-card-toggle {
+	border: none;
+	padding: 0;
+	margin: 0 0 1rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.wc-paygent-stored-card-toggle legend {
+	font-weight: 600;
+	font-size: 0.875rem;
+	margin-bottom: 0.5rem;
+}
+
+.wc-paygent-stored-card-toggle label {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	font-size: 0.9375rem;
+	cursor: pointer;
+	min-height: 44px;
+}
+
+.wc-paygent-stored-card-toggle input[type="radio"] {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	accent-color: var(--wp--custom--button--background, #1e1e1e);
+}
+
+/* ── Saved card select ───────────────────────────────────────────────────── */
+.wc-paygent-cc-select {
+	display: block;
+	width: 100%;
+	min-height: 48px;
+	padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+	font-size: 1rem;
+	font-family: inherit;
+	color: inherit;
+	background-color: #fff;
+	border: 1.5px solid var(--wc-color-border, #767676);
+	border-radius: 6px;
+	box-sizing: border-box;
+	cursor: pointer;
+	/* Custom chevron arrow */
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23767676' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.875rem center;
+}
+
+.wc-paygent-cc-select:focus {
+	outline: none;
+	border-color: var(--wp--custom--button--background, #1e1e1e);
+	box-shadow: 0 0 0 2px var(--wp--custom--button--background, #1e1e1e);
+}
+
+/* ── Save card checkbox ──────────────────────────────────────────────────── */
+.wc-paygent-cc-save-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5em;
+	font-size: 0.9375rem;
+	cursor: pointer;
+	min-height: 44px;
+	padding-top: 0.125rem;
+}
+
+.wc-paygent-cc-save-label input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin-top: 0.125em;
+	flex-shrink: 0;
+	accent-color: var(--wp--custom--button--background, #1e1e1e);
+}
+
+/* ── Payment method selector ─────────────────────────────────────────────── */
+.wc-paygent-cc-field--payment-method {
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--wc-color-border, #e0e0e0);
+}

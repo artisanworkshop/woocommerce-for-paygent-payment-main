@@ -70,6 +70,17 @@ class WC_Paygent_Block_CC extends Abstract_WC_Paygent_Block_Payment {
 			);
 		}
 
+		// Block CC card form stylesheet.
+		if ( ! wp_style_is( 'wc-paygent-block-cc', 'registered' ) ) {
+			wp_register_style(
+				'wc-paygent-block-cc',
+				WC_PAYGENT_PLUGIN_URL . 'assets/css/paygent-block-cc.css',
+				array(),
+				WC_PAYGENT_VERSION
+			);
+		}
+		wp_enqueue_style( 'wc-paygent-block-cc' );
+
 		return array( 'wc-paygent-block-cc' );
 	}
 
