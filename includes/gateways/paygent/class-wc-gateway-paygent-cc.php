@@ -1731,8 +1731,8 @@ jQuery(function(){
 		} elseif ( '40' === $payment_status ) {
 			$telegram_kind = '029';// Sale correction.
 		} else {
-			// translators: %s: payment status code.
 			$msg = sprintf(
+				// translators: %s: payment status code.
 				__( 'Amount correction is not available for payment status %s. Only status 20 (auth) or 40 (sale) is supported.', 'woocommerce-for-paygent-payment-main' ),
 				$payment_status
 			);
@@ -1769,8 +1769,8 @@ jQuery(function(){
 
 		// Always record an order note so the correction is visible in the order history.
 		if ( $new_payment_id !== $old_payment_id ) {
-			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount, %4$s: old payment_id, %5$s: new payment_id.
 			$note = sprintf(
+				// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount, %4$s: old payment_id, %5$s: new payment_id.
 				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s. payment_id changed from %4$s to %5$s.', 'woocommerce-for-paygent-payment-main' ),
 				$telegram_kind,
 				number_format( (int) $old_total ),
@@ -1779,8 +1779,8 @@ jQuery(function(){
 				$new_payment_id
 			);
 		} else {
-			// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
 			$note = sprintf(
+				// translators: %1$s: telegram kind, %2$s: old amount, %3$s: new amount.
 				__( 'Paygent amount correction (%1$s) succeeded. Amount: %2$s → %3$s.', 'woocommerce-for-paygent-payment-main' ),
 				$telegram_kind,
 				number_format( (int) $old_total ),
