@@ -81,6 +81,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Install npm dependencies
+        run: npm ci
+
       - name: Cache wp-env Docker layers
         uses: actions/cache@v4
         with:
