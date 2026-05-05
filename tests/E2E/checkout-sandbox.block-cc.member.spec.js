@@ -247,21 +247,23 @@ test.describe( 'Block-CC F: Saved card (保存カード)', () => {
 		await fillBillingBlock( page );
 		await selectPaygentCCBlock( page );
 
-		// Our React CardForm shows the save-card checkbox only for logged-in users.
-		// The `e2e-member` project stores the member's auth session.
-		const saveCardCheckbox = page.locator( 'input[type="checkbox"]' ).filter( { hasText: /save|保存/i } )
-			.or( page.locator( '#paygent-cc-save-checkbox, input[aria-label*="save"], input[aria-label*="保存"]' ) )
-			.first();
+		// WooCommerce Blocks renders the save card checkbox when showSaveOption: true.
+		// The container class is "wc-block-components-payment-methods__save-card-info".
+		// When checked, WC Blocks sets shouldSavePayment: true and passes it to
+		// CardForm, which forwards it as paygent_save_card_info: 'yes' in paymentMethodData.
+		const saveCardInput = page.locator(
+			'.wc-block-components-payment-methods__save-card-info input[type="checkbox"]'
+		);
 
-		// Try to find the checkbox by its containing label text.
-		const saveCardLabel = page.locator( 'label' ).filter( { hasText: /次回.*カード|save.*card/i } ).first();
-		const saveCardInput = saveCardLabel.locator( 'input[type="checkbox"]' ).or( saveCardCheckbox );
-
-		const checkboxVisible = await saveCardInput.isVisible( { timeout: 3_000 } ).catch( () => false );
+		const checkboxVisible = await saveCardInput.isVisible( { timeout: 5_000 } ).catch( () => false );
 		if ( checkboxVisible ) {
-			await saveCardInput.check().catch( () => {} );
+			const alreadyChecked = await saveCardInput.isChecked().catch( () => false );
+			if ( ! alreadyChecked ) {
+				await saveCardInput.check( { force: true } );
+			}
+			console.log( '  [F-1] Save card checkbox checked.' );
 		} else {
-			console.log( '  [F-1] Save card checkbox not visible — may be because store_card_info is not yet enabled for this session.' );
+			console.log( '  [F-1] Save card checkbox not visible — store_card_info may not be enabled.' );
 		}
 
 		await fillNewCardBlock( page );
@@ -275,20 +277,14 @@ test.describe( 'Block-CC F: Saved card (保存カード)', () => {
 			savedOrderId = orderId;
 		}
 
-		// Verify WC Payment Token was created.
+		// Verify WC Payment Token was created when checkbox was visible and checked.
 		const memberId = wpCli( `user get ${ MEMBER.login } --field=ID` ).trim();
-		if ( memberId.match( /^\d+$/ ) ) {
+		if ( checkboxVisible && memberId.match( /^\d+$/ ) ) {
 			const tokenCount = wpCli( `eval "
 				\\$tokens = WC_Payment_Tokens::get_customer_tokens( ${ memberId }, 'paygent_cc' );
 				echo count( \\$tokens );
 			"` ).trim();
-			// Save-card in Block checkout requires WooCommerce Blocks tokenization API
-			// integration, which is not yet implemented in the Paygent Block CC component.
-			// Warn instead of failing so the checkout success itself is still verified.
-			if ( checkboxVisible && parseInt( tokenCount, 10 ) === 0 ) {
-				console.warn( '  [F-1] ⚠ Save-card checkbox was checked but no WC token was created.' +
-					' Block checkout tokenization not yet implemented for Paygent CC.' );
-			}
+			expect( parseInt( tokenCount, 10 ) ).toBeGreaterThanOrEqual( 1 );
 		}
 	} );
 

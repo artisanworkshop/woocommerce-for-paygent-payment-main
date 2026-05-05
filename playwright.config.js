@@ -66,7 +66,7 @@ module.exports = defineConfig({
 		 * guest flow — use e2e-paypay project for PayPay tests). */
 		{
 			name: 'e2e',
-			testMatch: /(?<!\.guest|\.paypay)\.spec\.js$/,
+			testMatch: /(?<!\.guest|\.paypay|\.member)\.spec\.js$/,
 			use: {
 				...devices['Desktop Chrome'],
 				storageState: 'tests/E2E/.auth/admin.json',

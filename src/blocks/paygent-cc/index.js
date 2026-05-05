@@ -84,17 +84,18 @@ function buildPaymentOptions( paymentMethods, numberOfPayments ) {
  *   Row 1 — Card number (full width, monospace)
  *   Row 2 — Expiry (3fr) | CVC (2fr)  — side by side on ≥480 px
  *   Row 3 — Cardholder name (full width, 3DS2 only)
- *   Row 4 — Save-card checkbox (logged-in, feature-enabled)
- *   Row 5 — Payment-method selector (installments, if configured)
+ *   Row 4 — Payment-method selector (installments, if configured)
  *
- * @param {{ eventRegistration: object, emitResponse: object }} props
+ * The save-card checkbox is rendered by WooCommerce Blocks core (showSaveOption: true).
+ * `shouldSavePayment` reflects its checked state and is passed here as a prop.
+ *
+ * @param {{ eventRegistration: object, emitResponse: object, shouldSavePayment: boolean }} props
  */
-const CardForm = ( { eventRegistration, emitResponse } ) => {
+const CardForm = ( { eventRegistration, emitResponse, shouldSavePayment } ) => {
 	const {
 		merchantId,
 		tokenKey,
 		isTds2,
-		enableSaveCard,
 		savedCards,
 		paymentMethods,
 		numberOfPayments,
@@ -109,7 +110,6 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 	const [ expiry,         setExpiry         ] = useState( '' );
 	const [ cvc,            setCvc            ] = useState( '' );
 	const [ cardholderName, setCardholderName ] = useState( '' );
-	const [ saveCard,       setSaveCard       ] = useState( false );
 	const [ paymentOption,  setPaymentOption  ] = useState( '' );
 
 	const paymentOptions      = buildPaymentOptions( paymentMethods || [], numberOfPayments || [] );
@@ -164,7 +164,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 							'paygent_cc-token':               tokenRes.tokenizedCardObject.token,
 							'paygent_cc-cvc_token':           cvcRes.tokenizedCardObject.token,
 							'card_type':                      detectCardType( cardNumber ),
-							'paygent_save_card_info':         saveCard ? 'yes' : 'no',
+							'paygent_save_card_info':         shouldSavePayment ? 'yes' : 'no',
 							'paygent_cardholder_name':        isTds2 ? cardholderName : '',
 							'number_of_payments':             chosenOption,
 						},
@@ -183,7 +183,7 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 		eventRegistration, emitResponse,
 		useStored, selectedCardId, storedCvc,
 		cardNumber, expiry, cvc, cardholderName,
-		saveCard, paymentOption,
+		shouldSavePayment, paymentOption,
 		merchantId, tokenKey, isTds2, defaultOption,
 	] );
 
@@ -356,20 +356,6 @@ const CardForm = ( { eventRegistration, emitResponse } ) => {
 						</div>
 					) }
 
-					{ /* Save-card checkbox */ }
-					{ enableSaveCard && (
-						<div className="wc-paygent-cc-field">
-							<label className="wc-paygent-cc-save-label">
-								<input
-									type="checkbox"
-									checked={ saveCard }
-									onChange={ ( e ) => setSaveCard( e.target.checked ) }
-									aria-label={ __( 'Save this card for future payments', 'woocommerce-for-paygent-payment-main' ) }
-								/>
-								{ __( 'Save this card for future payments', 'woocommerce-for-paygent-payment-main' ) }
-							</label>
-						</div>
-					) }
 				</div>
 			) }
 
