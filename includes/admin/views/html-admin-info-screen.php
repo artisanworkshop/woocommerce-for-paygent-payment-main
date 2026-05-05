@@ -12,10 +12,10 @@
 <p><b>Sorry, Japanese Only</b></p>
 <div>
 <p>
-	こちらでは、WooCommerce For Paygentのサポート情報や告知等を定期的に行なわせて頂きます。
+	<?php esc_html_e( 'Support information and announcements for WooCommerce For Paygent will be posted here regularly.', 'woocommerce-for-paygent-payment-main' ); ?>
 </p>
 <p>
-	準備中。
+	<?php esc_html_e( 'Under construction.', 'woocommerce-for-paygent-payment-main' ); ?>
 </p>
 <p>
 	<?php

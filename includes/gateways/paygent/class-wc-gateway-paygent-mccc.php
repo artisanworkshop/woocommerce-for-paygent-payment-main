@@ -240,7 +240,7 @@ class WC_Gateway_Paygent_MCCC extends WC_Payment_Gateway {
 				'title'       => __( 'Payment Action', 'woocommerce-for-paygent-payment-main' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
-				'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only.', 'woocommerce' ),
+				'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only.', 'woocommerce-for-paygent-payment-main' ),
 				'default'     => 'sale',
 				'desc_tip'    => true,
 				'options'     => array(

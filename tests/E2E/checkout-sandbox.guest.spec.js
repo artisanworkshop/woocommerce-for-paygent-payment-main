@@ -551,6 +551,181 @@ test.describe('Sandbox D: Refund via admin (3DS disabled)', () => {
 		const notes = await page.locator('.order_notes, .woocommerce-order-notes').textContent();
 		expect(notes?.length).toBeGreaterThan(0);
 	});
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// D-2: Full refund (全額返金) — telegram 023 (sale cancel)
+	// Refunds the entire ¥1,000 order. WooCommerce sets status to wc-refunded.
+	// ─────────────────────────────────────────────────────────────────────────
+	test('D-2: Admin processes a full refund (全額返金) on a Paygent CC order', async ({ page, baseURL }) => {
+		test.setTimeout(180_000);
+		if (!productId) { test.skip(true, 'Test product not found'); return; }
+
+		// Step 1: Place ¥1,000 order via Paygent CC checkout.
+		const tokenReady = await goToCheckout(page, baseURL);
+		if (!tokenReady) { test.skip(true, 'sandbox.paygent.co.jp unreachable — PaygentToken.js did not load'); return; }
+
+		await fillBilling(page);
+		await selectPaygentCC(page);
+		await fillCardAndWaitForToken(page, CARD.OK);
+		await page.waitForSelector('.blockUI.blockOverlay', { state: 'detached', timeout: 10_000 }).catch(() => {});
+		await expect(page.locator('#paygent_cc-token')).not.toHaveValue('', { timeout: 5_000 });
+		await page.click('#place_order');
+		await page.waitForURL(/order-received/, { timeout: 60_000 });
+
+		const orderId = page.url().match(/order-received\/(\d+)/)?.[1];
+		if (!orderId) { test.skip(true, 'Checkout did not complete'); return; }
+		createdOrderIds.push(orderId);
+
+		// Step 2: Admin login (e2e-guest project has no stored auth state).
+		await page.goto(`${baseURL}/wp-login.php`);
+		await page.fill('#user_login', 'admin');
+		await page.fill('#user_pass', 'password');
+		await page.click('#wp-submit');
+		await page.waitForURL(/wp-admin/, { timeout: 15_000 });
+
+		// Step 3: Mark order as completed so Paygent payment_status reflects 40 (captured).
+		await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-orders&action=edit&id=${orderId}`);
+		await page.waitForSelector('#order_status, select[name="order_status"]', { timeout: 10_000 });
+		await page.locator('#order_status, select[name="order_status"]').first().selectOption('wc-completed');
+		await page.locator('button[name="save"], input[name="save_order"], .save_order').first().click();
+		await page.waitForLoadState('networkidle');
+
+		// Step 4: Open refund UI.
+		const refundItemsBtn = page.locator('button.refund-items');
+		await expect(refundItemsBtn).toBeVisible({ timeout: 10_000 });
+		await refundItemsBtn.click();
+		await expect(page.locator('#refund_amount')).toBeVisible({ timeout: 5_000 });
+
+		// Step 5: Fill full quantity (1) in the line-item qty input; WC computes total=1000.
+		// If the qty input is not visible (e.g. virtual product), force-set #refund_amount via JS.
+		const lineQtyInput = page.locator('input.refund_line_qty').first();
+		if (await lineQtyInput.isVisible({ timeout: 2_000 }).catch(() => false)) {
+			await lineQtyInput.fill('1');
+			await page.waitForTimeout(800); // allow WC JS to recompute #refund_amount
+		}
+		const computedAmount = await page.locator('#refund_amount').inputValue().catch(() => '');
+		if (!computedAmount || parseFloat(computedAmount.replace(/,/g, '')) < 1000) {
+			await page.evaluate(() => {
+				const el = /** @type {HTMLInputElement|null} */ (document.getElementById('refund_amount'));
+				if (el) {
+					el.value = '1000';
+					el.dispatchEvent(new Event('input',  { bubbles: true }));
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+			});
+			await page.waitForTimeout(300);
+		}
+
+		// Step 6: Execute full API refund via Paygent (telegram 023 — sale cancel).
+		const doApiRefundBtn = page.locator('button.do-api-refund');
+		await expect(doApiRefundBtn).toBeVisible({ timeout: 5_000 });
+		page.on('dialog', (d) => d.accept());
+		await doApiRefundBtn.click();
+		await page.waitForTimeout(6_000); // allow Paygent API round-trip
+
+		// Step 7: Reload and verify order status + notes.
+		await page.reload();
+		await page.waitForSelector('#order_status, select[name="order_status"]', { timeout: 10_000 });
+
+		// WooCommerce sets the status to wc-refunded when the full amount is refunded.
+		const finalStatus = await page.locator('#order_status, select[name="order_status"]').first().inputValue().catch(() => '');
+		// Paygent adds an order note with "successfully refunded" on telegram 023 success.
+		const noteContents = await page.locator('#woocommerce-order-notes .note_content, .order_notes .note_content').allTextContents();
+		const hasRefundNote = noteContents.some((t) => t.includes('successfully refunded'));
+
+		expect(finalStatus === 'wc-refunded' || hasRefundNote).toBeTruthy();
+
+		// WP-CLI cross-check: total refunded must equal the full order total (¥1,000).
+		const cliRefundTotal = wpCli(
+			`eval "\\$o=wc_get_order(${orderId});echo \\$o->get_total_refunded();"`
+		).trim();
+		expect(parseFloat(cliRefundTotal || '0')).toBeGreaterThanOrEqual(1000);
+	});
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// D-3: Partial refund (部分返金) — telegram 029 (sale change)
+	// Refunds ¥500 of ¥1,000. Order must remain completed (not wc-refunded).
+	// ─────────────────────────────────────────────────────────────────────────
+	test('D-3: Partial refund (部分返金) amount verified via Paygent API', async ({ page, baseURL }) => {
+		test.setTimeout(180_000);
+		if (!productId) { test.skip(true, 'Test product not found'); return; }
+
+		// Step 1: Place ¥1,000 order.
+		const tokenReady = await goToCheckout(page, baseURL);
+		if (!tokenReady) { test.skip(true, 'sandbox.paygent.co.jp unreachable — PaygentToken.js did not load'); return; }
+
+		await fillBilling(page);
+		await selectPaygentCC(page);
+		await fillCardAndWaitForToken(page, CARD.OK);
+		await page.waitForSelector('.blockUI.blockOverlay', { state: 'detached', timeout: 10_000 }).catch(() => {});
+		await expect(page.locator('#paygent_cc-token')).not.toHaveValue('', { timeout: 5_000 });
+		await page.click('#place_order');
+		await page.waitForURL(/order-received/, { timeout: 60_000 });
+
+		const orderId = page.url().match(/order-received\/(\d+)/)?.[1];
+		if (!orderId) { test.skip(true, 'Checkout did not complete'); return; }
+		createdOrderIds.push(orderId);
+
+		// Step 2: Admin login.
+		await page.goto(`${baseURL}/wp-login.php`);
+		await page.fill('#user_login', 'admin');
+		await page.fill('#user_pass', 'password');
+		await page.click('#wp-submit');
+		await page.waitForURL(/wp-admin/, { timeout: 15_000 });
+
+		// Step 3: Mark as completed.
+		await page.goto(`${baseURL}/wp-admin/admin.php?page=wc-orders&action=edit&id=${orderId}`);
+		await page.waitForSelector('#order_status, select[name="order_status"]', { timeout: 10_000 });
+		await page.locator('#order_status, select[name="order_status"]').first().selectOption('wc-completed');
+		await page.locator('button[name="save"], input[name="save_order"], .save_order').first().click();
+		await page.waitForLoadState('networkidle');
+
+		// Step 4: Open refund UI.
+		const refundItemsBtn = page.locator('button.refund-items');
+		await expect(refundItemsBtn).toBeVisible({ timeout: 10_000 });
+		await refundItemsBtn.click();
+		await expect(page.locator('#refund_amount')).toBeVisible({ timeout: 5_000 });
+
+		// Step 5: Set partial refund amount (¥500) directly in #refund_amount via JS.
+		// The full item price is ¥1,000 so ¥500 is a partial amount — no line qty maps to it.
+		await page.evaluate(() => {
+			const el = /** @type {HTMLInputElement|null} */ (document.getElementById('refund_amount'));
+			if (el) {
+				el.value = '500';
+				el.dispatchEvent(new Event('input',  { bubbles: true }));
+				el.dispatchEvent(new Event('change', { bubbles: true }));
+			}
+		});
+		await page.waitForTimeout(300);
+
+		// Step 6: Execute partial API refund via Paygent (telegram 029 — sale change).
+		const doApiRefundBtn = page.locator('button.do-api-refund');
+		await expect(doApiRefundBtn).toBeVisible({ timeout: 5_000 });
+		page.on('dialog', (d) => d.accept());
+		await doApiRefundBtn.click();
+		await page.waitForTimeout(6_000);
+
+		// Step 7: Reload and verify.
+		await page.reload();
+		await page.waitForSelector('#order_status, select[name="order_status"]', { timeout: 10_000 });
+
+		// Partial refund must NOT make the order wc-refunded (that requires full amount).
+		const finalStatus = await page.locator('#order_status, select[name="order_status"]').first().inputValue().catch(() => '');
+		expect(finalStatus).not.toBe('wc-refunded');
+
+		// Paygent adds "successfully partial refunded" note on telegram 029 success.
+		const noteContents = await page.locator('#woocommerce-order-notes .note_content, .order_notes .note_content').allTextContents();
+		const hasPartialNote = noteContents.some((t) =>
+			t.includes('successfully partial refunded') || t.includes('successfully refunded')
+		);
+		expect(hasPartialNote).toBeTruthy();
+
+		// WP-CLI cross-check: total refunded must equal ¥500.
+		const cliRefundTotal = wpCli(
+			`eval "\\$o=wc_get_order(${orderId});echo \\$o->get_total_refunded();"`
+		).trim();
+		expect(parseFloat(cliRefundTotal || '0')).toBeCloseTo(500, 0);
+	});
 });
 
 // ═════════════════════════════════════════════════════════════════════════════

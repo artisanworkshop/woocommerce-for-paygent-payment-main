@@ -32,6 +32,20 @@ async function globalSetup() {
 		}
 	};
 
+	// Ensure the Paygent plugin is active.
+	// wp-env activates plugins at container start but may silently fail if the
+	// slug is resolved differently. Force it here to guarantee it is active.
+	console.log('  → Activating Paygent plugin...');
+	wpEnv(`wp plugin activate woocommerce-for-paygent-payment-main`);
+	// Diagnostic: log all plugin statuses so CI output shows what is active.
+	const allPlugins = wpEnv(`wp plugin list --fields=name,status --format=csv`);
+	console.log('  → Plugin statuses:\n' + allPlugins);
+
+	// Enable pretty permalinks so /shop/, /checkout/, /wp-json/ all resolve.
+	console.log('  → Setting permalink structure...');
+	wpEnv(`wp rewrite structure '/%postname%/' --hard`);
+	wpEnv(`wp rewrite flush --hard`);
+
 	// WooCommerce settings.
 	console.log('  → Setting WooCommerce options...');
 	wpEnv(`wp option update woocommerce_currency JPY`);
@@ -63,7 +77,77 @@ async function globalSetup() {
 	if (testTokenKey) wpEnv(`wp option update wc-paygent-test-tokenkey "${testTokenKey}"`);
 
 	// Enable the Paygent CC gateway in WooCommerce settings.
-	wpEnv(`wp option update woocommerce_paygent_cc_settings --format=json '{"enabled":"yes","title":"クレジットカード (Paygent)","paymentaction":"sale","testmode":"yes"}'`);
+	// Use wp eval (direct PHP update_option) to bypass WP-CLI JSON argument
+	// parsing issues.  No special characters or quotes cross shell boundaries.
+	console.log('  → Enabling Paygent CC gateway settings...');
+	wpEnv(`wp eval "update_option('woocommerce_paygent_cc_settings',array('enabled'=>'yes','paymentaction'=>'sale','testmode'=>'yes'));"`);
+	// Diagnostic: verify the stored value so CI logs show the actual state.
+	const ccSettingsCheck = wpEnv(`wp option get woocommerce_paygent_cc_settings --format=json`);
+	console.log('  → CC settings stored:', ccSettingsCheck || '(empty — option not found)');
+
+	// Enable HPOS (High Performance Order Storage). admin-order E2E tests
+	// navigate to /wp-admin/admin.php?page=wc-orders which only works with
+	// HPOS enabled. Without it, WooCommerce redirects to edit.php?post_type=shop_order.
+	// WC 8.x uses feature key "custom_order_tables"; set all known option names
+	// so the correct one is picked up regardless of WC version.
+	wpEnv(`wp option update woocommerce_feature_custom_order_tables_enabled yes`);
+	wpEnv(`wp option update woocommerce_feature_hpos_enabled yes`);
+	wpEnv(`wp option update woocommerce_custom_orders_table_enabled yes`);
+
+	// Ensure the WooCommerce checkout page uses the classic shortcode form.
+	// WooCommerce 8.3+ ships with Block checkout by default; checkout.spec.js
+	// expects classic shortcode elements.
+	//
+	// Two things must be correct:
+	//   1. The page with slug "checkout" (resolved by /checkout/ URL) must have
+	//      shortcode content — woocommerce_checkout_page_id may point elsewhere.
+	//   2. woocommerce_checkout_page_id must match that page so is_checkout() works.
+	//
+	// Use wp eval to avoid shell glob-expansion of block markup brackets.
+	const checkoutSlugId = wpEnv(
+		`wp post list --post_type=page --name=checkout --fields=ID --format=csv`
+	).match(/^(\d+)$/m)?.[1] ?? '';
+	if (checkoutSlugId) {
+		wpEnv(`wp eval "wp_update_post(array('ID'=>${checkoutSlugId},'post_content'=>'[woocommerce_checkout]'));"`);
+		wpEnv(`wp option update woocommerce_checkout_page_id ${checkoutSlugId}`);
+		console.log(`  → Checkout page (ID:${checkoutSlugId}) set to shortcode form.`);
+	} else {
+		// Fallback: update whatever page the option points to.
+		const checkoutPageId = wpEnv(`wp option get woocommerce_checkout_page_id`).trim();
+		if (checkoutPageId.match(/^\d+$/)) {
+			wpEnv(`wp eval "wp_update_post(array('ID'=>${checkoutPageId},'post_content'=>'[woocommerce_checkout]'));"`);
+			console.log('  → Checkout page set to shortcode form for E2E tests.');
+		}
+	}
+
+	// Clear all WooCommerce cart sessions AND persistent cart user meta.
+	// Logged-in users have two cart stores:
+	//   1. woocommerce_sessions table  — cleared by session delete
+	//   2. _woocommerce_persistent_cart_N usermeta — NOT cleared by session delete;
+	//      WooCommerce restores from this meta on the next page load, causing items
+	//      to accumulate across repeated test runs (e.g. 71 items after 10 runs).
+	wpEnv(`wp eval "global \\$wpdb; \\$wpdb->query('DELETE FROM ' . \\$wpdb->prefix . 'woocommerce_sessions');"`);
+	wpEnv(`wp eval "global \\$wpdb; \\$wpdb->delete(\\$wpdb->usermeta, array('meta_key'=>'_woocommerce_persistent_cart_1'));"`);
+
+	// Delete leftover test orders from previous runs to keep the order list clean.
+	// Two types accumulate:
+	//   1. checkout-draft  — created automatically by Block checkout on every page visit.
+	//   2. pending  ¥0     — created by admin-order tests that previously used `post delete`
+	//                        (which silently skips HPOS records).
+	console.log('  → Cleaning up leftover test orders...');
+	wpEnv(
+		`wp eval '` +
+		// checkout-draft: auto-generated by Block checkout on every visit — always safe to delete.
+		// pending ¥0:     leaked by admin-order tests using post delete with HPOS enabled.
+		`$ids = wc_get_orders(["limit"=>-1,"status"=>["checkout-draft","pending"],"return"=>"ids"]);` +
+		`$deleted = 0;` +
+		`foreach($ids as $id){$o=wc_get_order($id);if(!$o)continue;if($o->get_status()==="checkout-draft"||($o->get_status()==="pending"&&(float)$o->get_total()===0.0)){$o->delete(true);$deleted++;}}` +
+		`echo "Deleted $deleted stale test orders.";` +
+		`'`
+	);
+
+	// Flush object cache so option changes take effect immediately.
+	wpEnv(`wp cache flush`);
 
 	// Prevent Japanized for WooCommerce (JP4WC) from redirecting to the Paidy
 	// onboarding wizard. JP4WC sets paidy_do_activation_redirect=true on first
@@ -94,7 +178,7 @@ async function globalSetup() {
 		);
 		console.log('  → CA bundle ready.');
 	} catch (err) {
-		console.warn('  ⚠ Could not copy CA bundle:', err.message);
+		console.warn('  ⚠ Could not copy CA bundle:', err instanceof Error ? err.message : String(err));
 	}
 
 	// -------------------------------------------------------------------------
@@ -105,13 +189,34 @@ async function globalSetup() {
 		`wp post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
 	if (!existing || existing.includes('ID') && !existing.match(/^\d+$/m)) {
-		wpEnv(
-			`wp post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}'`
-		);
+		// Use wp eval (direct PHP) to create the product so WooCommerce hooks fire
+		// and the price meta + wc_product_meta_lookup are always populated correctly.
+		// Single-quoted shell string protects PHP $ variables from shell expansion.
+		wpEnv(`wp eval 'if(!get_page_by_path("paygent-e2e-test-product","OBJECT","product")){$p=new WC_Product_Simple();$p->set_name("Paygent E2E Test Product");$p->set_slug("paygent-e2e-test-product");$p->set_status("publish");$p->set_regular_price("1000");$p->set_price("1000");$id=$p->save();echo $id;}'`);
 		console.log('  → Test product created.');
 	} else {
 		console.log('  → Test product already exists.');
 	}
+
+	// Always verify the product price.  A price of 0 causes WC()->cart->needs_payment()
+	// to return false, hiding ALL payment method radio buttons on the checkout page.
+	const diagProductId = wpEnv(`wp post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`).match(/^(\d+)$/m)?.[1] || '';
+	if (diagProductId) {
+		const diagPrice = wpEnv(`wp eval "echo get_post_meta(${diagProductId},'_price',true);"`);
+		if (!diagPrice || diagPrice === '0') {
+			console.warn('  ⚠ Product price is 0 or missing — forcing price via wp eval...');
+			// Single-quoted shell string: $p is PHP variable, not shell variable.
+			wpEnv(`wp eval '$p=wc_get_product(${diagProductId});if($p){$p->set_regular_price("1000");$p->set_price("1000");$p->save();}'`);
+		} else {
+			console.log('  → Product ID:', diagProductId, '| price:', diagPrice);
+		}
+	}
+
+	// Diagnostic: verify gateway registration and enabled state.
+	const diagGateways = wpEnv(`wp eval 'WC()->payment_gateways()->init(); foreach(WC()->payment_gateways()->payment_gateways() as $id=>$gw){echo $id.":".$gw->enabled." ";}'`);
+	console.log('  → Registered gateways:', diagGateways || '(none — plugin may not be active)');
+	const diagCurrency = wpEnv(`wp option get woocommerce_currency`);
+	console.log('  → Store currency:', diagCurrency || '(not set)');
 
 	// -------------------------------------------------------------------------
 	// Step 3: Authenticate admin and save session state

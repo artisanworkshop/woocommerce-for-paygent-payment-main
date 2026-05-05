@@ -35,7 +35,10 @@ add_action( 'plugins_loaded', 'wc_gateway_paygent_plugin' );
  * Initialize the Paygent plugin.
  */
 function wc_gateway_paygent_plugin() {
-	if ( is_woocommerce_active() && class_exists( 'WooCommerce' ) ) {
+	// Use class_exists() rather than is_woocommerce_active() so the check works
+	// regardless of the plugin directory name (e.g. wp-env uses
+	// 'woocommerce.latest-stable/' which does not match the hardcoded slug check).
+	if ( class_exists( 'WooCommerce' ) ) {
 		WC_Gateway_Paygent::instance()->init();
 	} else {
 		add_action( 'admin_notices', 'wc_gateway_paygent_fallback_notice' );

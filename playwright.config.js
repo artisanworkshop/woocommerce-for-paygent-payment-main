@@ -26,8 +26,10 @@ module.exports = defineConfig({
 	/* Maximum time one test can run. */
 	timeout: 120_000,
 
-	/* Maximum time for the whole test run. */
-	globalTimeout: 600_000,
+	/* Maximum time for the whole test run.
+	 * Sandbox tests (E-3 card deletion, PayPay redirect) can take several minutes each.
+	 * CI keeps the tighter limit; local runs get more headroom. */
+	globalTimeout: process.env.CI ? 600_000 : 1_200_000,
 
 	/* Retry failed tests once in CI. */
 	retries: process.env.CI ? 1 : 0,
@@ -59,10 +61,12 @@ module.exports = defineConfig({
 	},
 
 	projects: [
-		/* Authenticated tests: reuse admin session saved by globalSetup. */
+		/* Authenticated tests: reuse admin session saved by globalSetup.
+		 * Excludes .guest.spec.js (no auth) and .paypay.spec.js (external redirect,
+		 * guest flow — use e2e-paypay project for PayPay tests). */
 		{
 			name: 'e2e',
-			testMatch: /(?<!\.guest)\.spec\.js$/,
+			testMatch: /(?<!\.guest|\.paypay|\.member)\.spec\.js$/,
 			use: {
 				...devices['Desktop Chrome'],
 				storageState: 'tests/E2E/.auth/admin.json',

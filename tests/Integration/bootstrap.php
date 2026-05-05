@@ -44,5 +44,14 @@ $plugin_file = dirname( __DIR__, 2 ) . '/woocommerce-for-paygent-payment-main.ph
 if ( file_exists( $plugin_file ) && ! defined( 'WC_PAYGENT_PLUGIN_FILE' ) ) {
 	require_once $plugin_file;
 }
+// In the tests-cli container the plugin is not active in the DB, so
+// plugins_loaded has already fired before we require the plugin file.
+// init() defines constants but hooks on_plugins_loaded() to the 'init'
+// action, which may also have fired already. Call both directly so that
+// gateway class files (and the JP4WC framework they depend on) are loaded.
+if ( ! defined( 'WC_PAYGENT_PLUGIN_PATH' ) && class_exists( 'WC_Gateway_Paygent' ) ) {
+	WC_Gateway_Paygent::instance()->init();
+	WC_Gateway_Paygent::instance()->on_plugins_loaded();
+}
 
 echo "Bootstrap OK — WordPress " . get_bloginfo( 'version' ) . " + WooCommerce " . WC_VERSION . " loaded.\n";

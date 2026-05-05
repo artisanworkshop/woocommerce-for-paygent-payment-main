@@ -185,6 +185,7 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-abstract-wc-paygent-block-payment.php';
 				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-wc-paygent-block-redirect.php';
+				require_once WC_PAYGENT_ABSPATH . 'includes/gateways/paygent/includes/block/class-wc-paygent-block-cc.php';
 			}
 		}
 
@@ -330,6 +331,11 @@ if ( ! class_exists( 'WC_Gateway_Paygent' ) ) :
 			}
 			if ( get_option( 'wc-paygent-rakutenpay' ) ) {
 				$registry->register( new WC_Paygent_Block_Redirect( 'paygent_rakutenpay', $redirect_features ) );
+			}
+
+			// Credit card gateway.
+			if ( class_exists( 'WC_Paygent_Block_CC' ) ) {
+				$registry->register( new WC_Paygent_Block_CC() );
 			}
 		}
 

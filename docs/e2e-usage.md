@@ -120,16 +120,76 @@ export PAYGENT_TEST_CID=yyy
 export PAYGENT_TEST_CPASS=zzz
 export PAYGENT_TEST_TOKENKEY=aaa
 
-# ゲストチェックアウトテスト（グループ A–D）
+# ゲストチェックアウトテスト（グループ A–D）：クラシックチェックアウト
 npx playwright test tests/E2E/checkout-sandbox.guest.spec.js --project=e2e-guest
 
-# 会員チェックアウトテスト（グループ E–F）
+# 会員チェックアウトテスト（グループ E–F）：クラシックチェックアウト
 npx playwright test tests/E2E/checkout-sandbox.member.spec.js --project=e2e-member
+
+# Block チェックアウトテスト：ゲスト
+npx playwright test tests/E2E/checkout-sandbox.block-cc.guest.spec.js --project=e2e-guest
+
+# Block チェックアウトテスト：会員（カード保存フロー）
+npx playwright test tests/E2E/checkout-sandbox.block-cc.member.spec.js --project=e2e-member
+
+# PayPay リダイレクト確認テスト（ページ遷移まで）
+npx playwright test tests/E2E/checkout-sandbox.paypay.spec.js --project=e2e-paypay
 ```
 
 > **IP 登録について**: Paygent サンドボックスは接続元 IP を事前登録する必要があります。
 > 動的 IP の環境では実行できません。静的 IP の環境か、GitHub Actions の
 > self-hosted runner を使用してください。
+
+---
+
+## Playwright プロジェクト構成
+
+`playwright.config.js` で 4 つのプロジェクトを定義しています。
+
+| プロジェクト名 | 対象ファイルパターン | 認証状態 | 用途 |
+|----------------|---------------------|---------|------|
+| `e2e` | `*.spec.js`（guest / paypay / member を除く） | 管理者セッション | Functional テスト全般 |
+| `e2e-guest` | `*.guest.spec.js` | なし（ゲスト） | ゲストチェックアウト |
+| `e2e-member` | `*.member.spec.js` | 会員セッション | 保存カード・会員フロー |
+| `e2e-paypay` | `*.paypay.spec.js` | なし（ゲスト） | PayPay 外部リダイレクトフロー |
+
+---
+
+## PayPay サンドボックステストについて
+
+PayPay テスト（`checkout-sandbox.paypay.spec.js`）は**ページ遷移の確認まで**を対象としています。
+
+### 現在テストしていること
+
+| テスト | 内容 |
+|--------|------|
+| PayPay gateway is visible on checkout | チェックアウトに PayPay 支払い方法が表示されること |
+| A-1 | ゲストが注文を確定すると PayPay 外部 URL（stbfep.sps-system.com）へリダイレクトされること（telegram 420 受理確認） |
+| B-1 | ¥2 の注文でも同様に PayPay 外部 URL へリダイレクトされること（telegram 421 返金の前提確認） |
+
+### フルフロー（PayPay ログイン〜支払い完了）の手動テスト手順
+
+自動テストではサンドボックスのリダイレクト処理に 2〜5 分かかるため、PayPay ログインまでを含めた完全なフローは手動で確認します。
+
+**使用するテスト用認証情報**（`e2e.config.md` 参照）:
+
+| 項目 | 値 |
+|------|-----|
+| 電話番号 | `09081818181` |
+| パスワード | `PayPay8181` |
+| ワンタイムパスワード | `1234` |
+
+**手順:**
+
+1. `npx wp-env start` でローカル環境を起動
+2. `http://localhost:8888` でブラウザを開き、¥1 または ¥2 の商品をカートに入れる
+3. チェックアウトで PayPay を選択して注文確定
+4. PayPay テストページが表示されたら「**こちらをクリック**」リンクをクリック
+5. 電話番号・パスワードを入力して「ログイン」
+6. ワンタイムパスワード（`1234`）を入力して「認証する」
+7. 「支払う」をクリックして完了
+8. WooCommerce の注文完了ページ（`/order-received/`）に戻ることを確認
+9. 返金テストの場合: 管理画面から注文を「完了」に変更し、返金 UI で ¥1 返金を実行
 
 ---
 
@@ -150,6 +210,7 @@ npx playwright test \
   tests/E2E/smoke.spec.js \
   tests/E2E/checkout.spec.js \
   tests/E2E/admin-order.spec.js \
+  tests/E2E/admin-refund.spec.js \
   tests/E2E/webhook.spec.js \
   --project=e2e
 
@@ -270,6 +331,18 @@ curl -I http://localhost:8888/wp-admin/
 
 ```bash
 npx playwright install --with-deps chromium
+```
+
+### PayPay テストが Block UI に関するエラーで失敗する
+
+PayPay テストは Classic Checkout（ショートコード形式）を使用します。
+global.setup.js がチェックアウトページをショートコード形式に設定しますが、
+失敗する場合は手動で確認してください。
+
+```bash
+# チェックアウトページのコンテンツを確認
+npx wp-env run cli wp post get 7 --field=post_content
+# → [woocommerce_checkout] が含まれていればOK
 ```
 
 ---

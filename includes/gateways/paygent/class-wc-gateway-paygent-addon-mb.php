@@ -429,7 +429,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 	 */
 	public function paygent_mb_change_amout_payment( $actions, $subscription ) {
 		if ( $subscription->get_payment_method() === $this->id ) {
-			$action_name              = _x( 'Change the amount', 'woocommerce-for-paygent-payment-main' );
+			$action_name              = _x( 'Change the amount', 'subscription action', 'woocommerce-for-paygent-payment-main' );
 			$actions['change_amount'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_amount' => $subscription->get_id() ), $subscription->get_checkout_payment_url() ) ),
 				'name' => $action_name,
@@ -496,7 +496,7 @@ class WC_Gateway_Paygent_Addon_MB extends WC_Gateway_Paygent_MB {
 			if ( '0' === $response_user['result'] && $response_user['result_array'] ) {
 				echo esc_html( mb_convert_encoding( $response_user['result_array'][0]['redirect_html'], 'UTF-8', 'SJIS' ) );
 			} else {
-				echo esc_html( '何か障害が発生いたしました。また、時間をおいて試してください。' );
+				echo esc_html( __( 'An error has occurred. Please try again later.', 'woocommerce-for-paygent-payment-main' ) );
 			}
 		} elseif ( isset( $_GET['change_proceed'] ) && isset( $_GET['open_id'] ) ) {// phpcs:ignore
 			$total = 0;

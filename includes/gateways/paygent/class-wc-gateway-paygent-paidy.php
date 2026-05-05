@@ -142,7 +142,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 		$this->icon       = apply_filters( 'woocommerce_paidy_icon', WC_PAYGENT_PLUGIN_URL . 'assets/images/paidy_logo_100_2023.png' );
 		$this->has_fields = false;
 		// translators: %s: Payment method name.
-		$this->order_button_text = sprintf( __( 'Proceed to %s', 'paidy-wc' ), __( 'Paidy', 'paidy-wc' ) );
+		$this->order_button_text = sprintf( __( 'Proceed to %s', 'woocommerce-for-paygent-payment-main' ), __( 'Paidy', 'woocommerce-for-paygent-payment-main' ) );
 
 		// Create plugin fields and settings.
 		$this->init_form_fields();
@@ -273,7 +273,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 		?>
 		<br />
 		<a href="https://paidy.com/consumer" target="_blank" class="jp4wc-paidy-icon">
-			<img src="<?php echo esc_url( WC_PAYGENT_PLUGIN_URL ) . 'assets/images/checkout_banner_320x100.png'; ?>" alt="Paidy 翌月まとめてお支払い" style="max-height: none; float: none;">
+			<img src="<?php echo esc_url( WC_PAYGENT_PLUGIN_URL ) . 'assets/images/checkout_banner_320x100.png'; ?>" alt="<?php esc_attr_e( 'Pay next month with Paidy', 'woocommerce-for-paygent-payment-main' ); ?>" style="max-height: none; float: none;">
 		</a>
 		<br />
 		<p class="jp4wc-paidy-description"><?php echo wp_kses_post( $this->description ); ?></p>
@@ -308,17 +308,17 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 		$image_url    = WC_PAYGENT_PLUGIN_URL . 'assets/images/paidy_checkout_2023_320x100.png';
 		$explain_html = '
         <div class="jp4wc-paidy-explanation">
-		<img src="' . esc_url( $image_url ) . '" alt="Paidy 翌月まとめてお支払い" style="max-height: none; float: none;">
+		<img src="' . esc_url( $image_url ) . '" alt="' . esc_attr__( 'Pay next month with Paidy', 'woocommerce-for-paygent-payment-main' ) . '" style="max-height: none; float: none;">
         <ul>
-            <li style="list-style: disc !important;">クレジットカード、事前登録不要。</li>
-            <li style="list-style: disc !important;">メールアドレスと携帯番号だけで、今すぐお買い物。</li>
-            <li style="list-style: disc !important;">1か月に何度お買い物しても、お支払いは翌月まとめて1回でOK。</li>
-            <li style="list-style: disc !important;">お支払いは翌月10日までに、コンビニ払い・銀行振込・口座振替で。</li>
+            <li style="list-style: disc !important;">' . esc_html__( 'No credit card or prior registration required.', 'woocommerce-for-paygent-payment-main' ) . '</li>
+            <li style="list-style: disc !important;">' . esc_html__( 'Shop now with just your email address and phone number.', 'woocommerce-for-paygent-payment-main' ) . '</li>
+            <li style="list-style: disc !important;">' . esc_html__( 'No matter how many times you shop in a month, pay it all together once the following month.', 'woocommerce-for-paygent-payment-main' ) . '</li>
+            <li style="list-style: disc !important;">' . esc_html__( 'Pay by the 10th of the following month via convenience store, bank transfer, or direct debit.', 'woocommerce-for-paygent-payment-main' ) . '</li>
         </ul>
-        さらにペイディアプリから本人確認をすると、分割手数料無料*の３回あと払い**や、使い過ぎを防止する予算設定など、便利な機能をご利用いただけます。<br />
-*銀行振込・口座振替のみ無料<br />
-**1回のご利用金額が3,000円以上の場合のみ利用可能<br />
-        Paidyについて詳しくは<a href="https://paidy.com/payments/" target="_blank">こちら</a>。
+        ' . esc_html__( 'Verify your identity in the Paidy app to unlock 3-installment pay-later with no installment fees* and budget controls to prevent overspending.', 'woocommerce-for-paygent-payment-main' ) . '<br />
+' . esc_html__( '*Free only with bank transfer or direct debit', 'woocommerce-for-paygent-payment-main' ) . '<br />
+' . esc_html__( '**Available only for purchases of ¥3,000 or more', 'woocommerce-for-paygent-payment-main' ) . '<br />
+        <a href="https://paidy.com/payments/" target="_blank">' . esc_html__( 'Learn more about Paidy', 'woocommerce-for-paygent-payment-main' ) . '</a>.
         </div>
         ';
 		return apply_filters( 'jp4wc_paidy_explanation', $explain_html );
@@ -680,7 +680,7 @@ class WC_Gateway_Paygent_Paidy extends WC_Payment_Gateway {
 	public function checkout_reject_to_cancel( $checkout ) {
 		if ( isset( $_GET['status'] ) ) {// phpcs:ignore
 			if ( 'closed' === $_GET['status'] && isset( $_GET['order_id'] ) ) {// phpcs:ignore
-				$message = __( 'Once the customer interrupted the payment.. Order ID:', 'woocommerce-for-paygent-payment-main' ) . wp_unslash( $_GET['order_id'] );// phpcs:ignore
+				$message = __( 'Once the customer interrupted the payment.. Order ID:', 'woocommerce-for-paygent-payment-main' ) . absint( $_GET['order_id'] );// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$this->jp4wc_framework->jp4wc_debug_log( $message, $this->debug, 'woocommerce-for-paygent-payment-main' );
 			} elseif ( 'rejected' === $_GET['status'] || isset( $_GET['order_id'] ) ) {// phpcs:ignore
 				$reject_message = __( 'This Paidy payment has been declined. Please select another payment method.', 'woocommerce-for-paygent-payment-main' );

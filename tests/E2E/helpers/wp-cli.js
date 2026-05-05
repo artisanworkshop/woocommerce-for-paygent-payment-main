@@ -35,11 +35,26 @@ function ensureTestProduct() {
 		`post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
 	const match = existing.match(/^(\d+)$/m);
-	if (match) return match[1];
+	if (match) {
+		// Ensure the WooCommerce product lookup table is populated. It can be empty
+		// when the product was created via `wp post create` (which bypasses WC hooks)
+		// — an empty lookup table causes WooCommerce to treat the product price as 0.
+		wpCli(`wc tool run regenerate_product_lookup_tables --user=1`);
+		return match[1];
+	}
 
+	// Use `wc product create` so WooCommerce internal hooks fire and the price
+	// is written to both post meta and the wc_product_meta_lookup table.
+	const newId = wpCli(
+		`wc product create --name="Paygent E2E Test Product" --slug=paygent-e2e-test-product --status=publish --regular_price=1000 --virtual=false --user=1 --porcelain`
+	);
+	if (newId.match(/^\d+$/)) return newId;
+
+	// Fallback: raw post create (older wp-env without wc-cli support).
 	wpCli(
 		`post create --post_type=product --post_title="Paygent E2E Test Product" --post_name=paygent-e2e-test-product --post_status=publish --meta_input='{"_price":"1000","_regular_price":"1000","_virtual":"no","_manage_stock":"no"}' --porcelain`
 	);
+	wpCli(`wc tool run regenerate_product_lookup_tables --user=1`);
 	const id = wpCli(
 		`post list --post_type=product --name=paygent-e2e-test-product --fields=ID --format=csv`
 	);
@@ -112,6 +127,83 @@ function restorePaygentCcSettings(snapshot) {
 	wpCli(`option update woocommerce_paygent_cc_settings --format=json '${json}'`);
 }
 
+/**
+ * Create (or find) a Block checkout page and set it as the WooCommerce checkout page.
+ * Returns { pageId, blockCheckoutUrl, originalCheckoutPageId } for later restoration.
+ *
+ * The Block checkout content is the minimal Gutenberg block comment required by
+ * WooCommerce to render its Checkout block and all sub-blocks.
+ *
+ * @param {string} baseURL  e.g. 'http://localhost:8888'
+ * @returns {{ pageId: string, blockCheckoutUrl: string, originalCheckoutPageId: string }}
+ */
+function setupBlockCheckoutPage( baseURL ) {
+	// Remember the original checkout page ID.
+	const originalCheckoutPageId = wpCli( `option get woocommerce_checkout_page_id` ).trim();
+
+	// Reuse existing page to avoid accumulation across runs.
+	const existing = wpCli(
+		`post list --post_type=page --name=paygent-block-checkout-e2e --fields=ID --format=csv`
+	);
+	let pageId = ( existing.match( /^(\d+)$/m ) || [] )[1] || '';
+
+	if ( ! pageId ) {
+		const blockContent = [
+			'<!-- wp:woocommerce/checkout {"align":"wide"} -->',
+			'<div class="wp-block-woocommerce-checkout alignwide is-loading">',
+			'<!-- wp:woocommerce/checkout-fields-block -->',
+			'<div class="wp-block-woocommerce-checkout-fields-block">',
+			'<!-- wp:woocommerce/checkout-express-payment-block --><div class="wp-block-woocommerce-checkout-express-payment-block"></div><!-- /wp:woocommerce/checkout-express-payment-block -->',
+			'<!-- wp:woocommerce/checkout-contact-information-block --><div class="wp-block-woocommerce-checkout-contact-information-block"></div><!-- /wp:woocommerce/checkout-contact-information-block -->',
+			'<!-- wp:woocommerce/checkout-shipping-address-block --><div class="wp-block-woocommerce-checkout-shipping-address-block"></div><!-- /wp:woocommerce/checkout-shipping-address-block -->',
+			'<!-- wp:woocommerce/checkout-billing-address-block --><div class="wp-block-woocommerce-checkout-billing-address-block"></div><!-- /wp:woocommerce/checkout-billing-address-block -->',
+			'<!-- wp:woocommerce/checkout-shipping-methods-block --><div class="wp-block-woocommerce-checkout-shipping-methods-block"></div><!-- /wp:woocommerce/checkout-shipping-methods-block -->',
+			'<!-- wp:woocommerce/checkout-payment-block --><div class="wp-block-woocommerce-checkout-payment-block"></div><!-- /wp:woocommerce/checkout-payment-block -->',
+			'<!-- wp:woocommerce/checkout-order-note-block --><div class="wp-block-woocommerce-checkout-order-note-block"></div><!-- /wp:woocommerce/checkout-order-note-block -->',
+			'<!-- wp:woocommerce/checkout-actions-block --><div class="wp-block-woocommerce-checkout-actions-block"></div><!-- /wp:woocommerce/checkout-actions-block -->',
+			'</div>',
+			'<!-- /wp:woocommerce/checkout-fields-block -->',
+			'<!-- wp:woocommerce/checkout-totals-block -->',
+			'<div class="wp-block-woocommerce-checkout-totals-block">',
+			'<!-- wp:woocommerce/checkout-order-summary-block --><div class="wp-block-woocommerce-checkout-order-summary-block"></div><!-- /wp:woocommerce/checkout-order-summary-block -->',
+			'</div>',
+			'<!-- /wp:woocommerce/checkout-totals-block -->',
+			'</div>',
+			'<!-- /wp:woocommerce/checkout -->',
+		].join( '' );
+
+		// Escape single quotes for the shell command.
+		const escapedContent = blockContent.replace( /'/g, "'\\''" );
+		pageId = wpCli(
+			`post create --post_type=page --post_status=publish ` +
+			`--post_title="Block Checkout (E2E)" --post_name=paygent-block-checkout-e2e ` +
+			`--post_content='${ escapedContent }' --porcelain`
+		).trim();
+	}
+
+	// Point WooCommerce checkout at the new Block checkout page.
+	wpCli( `option update woocommerce_checkout_page_id ${ pageId }` );
+
+	const blockCheckoutUrl = `${ baseURL.replace( /\/$/, '' ) }/paygent-block-checkout-e2e/`;
+	return { pageId, blockCheckoutUrl, originalCheckoutPageId };
+}
+
+/**
+ * Restore the WooCommerce checkout page to its original ID and delete the
+ * Block checkout test page.
+ *
+ * @param {string} originalCheckoutPageId
+ * @param {string} pageId
+ */
+function teardownBlockCheckoutPage( originalCheckoutPageId, pageId ) {
+	if ( originalCheckoutPageId ) {
+		wpCli( `option update woocommerce_checkout_page_id ${ originalCheckoutPageId }` );
+	}
+	if ( pageId ) {
+		wpCli( `post delete ${ pageId } --force` );
+	}
+}
+
 module.exports = {
 	wpCli,
 	ensureTestProduct,
@@ -121,4 +213,6 @@ module.exports = {
 	enableTds2,
 	disableTds2,
 	restorePaygentCcSettings,
+	setupBlockCheckoutPage,
+	teardownBlockCheckoutPage,
 };

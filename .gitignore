@@ -10,7 +10,7 @@
 node_modules/
 vendor/
 deploy/
-package-lock.json
+
 
 # Composer
 # vendor/
@@ -39,3 +39,4 @@ playwright-report/
 test-results/
 tests/E2E/.auth/
 .playwright-mcp/
+e2e.config.md

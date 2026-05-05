@@ -11,6 +11,7 @@
 	"devDependencies": {
 		"@playwright/test": "^1.59.1",
 		"@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
+		"@wordpress/env": "^10.0.0",
 		"@wordpress/scripts": "^30.0.2",
 		"cross-env": "7.0.3",
 		"webpack-cli": "^6.0.1"
@@ -30,6 +31,8 @@
 		"e2e:debug": "playwright test --debug",
 		"e2e:smoke": "playwright test --project=e2e tests/E2E/smoke.spec.js",
 		"e2e:paypay": "playwright test --project=e2e-paypay",
+		"e2e:block-cc": "playwright test --project=e2e-guest tests/E2E/checkout-sandbox.block-cc.guest.spec.js",
+		"e2e:block-cc:member": "playwright test --project=e2e-member tests/E2E/checkout-sandbox.block-cc.member.spec.js",
 		"e2e:report": "playwright show-report"
 	}
 }

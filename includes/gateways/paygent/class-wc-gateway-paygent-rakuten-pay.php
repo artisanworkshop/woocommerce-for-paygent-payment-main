@@ -152,7 +152,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 				'title'       => __( 'Button type', 'woocommerce-for-paygent-payment-main' ),
 				'type'        => 'select',
 				'class'       => 'wc-button-select',
-				'description' => __( 'Select the button you want to display when making a payment decision.', 'woocommerce' ),
+				'description' => __( 'Select the button you want to display when making a payment decision.', 'woocommerce-for-paygent-payment-main' ),
 				'default'     => 'sale',
 				'desc_tip'    => true,
 				'options'     => array(
@@ -241,7 +241,7 @@ class WC_Gateway_Paygent_Rakuten_Pay extends WC_Payment_Gateway {
 				$fee_total = $fee->get_total() + $fee->get_total_tax();
 				if ( isset( $fee_total ) && 0 !== $fee_total ) {
 					$send_data[ 'goods_id[' . $i . ']' ]     = 'fee';
-					$send_data[ 'goods[' . $i . ']' ]        = mb_convert_encoding( '手数料', 'SJIS', 'UTF-8' );
+					$send_data[ 'goods[' . $i . ']' ]        = mb_convert_encoding( __( 'Fee', 'woocommerce-for-paygent-payment-main' ), 'SJIS', 'UTF-8' );
 					$send_data[ 'goods_price[' . $i . ']' ]  = $fee->get_total() + $fee->get_total_tax();
 					$send_data[ 'goods_amount[' . $i . ']' ] = 1;
 				}
