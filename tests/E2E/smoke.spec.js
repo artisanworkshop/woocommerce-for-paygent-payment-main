@@ -67,27 +67,25 @@ test.describe('Smoke: Environment', () => {
 
 	test('checkout page is accessible', async ({ page, baseURL }) => {
 		// Smoke: verify the checkout page URL responds with HTTP 200 and contains
-		// the classic checkout form in its HTML.
-		//
-		// We use page.request (same cookie jar as the browser) so the cart session
-		// is shared. Adding the product to the cart first ensures the checkout form
-		// renders rather than the "cart is empty" redirect.
+		// a checkout form (Block or classic shortcode).
 		if (!productId) {
 			test.skip(true, 'Test product ID not resolved via WP-CLI');
 			return;
 		}
 
-		// Add product to cart via query-param URL (WooCommerce processes this
-		// server-side and sets the cart session cookie in the response).
+		// Add product to cart so WooCommerce renders the checkout form instead of
+		// redirecting to the shop on empty-cart.
 		await page.goto(`${baseURL}/?add-to-cart=${productId}`, { waitUntil: 'domcontentloaded' });
 
-		// Fetch the checkout page HTML directly — no JS rendering needed.
-		// page.request shares cookies with the browser, so the cart session applies.
 		const response = await page.request.get(`${baseURL}/checkout/`);
 		expect(response.status()).toBe(200);
 
-		// The classic checkout (shortcode) always renders #customer_details server-side.
+		// Accept either Block checkout or classic shortcode checkout markup.
 		const html = await response.text();
-		expect(html).toContain('customer_details');
+		const hasCheckout =
+			html.includes('customer_details') ||       // classic shortcode
+			html.includes('wc-block-checkout') ||      // Block checkout (WC 8.3+)
+			html.includes('woocommerce-checkout');     // generic WC checkout class
+		expect(hasCheckout).toBeTruthy();
 	});
 });

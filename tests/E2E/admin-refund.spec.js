@@ -18,6 +18,9 @@ const { wpCli } = require('./helpers/wp-cli');
 const createdOrderIds = [];
 
 test.afterAll(() => {
+	// Skip cleanup when E2E_KEEP_ORDERS=true so test orders (including
+	// successfully refunded ones) remain visible for human inspection.
+	if (process.env.E2E_KEEP_ORDERS === 'true') return;
 	for (const id of createdOrderIds) {
 		wpCli(`wc shop_order delete ${id} --force=true --user=1`);
 	}

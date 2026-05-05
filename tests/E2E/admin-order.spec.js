@@ -12,8 +12,14 @@ const { wpCli } = require('./helpers/wp-cli');
 const createdOrderIds = [];
 
 test.afterAll(async () => {
-	if (createdOrderIds.length) {
-		wpCli(`post delete ${createdOrderIds.join(' ')} --force`);
+	// Skip cleanup when E2E_KEEP_ORDERS=true so test orders remain visible for
+	// human inspection after a local run.  CI always cleans up (default).
+	if (process.env.E2E_KEEP_ORDERS === 'true') return;
+	// Use `wc shop_order delete` instead of `post delete`: with HPOS enabled,
+	// orders live in wc_orders (not wp_posts), so post delete silently leaves
+	// the order record behind.
+	for (const id of createdOrderIds) {
+		wpCli(`wc shop_order delete ${id} --force=true --user=1`);
 	}
 });
 

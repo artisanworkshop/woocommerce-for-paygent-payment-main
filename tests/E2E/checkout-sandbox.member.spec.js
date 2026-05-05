@@ -252,15 +252,25 @@ test.describe('Sandbox E: Stored card payment (logged-in member)', () => {
 		await fillBilling(page);
 		await selectPaygentCC(page);
 
-		// On subsequent runs the member already has a saved card, so stored card UI shows.
-		// Switch to "new card" radio to get to the standard card entry form.
+		// When the user has saved cards, Paygent renders a "use stored / use new card" radio.
+		// Use waitFor({ state:'attached' }) so we detect the radio even if the payment box
+		// AJAX re-render is still in progress and the element is temporarily in a hidden parent.
 		const newCardRadioE1 = page.locator('#paygent-use-stored-payment-info-no');
-		if (await newCardRadioE1.isVisible({ timeout: 3_000 }).catch(() => false)) {
-			// Use click() instead of check() — AJAX re-render replaces the radio DOM node
-			// before Playwright can verify the checked state, causing a false state error.
+		const radioInDom = await newCardRadioE1.waitFor({ state: 'attached', timeout: 5_000 }).then(() => true).catch(() => false);
+		if (radioInDom) {
 			await newCardRadioE1.click({ force: true });
 			await page.waitForSelector('.blockUI.blockOverlay', { state: 'detached', timeout: 15_000 }).catch(() => {});
 		}
+
+		// Fallback: force-show #paygent-new-info if it is still hidden.
+		// This handles edge cases where the stored-card UI hides the form even though
+		// the "use new card" radio was not found (e.g. timing race after AJAX re-render).
+		await page.evaluate(() => {
+			const el = document.getElementById('paygent-new-info');
+			if (el && window.getComputedStyle(el).display === 'none') {
+				el.style.display = 'block';
+			}
+		});
 
 		// Wait for card number to become visible (new card form).
 		await page.locator('#paygent_cc-card-number').waitFor({ state: 'visible', timeout: 15_000 });

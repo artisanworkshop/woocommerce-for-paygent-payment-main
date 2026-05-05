@@ -39,6 +39,8 @@ let productId = '';
 const createdOrderIds = [];
 /** @type {Record<string, string>} */
 let savedPaypaySettings = {};
+/** @type {string} Cached PaygentToken.js to avoid slow repeated fetches from sandbox. */
+let cachedPaygentTokenJs = '';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -93,6 +95,12 @@ async function fillBilling(page) {
  * @param {string} baseURL
  */
 async function goToCheckout(page, baseURL) {
+	// Serve PaygentToken.js from cache so checkout loads instantly.
+	if (cachedPaygentTokenJs) {
+		await page.route(/sandbox\.paygent\.co\.jp\/js\/PaygentToken/, (route) =>
+			route.fulfill({ status: 200, contentType: 'application/javascript', body: cachedPaygentTokenJs })
+		);
+	}
 	await page.goto(`${baseURL}/?add-to-cart=${productId}`, { waitUntil: 'domcontentloaded' });
 	await page.goto(`${baseURL}/checkout/`, { waitUntil: 'domcontentloaded' });
 	await page.waitForSelector('#customer_details', { timeout: 30_000 });
@@ -174,6 +182,27 @@ async function completePayPayLogin(page) {
 // ─── setup / teardown ────────────────────────────────────────────────────────
 
 test.beforeAll(async () => {
+	// Pre-fetch PaygentToken.js so checkout pages load instantly instead of waiting
+	// 60-90s for sandbox.paygent.co.jp on each test.
+	const https = require('https');
+	cachedPaygentTokenJs = await new Promise((resolve) => {
+		const req = https.get(
+			'https://sandbox.paygent.co.jp/js/PaygentToken.js',
+			{ timeout: 30_000 },
+			(res) => {
+				const chunks = [];
+				res.on('data', (c) => chunks.push(c));
+				res.on('end',  () => resolve(Buffer.concat(chunks).toString()));
+				res.on('error', () => resolve(''));
+			}
+		);
+		req.on('error',   () => resolve(''));
+		req.on('timeout', () => { req.destroy(); resolve(''); });
+	});
+	if (cachedPaygentTokenJs) {
+		console.log('  [paypay] PaygentToken.js pre-fetched and cached.');
+	}
+
 	// Create a ¥1 product for PayPay tests (spec: use ¥1 to avoid shared-env amount conflicts).
 	const existing = wpCli(
 		`post list --post_type=product --name=paygent-paypay-e2e --fields=ID --format=csv`
@@ -241,8 +270,8 @@ test.describe('Sandbox PayPay: Standard payment flow', () => {
 		// to capture it and wait directly for the external PayPay test page.
 		await page.locator('#place_order').click();
 
-		// waitForURL with a function: resolves as soon as the URL leaves localhost.
-		await page.waitForURL((url) => !url.includes('localhost:8888'), { timeout: 90_000 });
+		// waitForURL callback receives a URL object, not a string — use .href for string methods.
+		await page.waitForURL((url) => !url.href.includes('localhost:8888'), { timeout: 90_000 });
 
 		// Screenshot the PayPay test login page for selector debugging.
 		await page.screenshot({ path: 'playwright-report/paypay-login.png' });
