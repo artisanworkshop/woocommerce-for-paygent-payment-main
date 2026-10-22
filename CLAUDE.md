@@ -27,6 +27,7 @@ woocommerce-for-paygent-payment-main/
 │   │   ├── class-wc-admin-screen-paygent.php      ← 管理画面
 │   │   └── class-jp4wc-card-expiry-notifier.php   ← カード有効期限通知
 │   ├── class-jp4wc-order-attempt-limiter.php       ← 注文試行制限
+│   ├── artws-php-security-notice/                  ← 共通PHPセキュリティ通知（JP4WCから無編集コピー）
 │   └── jp4wc-framework/                            ← JP4WC共通フレームワーク
 │
 ├── includes/gateways/paygent/
@@ -132,6 +133,22 @@ SHA-256による改ざん検知。`merchant_id + connect_id + connect_password +
 
 WooCommerce High Performance Order Storage（HPOS）完全対応済み。
 `$order->get_meta()` / `$order->update_meta_data()` を使用し、`get_post_meta()` は使わない。
+
+### 共通PHPセキュリティ通知（`includes/artws-php-security-notice/`）
+
+Artisan Workshop の各プラグインが同梱する PHP 脆弱性の通知（Issue #44）。
+- Japanized for WooCommerce のタグから**無編集でコピー**する（`diff -r` で一致を確認）。直す必要が出たら
+  ここでは直さず、JP4WC 側で直して `Notice::VERSION` を上げ、全プラグインへコピーし直す
+- PHP 7.0 で構文エラーにならない書き方のまま保つ。このリポジトリには PHPCompatibilityWP が無いので
+  JP4WC の `vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.0- includes/artws-php-security-notice/` で確認する
+- 登録した全コピーのうち最新版だけが `plugins_loaded` 5 で読み込まれる（フレームワークの「先に読んだ方」とは逆）。
+  メインファイルが `artws_php_security_notice_register()` に渡す版数は `Notice::VERSION` と揃える
+- メインファイルは `register.php` を `is_readable()` のときだけ読む（更新中のリクエストは通知なしで続行）。
+  登録は WooCommerce の有無の判定より前・外で行う
+- 文言は `wc_gateway_paygent_php_security_notice_strings()` が返す。言語パックに無い訳は、callback の実行中だけ
+  同梱の `.mo` から補う（そのため `.mo` は配布する。WP 6.5 未満は `MO` クラスで読む）
+- phpcs の `PrefixAllGlobals`（`artws_` / `ArtisanWorkshop\PhpSecurityNotice`）はこのディレクトリだけに効かせている
+  （プラグイン本体は接頭辞を未設定）
 
 ## WordPress コーディング標準
 
@@ -271,9 +288,11 @@ CC/MCCC/CS/ATM/PayPay/楽天ペイ/BN/MB は `payment_complete()` または `set
 
 - 手順: `npm run make-pot` → `msgmerge` で ja.po 更新 → 翻訳 → `npm run make-json`、
   `.mo` は `msgfmt` で生成
-- `i18n/*.json` / `i18n/*.mo` は `.distignore` で配布除外（ローカル開発用）。本番翻訳は
+- `i18n/*.json` は `.distignore` で配布除外（ローカル開発用）。本番翻訳は
   translate.wordpress.org の言語パックが配信するため、**リリース（タグpush）前に
   ja.po を GlotPress へインポートする**（怠ると新規文字列が英語のままになる）
+- `i18n/*.mo` は配布する（共通PHPセキュリティ通知が、言語パックに無い訳を同梱 `.mo` から補うため。Issue #44）。
+  `.po` と食い違わないよう、文字列の追加は wp-i18n スキルの `po-add-entry.py` か `msgfmt` で `.mo` まで更新する
 - Block JS の翻訳は抽象クラスの `set_script_translations()` ヘルパーで読み込む。
   Blockクラスで新しいWP関数を呼んだら `tests/bootstrap.php` へプレーンスタブの追加が
   必要（単体テストはWPなしの Brain\Monkey 環境）
