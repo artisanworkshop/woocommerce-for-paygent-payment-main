@@ -37,7 +37,7 @@ AbstractPaymentMethodType                registerPaymentMethod()
 
 ```
 includes/gateways/paygent/includes/block/
-  abstract-wc-paygent-block-payment.php   ← 全 Block クラスの抽象基底
+  class-abstract-wc-paygent-block-payment.php ← 全 Block クラスの抽象基底
   class-wc-paygent-block-redirect.php     ← ATM/BN/PayPay/楽天ペイ【1クラスで4役】
   class-wc-paygent-block-cc.php           ← CC + Addon_CC (Branch 2)
   class-wc-paygent-block-cs.php           ← コンビニ (Branch 3)
@@ -124,8 +124,8 @@ trunk
 | 操作 | ファイル |
 |------|---------|
 | 新規 | `docs/checkout-block-plan.md` |
-| 新規 | `.claude/skills/wc-block-payment/skill.md` |
-| 新規 | `includes/gateways/paygent/includes/block/abstract-wc-paygent-block-payment.php` |
+| 新規 | `.claude/skills/wc-block-payment/SKILL.md` |
+| 新規 | `includes/gateways/paygent/includes/block/class-abstract-wc-paygent-block-payment.php` |
 | 新規 | `includes/gateways/paygent/includes/block/class-wc-paygent-block-redirect.php` |
 | 新規 | `src/blocks/shared/components/PaymentLabel.jsx` |
 | 新規 | `src/blocks/shared/components/PaymentDescription.jsx` |
