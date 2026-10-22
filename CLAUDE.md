@@ -164,6 +164,10 @@ WordPress / WooCommerce 汎用スキル（`wc-development`, `wp-security-check` 
 | `paygent-sb-cc` | `/paygent-sb-cc <URL> [フェーズ]`, `サンドボックス決済試験`, `試験環境動作確認`（WEB試験環境をClaude in Chromeで検証） | `.claude/skills/paygent-sb-cc/` |
 | `paygent-sb-cs` | `/paygent-sb-cs <URL> [フェーズ]`, `sb-cs`, `コンビニ決済試験`, `statusupdatesearch`（WEB試験環境＋試験環境ツールで検証） | `.claude/skills/paygent-sb-cs/` |
 
+スキルを追加・削除・改名したら、この表と `README.md` の「Claude Code スキル」表を両方更新する（PR #43 で README だけ古いまま残った）。
+ファイル名は `SKILL.md`（大文字）で `name`/`description` の frontmatter 必須。このリポジトリは `core.ignorecase=true` なので、
+大文字小文字だけの改名は一時名を経由して `git mv` を2回行う。
+
 スキルの情報は **2025docs/ の仕様書PDFが正**。コードより仕様書を優先すること。
 
 ## PDF仕様書アップデート検知
