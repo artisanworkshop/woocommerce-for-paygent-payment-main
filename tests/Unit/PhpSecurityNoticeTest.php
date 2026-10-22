@@ -86,11 +86,14 @@ class PhpSecurityNoticeTest extends TestCase {
 
 	public function test_bundled_translation_leaves_other_strings_alone(): void {
 		$this->define_mo_stub();
-		Functions\when( 'determine_locale' )->justReturn( 'xx_XX' );
 		$imported = \MO::$imported;
 
+		// Japanese has a bundled translation of "Close", so these would change without the checks.
+		Functions\when( 'determine_locale' )->justReturn( 'ja' );
 		$this->assertSame( 'Close', wc_gateway_paygent_php_security_notice_bundled_translation( 'Close', 'Close', 'other-domain' ), 'Other text domains pass through.' );
 		$this->assertSame( 'Closed', wc_gateway_paygent_php_security_notice_bundled_translation( 'Closed', 'Close', 'woocommerce-for-paygent-payment-main' ), 'Loaded translations win.' );
+
+		Functions\when( 'determine_locale' )->justReturn( 'xx_XX' );
 		$this->assertSame( 'Close', wc_gateway_paygent_php_security_notice_bundled_translation( 'Close', 'Close', 'woocommerce-for-paygent-payment-main' ), 'A locale without a bundled file passes through.' );
 		$this->assertSame( $imported, \MO::$imported, 'No file is read for them.' );
 	}
