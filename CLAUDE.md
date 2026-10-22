@@ -148,7 +148,9 @@ WooCommerce High Performance Order Storage（HPOS）完全対応済み。
 
 ## Claude Code スキル
 
-`.claude/skills/` に8つのスキルが定義されています。関連するキーワードやファイルを編集する際に自動的に発動します。
+`.claude/skills/` に9つのプロジェクト固有スキルが定義されています。関連するキーワードやファイルを編集する際に自動的に発動します。
+WordPress / WooCommerce 汎用スキル（`wc-development`, `wp-security-check` 等）は共有スキル（`~/.claude/skills/`）を使い、
+このリポジトリには複製しない。
 
 | スキル | 発動キーワード例 | 参照先 |
 | --- | --- | --- |
@@ -160,6 +162,7 @@ WooCommerce High Performance Order Storage（HPOS）完全対応済み。
 | `wc-block-payment` | `AbstractPaymentMethodType`, `registerPaymentMethod`, `onPaymentSetup`, `block-cs` | `.claude/skills/wc-block-payment/` |
 | `paygent-sandbox-check` | `サンドボックス検証`, `実決済テスト`, `sandbox check`, マージ前検証 | `.claude/skills/paygent-sandbox-check/` |
 | `paygent-sb-cc` | `/paygent-sb-cc <URL> [フェーズ]`, `サンドボックス決済試験`, `試験環境動作確認`（WEB試験環境をClaude in Chromeで検証） | `.claude/skills/paygent-sb-cc/` |
+| `paygent-sb-cs` | `/paygent-sb-cs <URL> [フェーズ]`, `sb-cs`, `コンビニ決済試験`, `statusupdatesearch`（WEB試験環境＋試験環境ツールで検証） | `.claude/skills/paygent-sb-cs/` |
 
 スキルの情報は **2025docs/ の仕様書PDFが正**。コードより仕様書を優先すること。
 

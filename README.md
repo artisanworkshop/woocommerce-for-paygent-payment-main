@@ -139,17 +139,22 @@ Please back up your database and plugin files before updating. If you do a major
 
 ### Claude Code スキル
 
-`.claude/skills/` に5つのスキルが定義されており、Paygent決済の実装・修正時に自動的に発動します。
+`.claude/skills/` に9つのプロジェクト固有スキルが定義されており、Paygent決済の実装・修正・検証時に自動的に発動します。
 
-| スキル名 | 対象決済 |
+| スキル名 | 対象決済・用途 |
 | --- | --- |
 | `paygent-core` | 共通API通信、ハッシュチェック、認証、エラーハンドリング |
 | `paygent-cc` | クレジットカード（トークン決済、3DS2、継続課金、多通貨） |
 | `paygent-digital` | PayPay、Paidy、楽天ペイ、Apple Pay、Google Pay、Alipay、銀聯 |
 | `paygent-bank` | コンビニ決済、仮想口座（ATM）、銀行ネット、口座振替 |
 | `paygent-carrier` | キャリア決済（auかんたん決済、d払い、ソフトバンク）都度課金・継続課金 |
+| `wc-block-payment` | Block Checkout 統合（PHP 登録クラス、`registerPaymentMethod`、トークン化、webpack 構成） |
+| `paygent-sandbox-check` | ローカル wp-env でのサンドボックス実決済チェックリスト |
+| `paygent-sb-cc` | WEB試験環境でのクレジットカード動作確認（Claude in Chrome） |
+| `paygent-sb-cs` | WEB試験環境でのコンビニ決済動作確認（Claude in Chrome＋Paygent試験環境ツール） |
 
 各スキルの詳細は `.claude/skills/<skill-name>/SKILL.md` を参照してください。
+WordPress / WooCommerce 汎用スキル（`wc-development`、`wp-security-check` 等）は共有スキル（`~/.claude/skills/`）を使い、このリポジトリには複製しません。
 
 ### PDF仕様書アップデート検知ワークフロー
 
