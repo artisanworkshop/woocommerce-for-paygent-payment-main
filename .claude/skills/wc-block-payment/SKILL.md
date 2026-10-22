@@ -1,3 +1,16 @@
+---
+name: wc-block-payment
+description: >
+  このプラグインのBlock Checkout（WooCommerce Blocks）決済統合スキル。PHP側の
+  AbstractPaymentMethodType継承クラス（Abstract_WC_Paygent_Block_Payment / Redirect / CC / MCCC /
+  CS / MB / Paidy）の登録・設定データ受け渡し、JS側のregisterPaymentMethod・onPaymentSetup・
+  PaygentTokenによるトークン化、asset.phpを使ったスクリプト登録、webpackエントリ構成をカバー。
+  「AbstractPaymentMethodType」「registerPaymentMethod」「onPaymentSetup」「get_payment_method_data」
+  「PaymentMethodRegistry」「wc-paygent-block」「block-cc」「block-redirect」「block-cs」
+  「block-mb」「block-paidy」などのキーワード、または src/blocks/ や includes/gateways/paygent/includes/block/
+  を編集する際に発動。
+---
+
 # WooCommerce Block Payment Method スキル
 
 ## 発動キーワード
@@ -188,7 +201,7 @@ entry: {
 
 | 役割 | パス |
 |------|------|
-| PHP 抽象基底 | `includes/gateways/paygent/includes/block/abstract-wc-paygent-block-payment.php` |
+| PHP 抽象基底 | `includes/gateways/paygent/includes/block/class-abstract-wc-paygent-block-payment.php` |
 | PHP リダイレクト共通 | `includes/gateways/paygent/includes/block/class-wc-paygent-block-redirect.php` |
 | PHP CC | `includes/gateways/paygent/includes/block/class-wc-paygent-block-cc.php` |
 | JS 共通コンポーネント | `src/blocks/shared/components/` |
