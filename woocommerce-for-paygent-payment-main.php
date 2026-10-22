@@ -47,7 +47,8 @@ if ( function_exists( 'artws_php_security_notice_register' ) ) {
  * @return array
  */
 function wc_gateway_paygent_php_security_notice_strings() {
-	add_filter( 'gettext_woocommerce-for-paygent-payment-main', 'wc_gateway_paygent_php_security_notice_bundled_translation', 10, 2 );
+	// gettext, not gettext_{$domain}: that filter is WordPress 5.5+.
+	add_filter( 'gettext', 'wc_gateway_paygent_php_security_notice_bundled_translation', 10, 3 );
 	try {
 		return array(
 			'title'          => __( 'Update PHP now: critical security vulnerabilities', 'woocommerce-for-paygent-payment-main' ),
@@ -64,7 +65,7 @@ function wc_gateway_paygent_php_security_notice_strings() {
 			'close'          => __( 'Close', 'woocommerce-for-paygent-payment-main' ),
 		);
 	} finally {
-		remove_filter( 'gettext_woocommerce-for-paygent-payment-main', 'wc_gateway_paygent_php_security_notice_bundled_translation', 10 );
+		remove_filter( 'gettext', 'wc_gateway_paygent_php_security_notice_bundled_translation', 10 );
 	}
 }
 
@@ -76,11 +77,12 @@ function wc_gateway_paygent_php_security_notice_strings() {
  * @since 3.0.1
  * @param string $translation Translation from the loaded files.
  * @param string $text        Text to translate.
+ * @param string $domain      Text domain.
  * @return string
  */
-function wc_gateway_paygent_php_security_notice_bundled_translation( $translation, $text ) {
+function wc_gateway_paygent_php_security_notice_bundled_translation( $translation, $text, $domain ) {
 	static $files = array();
-	if ( $translation !== $text ) {
+	if ( 'woocommerce-for-paygent-payment-main' !== $domain || $translation !== $text ) {
 		return $translation;
 	}
 	$locale = determine_locale();

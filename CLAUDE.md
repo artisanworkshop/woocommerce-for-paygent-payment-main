@@ -146,7 +146,9 @@ Artisan Workshop の各プラグインが同梱する PHP 脆弱性の通知（I
 - メインファイルは `register.php` を `is_readable()` のときだけ読む（更新中のリクエストは通知なしで続行）。
   登録は WooCommerce の有無の判定より前・外で行う
 - 文言は `wc_gateway_paygent_php_security_notice_strings()` が返す。言語パックに無い訳は、callback の実行中だけ
-  同梱の `.mo` から補う（そのため `.mo` は配布する。WP 6.5 未満は `MO` クラスで読む）
+  同梱の `.mo` から補う（そのため `.mo` は配布する）。最低対応が WP 5.0 なので、JP4WC と違い
+  `gettext_{$domain}`（WP 5.5+）ではなく `gettext` にフックしてテキストドメインで絞り、
+  `WP_Translation_File`（WP 6.5+）が無いときは `MO` クラスで読む
 - phpcs の `PrefixAllGlobals`（`artws_` / `ArtisanWorkshop\PhpSecurityNotice`）はこのディレクトリだけに効かせている
   （プラグイン本体は接頭辞を未設定）
 
