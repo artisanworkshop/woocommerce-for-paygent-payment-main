@@ -4,6 +4,7 @@ namespace Paygent\Tests\Unit;
 
 use ArtisanWorkshop\PhpSecurityNotice\Notice;
 use Brain\Monkey\Filters;
+use Brain\Monkey\Functions;
 
 /**
  * Tests how this plugin bundles the PHP security notice shared with other
@@ -52,14 +53,69 @@ class PhpSecurityNoticeTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The filter is gettext, not gettext_{$domain}, which WordPress 5.0 to 5.4 do not have.
+	 */
 	public function test_bundled_translation_is_used_only_while_the_strings_are_built(): void {
-		Filters\expectAdded( 'gettext_woocommerce-for-paygent-payment-main' )
+		Filters\expectAdded( 'gettext' )
 			->once()
-			->with( 'wc_gateway_paygent_php_security_notice_bundled_translation', 10, 2 );
-		Filters\expectRemoved( 'gettext_woocommerce-for-paygent-payment-main' )
+			->with( 'wc_gateway_paygent_php_security_notice_bundled_translation', 10, 3 );
+		Filters\expectRemoved( 'gettext' )
 			->once()
 			->with( 'wc_gateway_paygent_php_security_notice_bundled_translation', 10 );
 
 		wc_gateway_paygent_php_security_notice_strings();
+	}
+
+	/**
+	 * Before WordPress 6.5 there is no WP_Translation_File, so the bundled .mo is read with MO.
+	 */
+	public function test_bundled_translation_is_read_with_mo_without_wp_translation_file(): void {
+		$this->assertFalse( class_exists( 'WP_Translation_File', false ), 'This test needs a process without WP_Translation_File.' );
+		$this->define_mo_stub();
+		Functions\when( 'determine_locale' )->justReturn( 'ja' );
+
+		$this->assertSame( '閉じる', wc_gateway_paygent_php_security_notice_bundled_translation( 'Close', 'Close', 'woocommerce-for-paygent-payment-main' ) );
+		$this->assertSame( 'Learn more', wc_gateway_paygent_php_security_notice_bundled_translation( 'Learn more', 'Learn more', 'woocommerce-for-paygent-payment-main' ), 'A string the bundled file lacks stays as it is.' );
+		$this->assertSame(
+			array( realpath( dirname( __DIR__, 2 ) . '/i18n/woocommerce-for-paygent-payment-main-ja.mo' ) ),
+			array_map( 'realpath', \MO::$imported ),
+			'The bundled Japanese file is read once and kept.'
+		);
+	}
+
+	public function test_bundled_translation_leaves_other_strings_alone(): void {
+		$this->define_mo_stub();
+		Functions\when( 'determine_locale' )->justReturn( 'xx_XX' );
+		$imported = \MO::$imported;
+
+		$this->assertSame( 'Close', wc_gateway_paygent_php_security_notice_bundled_translation( 'Close', 'Close', 'other-domain' ), 'Other text domains pass through.' );
+		$this->assertSame( 'Closed', wc_gateway_paygent_php_security_notice_bundled_translation( 'Closed', 'Close', 'woocommerce-for-paygent-payment-main' ), 'Loaded translations win.' );
+		$this->assertSame( 'Close', wc_gateway_paygent_php_security_notice_bundled_translation( 'Close', 'Close', 'woocommerce-for-paygent-payment-main' ), 'A locale without a bundled file passes through.' );
+		$this->assertSame( $imported, \MO::$imported, 'No file is read for them.' );
+	}
+
+	/**
+	 * Defines a minimal MO (WordPress pomo) that records the files it reads.
+	 */
+	private function define_mo_stub(): void {
+		if ( class_exists( 'MO', false ) ) {
+			return;
+		}
+		// phpcs:ignore Squiz.PHP.Eval.Discouraged
+		eval(
+			'class MO {
+				public static $imported = array();
+				private $entries = array();
+				public function import_from_file( $filename ) {
+					self::$imported[] = $filename;
+					$this->entries    = array( "Close" => "閉じる" );
+					return true;
+				}
+				public function translate( $singular, $context = null ) {
+					return isset( $this->entries[ $singular ] ) ? $this->entries[ $singular ] : $singular;
+				}
+			}'
+		);
 	}
 }
