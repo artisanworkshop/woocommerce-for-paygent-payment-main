@@ -33,6 +33,20 @@
 		</properties>
 	</rule>
 
+	<!--
+		PHP security notice shared with other Artisan Workshop plugins, copied as is.
+		Only this directory is checked for prefixes: the rest of the plugin does not set any.
+	-->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="artws_"/>
+				<element value="ArtisanWorkshop\PhpSecurityNotice"/>
+			</property>
+		</properties>
+		<include-pattern>*/includes/artws-php-security-notice/*</include-pattern>
+	</rule>
+
 	<config name="minimum_supported_wp_version" value="5.0"/>
 
 	<!-- WooCommerce defines manage_woocommerce as a custom capability. -->
