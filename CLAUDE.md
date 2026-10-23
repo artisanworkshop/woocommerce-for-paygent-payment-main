@@ -14,6 +14,14 @@ Paygent決済をWooCommerceに統合するWordPressプラグイン（v3.0.0）�
 | WooCommerce | >= 8.0.0（推奨 11.0+ / 11.0.1で検証済み） |
 | WooCommerce Subscriptions | 継続課金使用時のみ必須 |
 
+## Git・PR 運用
+
+- フォーク運用: `origin` が shoheitanaka のフォーク、`upstream` が artisanworkshop の本流。既定ブランチは **`trunk`**（`main` ではない）。
+  PR は `gh pr create --repo artisanworkshop/woocommerce-for-paygent-payment-main --head shoheitanaka:<branch> --base trunk`
+- ドキュメントだけの更新もフォークの `trunk` にコミットし、`trunk` から upstream へ PR を出す（PR #42・#45）。
+  それが upstream に入る前に作業ブランチを切ると、その PR に混入する（PR #46 に #45 のコミットが入った）
+- Codex は push では自動レビューしない。PR に `@codex review` とコメントして依頼する（dev-cycle は `--request-codex`）
+
 ## ファイル構成
 
 ```text
