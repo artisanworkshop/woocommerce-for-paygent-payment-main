@@ -18,11 +18,12 @@
 /test-results
 /.playwright-mcp
 
-# Compiled translation files: local development only.
+# Compiled JS translation files: local development only.
 # WordPress.org language packs (translate.wordpress.org) serve production
 # translations, so these must not be deployed to SVN.
+# The .mo files are shipped: the PHP security notice reads them for strings
+# the language pack lacks (wc_gateway_paygent_php_security_notice_strings()).
 /i18n/*.json
-/i18n/*.mo
 
 # Files
 .wp-env.json
