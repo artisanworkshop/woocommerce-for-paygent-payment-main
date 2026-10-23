@@ -145,6 +145,7 @@ WooCommerce High Performance Order Storage（HPOS）完全対応済み。
 ### 共通PHPセキュリティ通知（`includes/artws-php-security-notice/`）
 
 Artisan Workshop の各プラグインが同梱する PHP 脆弱性の通知（Issue #44）。
+
 - Japanized for WooCommerce のタグから**無編集でコピー**する（`diff -r` で一致を確認）。直す必要が出たら
   ここでは直さず、JP4WC 側で直して `Notice::VERSION` を上げ、全プラグインへコピーし直す
 - PHP 7.0 で構文エラーにならない書き方のまま保つ。このリポジトリには PHPCompatibilityWP が無いので
@@ -165,6 +166,9 @@ Artisan Workshop の各プラグインが同梱する PHP 脆弱性の通知（I
 - **入力**: `sanitize_text_field()` / `absint()` / `wp_unslash()` 等でサニタイズ
 - **出力**: `esc_html()` / `esc_attr()` / `wp_kses_post()` でエスケープ
 - **nonce**: フォーム送信は必ず nonce 検証
+- 最低対応は WP 5.0。それより後に入った API（`gettext_{$domain}` 5.5、`WP_Translation_File` 6.5 など）は
+  フォールバックを用意する。古い版の挙動は `gh api 'repos/WordPress/WordPress/contents/<path>?ref=5.0'` で
+  実ソースを確かめる（PR #46 で bot の誤検知 2 件をこれで判定）
 - **外部スクリプトURLは `https://` を明示**（プロトコル相対 `//` は禁止。httpサイトでは
   ポート80へ解決され、Paygent側が遮断するためページ描画が約75秒ブロックされる）
 - `phpcs` / `phpstan` が設定されている場合はコミット前に実行
