@@ -68,6 +68,12 @@ Please back up your database and plugin files before updating. If you do a major
 
 ## Changelog
 
+### 3.0.1 - 2026-10-23
+
+- Added - Show administrators a dialog on admin screens when the site runs a PHP version affected by the critical PHP2Shell vulnerabilities (CVE-2026-109618 / CVE-2026-109619). The fix is in PHP 8.2.35, 8.3.36, 8.4.27 and 8.5.12; PHP 8.1 and older have no fixed release. "Don't show again" hides it for that user until the PHP version changes. (#44)
+- Fixed - Exclude development files (Paygent specification PDFs, tests, documentation and CI settings) from the plugin package. Version 3.0.0 included them by mistake. (#42)
+- Updated - Tested with WordPress 7.1.3 and WooCommerce 11.2.1.
+
 ### 3.0.0 - 2026-09-03
 
 - Security - Block direct web access to the client certificate upload directory (wp-content/uploads/wc-paygent/) with an .htaccess and index.html. nginx users should add an equivalent deny rule to the server configuration.
